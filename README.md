@@ -1,2 +1,2 @@
-[![GitHub](https://img.shields.io/github/license/buijs-dev/squint?color=black&style=for-the-badge)](https://github.com/buijs-dev/squint/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/license/buijs-dev/squint?color=black&style=for-the-badge)](https://github.com/buijs-dev/squint/blob/main/LICENSE )
 [![Codecov](https://img.shields.io/codecov/c/github/buijs-dev/squint?logo=codecov&style=for-the-badge)](https://codecov.io/gh/buijs-dev/squint)
