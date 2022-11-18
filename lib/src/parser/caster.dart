@@ -23,6 +23,27 @@ import "dart:typed_data";
 import "../common/common.dart";
 import "element.dart";
 
+/// Returns a nullable T or throws a [SquintException].
+T? squintOrNull<T>(dynamic value) {
+  if (value is SquintValue) {
+    return squintOrNull<T>(value.value);
+  }
+
+  if (value is SquintNullValue) {
+    return null;
+  }
+
+  if (value is T?) {
+    return value;
+  }
+
+  if (value == null) {
+    return null;
+  }
+
+  throw _notNullOrType(T.runtimeType.toString(), value);
+}
+
 /// Returns a String or throws a [SquintException].
 String stringOrThrow(dynamic value, {Exception? e}) {
   final valueOrNull = stringOrNull(value);
@@ -376,4 +397,4 @@ Float32List? float32ListOrNull(dynamic value) {
 }
 
 SquintException _notNullOrType(String expectedType, dynamic type) =>
-    SquintException("Value is neither null nor expectedType: '$type'");
+    SquintException("Value is neither null nor $expectedType (expected): '$type'");

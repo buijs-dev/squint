@@ -32,6 +32,17 @@ export "element.dart";
 
 ///
 extension JsonMapParser on Map<String, dynamic> {
+  /// Return a squint-annotated CustomType value or throw an Exception.
+  T squintValueOrThrow<T>({
+    required String key,
+    Exception? e,
+  }) =>
+      _valueOrThrow<T>(squintValueOrNull(key: key), e: e);
+
+  /// Return a squint-annotated CustomType value or null.
+  T? squintValueOrNull<T>({required String key}) =>
+      _valueOrNull(key: key, cast: squintOrNull);
+
   /// Return an String value or throw an Exception.
   String stringValueOrThrow({
     required String key,
