@@ -20,19 +20,16 @@
 
 /// String processing utilities.
 extension StringUtils on String {
-
   /// Remove the postfix of a String
   /// if present
   /// or return current String.
   String removePostfixIfPresent(String toRemove) {
-    if(!endsWith(toRemove)) {
+    if (!endsWith(toRemove)) {
       return this;
     }
 
-    final lastIndex =
-      lastIndexOf(toRemove);
+    final lastIndex = lastIndexOf(toRemove);
 
     return substring(0, lastIndex);
   }
-
 }
