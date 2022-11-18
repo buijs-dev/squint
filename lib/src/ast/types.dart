@@ -23,115 +23,117 @@ import "ast.dart";
 /// A Integer [StandardType].
 class IntType extends StandardType {
   /// Construct a new [IntType].
-  const IntType(): super(className: "int", nullable: false);
+  const IntType() : super(className: "int", nullable: false);
 }
 
 /// A nullable Integer [StandardType].
 class NullableIntType extends StandardType {
   /// Construct a new [NullableIntType].
-  const NullableIntType(): super(className: "int", nullable: true);
+  const NullableIntType() : super(className: "int", nullable: true);
 }
 
 /// A double [StandardType].
 class DoubleType extends StandardType {
   /// Construct a new [DoubleType].
-  const DoubleType(): super(className: "double", nullable: false);
+  const DoubleType() : super(className: "double", nullable: false);
 }
 
 /// A nullable double [StandardType].
 class NullableDoubleType extends StandardType {
   /// Construct a new [NullableDoubleType].
-  const NullableDoubleType(): super(className: "double", nullable: true);
+  const NullableDoubleType() : super(className: "double", nullable: true);
 }
 
 /// A Boolean [StandardType].
 class BooleanType extends StandardType {
   /// Construct a new [BooleanType].
-  const BooleanType(): super(className: "bool", nullable: false);
+  const BooleanType() : super(className: "bool", nullable: false);
 }
 
 /// A nullable Boolean [StandardType].
 class NullableBooleanType extends StandardType {
   /// Construct a new [NullableBooleanType].
-  const NullableBooleanType(): super(className: "bool", nullable: true);
+  const NullableBooleanType() : super(className: "bool", nullable: true);
 }
 
 /// A String [StandardType].
 class StringType extends StandardType {
   /// Construct a new [StringType].
-  const StringType(): super(className: "String", nullable: false);
+  const StringType() : super(className: "String", nullable: false);
 }
 
 /// A nullable String [StandardType].
 class NullableStringType extends StandardType {
   /// Construct a new [NullableStringType].
-  const NullableStringType(): super(className: "String", nullable: true);
+  const NullableStringType() : super(className: "String", nullable: true);
 }
 
 /// A Uint8List [StandardType].
 class Uint8ListType extends StandardType {
   /// Construct a new [Uint8ListType].
-  const Uint8ListType(): super(className: "Uint8List", nullable: false);
+  const Uint8ListType() : super(className: "Uint8List", nullable: false);
 }
 
 /// A nullable Uint8List [StandardType].
 class NullableUint8ListType extends StandardType {
   /// Construct a new [NullableUint8ListType].
-  const NullableUint8ListType(): super(className: "Uint8List", nullable: true);
+  const NullableUint8ListType() : super(className: "Uint8List", nullable: true);
 }
 
 /// A Int32List [StandardType].
 class Int32ListType extends StandardType {
   /// Construct a new [Int32ListType].
-  const Int32ListType(): super(className: "Int32List", nullable: false);
+  const Int32ListType() : super(className: "Int32List", nullable: false);
 }
 
 /// A nullable Int32List [StandardType].
 class NullableInt32ListType extends StandardType {
   /// Construct a new [NullableInt32ListType].
-  const NullableInt32ListType(): super(className: "Int32List", nullable: true);
+  const NullableInt32ListType() : super(className: "Int32List", nullable: true);
 }
 
 /// A Int64List [StandardType].
 class Int64ListType extends StandardType {
   /// Construct a new [Int64ListType].
-  const Int64ListType(): super(className: "Int64List", nullable: false);
+  const Int64ListType() : super(className: "Int64List", nullable: false);
 }
 
 /// A nullable Int64List [StandardType].
 class NullableInt64ListType extends StandardType {
   /// Construct a new [NullableInt64ListType].
-  const NullableInt64ListType(): super(className: "Int64List", nullable: true);
+  const NullableInt64ListType() : super(className: "Int64List", nullable: true);
 }
 
 /// A Float32List [StandardType].
 class Float32ListType extends StandardType {
   /// Construct a new [Float32ListType].
-  const Float32ListType(): super(className: "Float32List", nullable: false);
+  const Float32ListType() : super(className: "Float32List", nullable: false);
 }
 
 /// A nullable Float32List [StandardType].
 class NullableFloat32ListType extends StandardType {
   /// Construct a new [Float32ListType].
-  const NullableFloat32ListType(): super(className: "Float32List", nullable: true);
+  const NullableFloat32ListType()
+      : super(className: "Float32List", nullable: true);
 }
 
 /// A Float64List [StandardType].
 class Float64ListType extends StandardType {
   /// Construct a new [Float64ListType].
-  const Float64ListType(): super(className: "Float64List", nullable: false);
+  const Float64ListType() : super(className: "Float64List", nullable: false);
 }
 
 /// A nullable Float64List [StandardType].
 class NullableFloat64ListType extends StandardType {
   /// Construct a new [NullableFloat64ListType].
-  const NullableFloat64ListType(): super(className: "Float64List", nullable: true);
+  const NullableFloat64ListType()
+      : super(className: "Float64List", nullable: true);
 }
 
 /// A List [StandardType].
 class ListType extends StandardType {
   /// Construct a new [ListType].
-  const ListType(this.child): super(className: "List", nullable: false);
+  const ListType(this.child) : super(className: "List", nullable: false);
 
   /// List child element.
   final AbstractType child;
@@ -140,19 +142,19 @@ class ListType extends StandardType {
 /// A nullable List [StandardType].
 class NullableListType extends StandardType {
   /// Construct a new [NullableListType].
-  const NullableListType(this.child): super(className: "List", nullable: true);
+  const NullableListType(this.child) : super(className: "List", nullable: true);
 
   /// List child element.
   final AbstractType child;
 }
 
 /// A Map [StandardType].
-class MapType extends StandardType  {
+class MapType extends StandardType {
   /// Construct a new [MapType].
   const MapType({
     required this.key,
     required this.value,
-}): super(className: "Map", nullable: false);
+  }) : super(className: "Map", nullable: false);
 
   /// Map key element.
   final AbstractType key;
@@ -162,16 +164,16 @@ class MapType extends StandardType  {
 }
 
 /// A nullable Map [StandardType].
-class NullableMapType extends StandardType  {
+class NullableMapType extends StandardType {
   /// Construct a new [NullableMapType].
   const NullableMapType({
     required this.key,
     required this.value,
-}): super(className: "Map", nullable: true);
+  }) : super(className: "Map", nullable: true);
+
   /// Map key element.
   final AbstractType key;
 
   /// Map value element.
   final AbstractType value;
-
 }

@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
+
 import "dart:convert";
 import "dart:io";
 
@@ -45,6 +47,15 @@ class StandardType extends AbstractType {
 
   /// Bool indicator if null is allowed.
   final bool nullable;
+
+  @override
+  bool operator ==(dynamic other) => other is StandardType
+      && className == other.className
+      && nullable == other.nullable;
+
+  @override
+  int get hashCode => className.hashCode + nullable.hashCode;
+
 }
 
 /// A custom class definition.
@@ -74,63 +85,59 @@ class TypeMember {
   final AbstractType type;
 
   @override
-  String toString() =>
-      "TypeMember('$type' '$name')";
+  String toString() => "TypeMember('$type' '$name')";
 }
 
 ///
 extension CustomTypeFromDebugFile on File {
-
   ///
   CustomType? get customType {
     final json = tryJsonDecode;
 
-    if(json == null) {
+    if (json == null) {
       "Failed to JSON decode file: '$this'".log(context: readAsStringSync());
       return null;
     }
 
-    final className =
-      json.stringValueOrThrow(key: "className");
+    final className = json.stringValueOrThrow(key: "className");
 
-    final members =
-    json.listValueOrThrow(key: "members")
+    final members = json
+        .listValueOrThrow(key: "members")
         .map((dynamic o) => o as List<dynamic>)
         .map((List<dynamic> o) {
-          if(o.length != 3) {
-            throw SquintException("JSON content incomplete. Expected 3 elements but found: '$o'");
-          }
+      if (o.length != 3) {
+        throw SquintException(
+            "JSON content incomplete. Expected 3 elements but found: '$o'");
+      }
 
-          final name = stringOrThrow(o[0]);
-          final type = stringOrThrow(o[1]);
-          final nullable = boolOrThrow(o[2]);
+      final name = stringOrThrow(o[0]);
+      final type = stringOrThrow(o[1]);
+      final nullable = boolOrThrow(o[2]);
 
-          return TypeMember(
-            name: name,
-            type: type.abstractType(nullable: nullable),
-          );
-        }).toList();
+      return TypeMember(
+        name: name,
+        type: type.abstractType(nullable: nullable),
+      );
+    }).toList();
 
     return CustomType(
-        className: className,
-        members: members,
+      className: className,
+      members: members,
     );
   }
 
   /// JsonDecode this file or return null.
-  Map<String,dynamic>? get tryJsonDecode {
+  Map<String, dynamic>? get tryJsonDecode {
     try {
       return jsonDecode(readAsStringSync()) as Map<String, dynamic>;
     } on Exception {
       return null;
     }
   }
-
 }
 
 /// Find matching AbstractType for String value.
 extension AbstractTypeFromString on String {
-
   /// Returns [StandardType] if match found
   /// in [_standardTypes] or [_standardNullableTypes]
   /// and otherwise a new [CustomType].
@@ -138,14 +145,12 @@ extension AbstractTypeFromString on String {
     final withPostfix = trim();
     final withoutPostfix = withPostfix.removePostfixIfPresent("?");
 
-    final listType =
-      _listRegex.firstMatch(withoutPostfix);
+    final listType = _listRegex.firstMatch(withoutPostfix);
 
-    if(listType != null) {
-
+    if (listType != null) {
       final child = listType.group(3)?.abstractType();
 
-      if(child == null) {
+      if (child == null) {
         throw SquintException("Unable to determine List child type: '$this'");
       }
 
@@ -154,30 +159,30 @@ extension AbstractTypeFromString on String {
           : ListType(child);
     }
 
-    final mapType =
-      _mapRegex.firstMatch(withoutPostfix);
+    final mapType = _mapRegex.firstMatch(withoutPostfix);
 
     // TODO test nested Map, check regex etc
-    if(mapType != null) {
-
-      final matches = <String>[]; for(var i = 0; i <=mapType.groupCount; i++) { matches.add(mapType!.group(i) ?? ""); }
+    if (mapType != null) {
+      final matches = <String>[];
+      for (var i = 0; i <= mapType.groupCount; i++) {
+        matches.add(mapType!.group(i) ?? "");
+      }
 
       final key = mapType.group(3)?.abstractType();
 
-      if(key == null) {
+      if (key == null) {
         throw SquintException("Unable to determine Map key type: '$this'");
       }
 
       final value = mapType.group(4)?.abstractType();
 
-      if(value == null) {
+      if (value == null) {
         throw SquintException("Unable to determine Map value type: '$this'");
       }
 
       return (nullable ?? withPostfix.endsWith("?"))
           ? NullableMapType(key: key, value: value)
           : MapType(key: key, value: value);
-
     }
 
     final type = (nullable ?? withPostfix.endsWith("?"))
@@ -186,14 +191,11 @@ extension AbstractTypeFromString on String {
 
     return type ?? CustomType(className: withoutPostfix, members: []);
   }
-
 }
 
-final _listRegex =
-  RegExp(r"""^(List)(<(.+?)>|)$""");
+final _listRegex = RegExp(r"""^(List)(<(.+?)>|)$""");
 
-final _mapRegex =
-  RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");
+final _mapRegex = RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");
 
 const _standardTypes = {
   "int": IntType(),
