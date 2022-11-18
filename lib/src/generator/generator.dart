@@ -27,7 +27,7 @@ String generateMethods({
   required CustomType type,
 }) =>
     """
-${type.className} deserializeExampleResponse(String json) =>
+${type.className} deserialize${type.className}(String json) =>
     deserialize${type.className}Map(jsonDecode(json) as Map<String, dynamic>);
     
     ${type.className} deserialize${type.className}Map(Map<String, dynamic> data) =>
@@ -56,26 +56,25 @@ extension on TypeMember {
 
 extension on CustomType {
   String generateTypeMemberDeserializer(String name) {
-    //TODO
-    return """$name: data.stringValueOrThrow(key: "$name")""";
+    return """$name: data.squintValueOrThrow<$className>(key: "$name")""";
   }
 }
 
 extension on StandardType {
   String generateTypeMemberDeserializer(String name) {
-    if(this is ListType) {
+    if (this is ListType) {
       return """$name: data.listValueOrThrow(key: "$name")${(this as ListType).child.generateListTypeMapper}.toList()""";
     }
 
-    if(this is NullableListType) {
+    if (this is NullableListType) {
+      return """$name: data.listValueOrThrow(key: "$name")?${(this as ListType).child.generateListTypeMapper}.toList()""";
+    }
+
+    if (this is MapType) {
       //TODO
     }
 
-    if(this is MapType) {
-      //TODO
-    }
-
-    if(this is NullableMapType) {
+    if (this is NullableMapType) {
       //TODO
     }
 
@@ -85,25 +84,25 @@ extension on StandardType {
 
 extension on AbstractType {
   String get generateListTypeMapper {
-    if(this is ListType) {
+    if (this is ListType) {
       //TODO
     }
 
-    if(this is NullableListType) {
+    if (this is NullableListType) {
       //TODO
     }
 
-    if(this is MapType) {
+    if (this is MapType) {
       //TODO
     }
 
-    if(this is NullableMapType) {
+    if (this is NullableMapType) {
       //TODO
     }
 
     final method = _unwrappingMethod[this];
 
-    if(method == null) {
+    if (method == null) {
       throw SquintException("Failed to generateListTypeMapper: $this");
     }
 
@@ -112,25 +111,25 @@ extension on AbstractType {
 }
 
 /// Method to get a [StandardType] value from a JSON map.
-const _deserializerMethod = {
-  IntType(): "intValueOrThrow",
-  DoubleType(): "doubleValueOrThrow",
-  BooleanType(): "boolValueOrThrow",
-  StringType(): "stringValueOrThrow",
-  Uint8ListType(): "uint8ListValueOrThrow",
-  Int32ListType(): "int32ListValueOrThrow",
-  Int64ListType(): "int64ListValueOrThrow",
-  Float32ListType(): "float32ListValueOrThrow",
-  Float64ListType(): "float64ListValueOrThrow",
-  NullableIntType(): "intValueOrNull",
-  NullableDoubleType(): "doubleValueOrNull",
-  NullableBooleanType(): "boolValueOrNull",
-  NullableStringType(): "stringValueOrNull",
-  NullableUint8ListType(): "uint8ListValueOrNull",
-  NullableInt32ListType(): "int32ListValueOrNull",
-  NullableInt64ListType(): "int64ListValueOrNull",
-  NullableFloat32ListType(): "float32ListValueOrNull",
-  NullableFloat64ListType(): "float64ListValueOrNull",
+final _deserializerMethod = {
+  const IntType(): "intValueOrThrow",
+  const DoubleType(): "doubleValueOrThrow",
+  const BooleanType(): "boolValueOrThrow",
+  const StringType(): "stringValueOrThrow",
+  const Uint8ListType(): "uint8ListValueOrThrow",
+  const Int32ListType(): "int32ListValueOrThrow",
+  const Int64ListType(): "int64ListValueOrThrow",
+  const Float32ListType(): "float32ListValueOrThrow",
+  const Float64ListType(): "float64ListValueOrThrow",
+  const NullableIntType(): "intValueOrNull",
+  const NullableDoubleType(): "doubleValueOrNull",
+  const NullableBooleanType(): "boolValueOrNull",
+  const NullableStringType(): "stringValueOrNull",
+  const NullableUint8ListType(): "uint8ListValueOrNull",
+  const NullableInt32ListType(): "int32ListValueOrNull",
+  const NullableInt64ListType(): "int64ListValueOrNull",
+  const NullableFloat32ListType(): "float32ListValueOrNull",
+  const NullableFloat64ListType(): "float64ListValueOrNull",
 };
 
 /// Mapping method to call after retrieving a value from a JSON map
@@ -144,13 +143,13 @@ const _deserializerMethod = {
 /// A List<int> value (wrapped) requires a mapping postfix:
 /// - foo: data.listValueOrThrow(key: "foo")
 ///            .map<int>(intOrThrow).toList() // returns the value of foo with type List<int>.
-const _unwrappingMethod = {
-  IntType(): ".map<int>(intOrThrow)",
-  DoubleType(): ".map<double>(doubleOrThrow)",
-  BooleanType(): ".map<bool>(boolOrThrow)",
-  StringType(): ".map<String>(stringOrThrow)",
-  NullableIntType(): ".map<int?>(intOrNull)",
-  NullableDoubleType(): ".map<double?>(doubleOrNull)",
-  NullableBooleanType(): ".map<bool?>(boolOrNull)",
-  NullableStringType(): ".map<String?>(stringOrNull)",
+final _unwrappingMethod = {
+  const IntType(): ".map<int>(intOrThrow)",
+  const DoubleType(): ".map<double>(doubleOrThrow)",
+  const BooleanType(): ".map<bool>(boolOrThrow)",
+  const StringType(): ".map<String>(stringOrThrow)",
+  const NullableIntType(): ".map<int?>(intOrNull)",
+  const NullableDoubleType(): ".map<double?>(doubleOrNull)",
+  const NullableBooleanType(): ".map<bool?>(boolOrNull)",
+  const NullableStringType(): ".map<String?>(stringOrNull)",
 };
