@@ -26,7 +26,6 @@ import "package:squint/src/ast/types.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("Analyze int", () {
     given:
     final file = "int".createResponse;
@@ -40,7 +39,8 @@ void main() {
     final file = "double".createResponse;
 
     expect:
-    file.executeTest(first: const DoubleType(), second: const NullableDoubleType());
+    file.executeTest(
+        first: const DoubleType(), second: const NullableDoubleType());
   });
 
   test("Analyze bool", () {
@@ -48,7 +48,8 @@ void main() {
     final file = "bool".createResponse;
 
     expect:
-    file.executeTest(first: const BooleanType(), second: const NullableBooleanType());
+    file.executeTest(
+        first: const BooleanType(), second: const NullableBooleanType());
   });
 
   test("Analyze String", () {
@@ -56,7 +57,8 @@ void main() {
     final file = "String".createResponse;
 
     expect:
-    file.executeTest(first: const StringType(), second: const NullableStringType());
+    file.executeTest(
+        first: const StringType(), second: const NullableStringType());
   });
 
   test("Analyze Uint8List", () {
@@ -64,7 +66,8 @@ void main() {
     final file = "Uint8List".createResponse;
 
     expect:
-    file.executeTest(first: const Uint8ListType(), second: const NullableUint8ListType());
+    file.executeTest(
+        first: const Uint8ListType(), second: const NullableUint8ListType());
   });
 
   test("Analyze Int32List", () {
@@ -72,7 +75,8 @@ void main() {
     final file = "Int32List".createResponse;
 
     expect:
-    file.executeTest(first: const Int32ListType(), second: const NullableInt32ListType());
+    file.executeTest(
+        first: const Int32ListType(), second: const NullableInt32ListType());
   });
 
   test("Analyze Int64List", () {
@@ -80,7 +84,8 @@ void main() {
     final file = "Int64List".createResponse;
 
     expect:
-    file.executeTest(first: const Int64ListType(), second: const NullableInt64ListType());
+    file.executeTest(
+        first: const Int64ListType(), second: const NullableInt64ListType());
   });
 
   test("Analyze Float32List", () {
@@ -88,7 +93,9 @@ void main() {
     final file = "Float32List".createResponse;
 
     expect:
-    file.executeTest(first: const Float32ListType(), second: const NullableFloat32ListType());
+    file.executeTest(
+        first: const Float32ListType(),
+        second: const NullableFloat32ListType());
   });
 
   test("Analyze Float64List", () {
@@ -96,20 +103,21 @@ void main() {
     final file = "Float64List".createResponse;
 
     expect:
-    file.executeTest(first: const Float64ListType(), second: const NullableFloat64ListType());
+    file.executeTest(
+        first: const Float64ListType(),
+        second: const NullableFloat64ListType());
   });
-
 }
 
 final basePath =
     "${Directory.systemTemp.absolute.path}${Platform.pathSeparator}";
 
 extension on String {
-
   String get createResponse {
     final file = File("$basePath${this}sqdb_$this.dart")
       ..createSync()
-      ..writeAsStringSync("""
+      ..writeAsStringSync(
+        """
              {
               "className": "MyResponse",
                "members": [ ["a1", "$this", false], ["a2", "$this", true] ]
@@ -119,7 +127,8 @@ extension on String {
     return file.absolute.path;
   }
 
-  bool executeTest({required StandardType first, required StandardType second}) {
+  bool executeTest(
+      {required StandardType first, required StandardType second}) {
     when:
     final types = analyzer.analyze(this);
 
@@ -127,14 +136,17 @@ extension on String {
     expect(types.length, 1, reason: "Should have found 1 type");
 
     final type = types.first;
-    expect(type is CustomType, true, reason: "An user created model is always a CustomType");
+    expect(type is CustomType, true,
+        reason: "An user created model is always a CustomType");
 
     final customType = type as CustomType;
     expect(customType.members.length, 2);
     expect(customType.members[0].name, "a1");
-    expect(customType.members[0].type.toString() == first.toString(), true, reason: "First type is not nullable");
+    expect(customType.members[0].type.toString() == first.toString(), true,
+        reason: "First type is not nullable");
     expect(customType.members[1].name, "a2");
-    expect(customType.members[1].type.toString() == second.toString(), true, reason: "Second type is nullable");
+    expect(customType.members[1].type.toString() == second.toString(), true,
+        reason: "Second type is nullable");
 
     return true;
   }

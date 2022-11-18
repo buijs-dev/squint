@@ -82,16 +82,25 @@ void main() {
     final retrievedValue = nestednestednestednestedlist
         .listValueOrThrow(key: "key1")
         .map(listOrThrow)
+
         .map((e) => e.map(listOrThrow))
+
         .map((e) => e.map((e) => e.map(listOrThrow)))
-        .map((e) => e.map((e) => e.map((e) => e.map(stringOrThrow).toList()).toList()).toList()).toList();
+
+        .map((e) => e.map((e) => e.map((e) => e.map(stringOrThrow).toList())
+
+        .toList())
+
+        .toList())
+
+        .toList();
 
     expect(retrievedValue[0][0][0][0], "Value!");
   });
 
   test("Unwrap Map", () {
     final map = {
-      "key1": {1.0: true, 2.0: false}
+      "key1": { 1.0: true, 2.0: false }
     };
 
     final retrievedValue = map.mapValueOrThrow(key: "key1").map<double, bool>(
@@ -162,6 +171,31 @@ void main() {
     expect(uint8List![0], 0.1);
     expect(uint8List[1], 1.1);
   });
+
+
+
+  test("efefedfedfsfd", () {
+    final nestednestednestednestedlist = {
+      "key1": [
+        [
+          [
+            ["Value!"]
+          ]
+        ]
+      ]
+    };
+
+    final retrievedValue = nestednestednestednestedlist
+        .listValueOrThrow(key: "key1")
+        .map(listOrThrow)
+        .map((e) => e.map(listOrThrow))
+        .map((e) => e.map((e) => e.map(listOrThrow)))
+        .map((e) => e.map((e) => e.map((e) => e.map(stringOrThrow).toList()).toList()).toList()).toList();
+
+    expect(retrievedValue[0][0][0][0], "Value!");
+  });
+
+
 }
 
 @squint

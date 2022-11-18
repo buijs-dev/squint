@@ -18,37 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/ast/ast.dart";
-import "package:squint/src/ast/types.dart";
-import "package:squint/src/generator/generator.dart" as generator;
+import "dart:io";
+
+import "package:squint/src/cli/cli.dart" as cli;
 import "package:test/test.dart";
 
-void main() {
-  test("Generate", () {
-    given:
-    const customType = CustomType(className: "SchoolIsOut4Summer", members: [
-      TypeMember(name: "name", type: StringType()),
-      TypeMember(name: "friends", type: ListType(StringType()))
-    ]);
+import "../analyzer/analyzer_classfile_test.dart";
 
-    and:
-    const expected = """
-     SchoolIsOut4Summer deserializeSchoolIsOut4Summer(String json) =>
-    deserializeSchoolIsOut4SummerMap(jsonDecode(json) as Map<String, dynamic>);
-    
-    SchoolIsOut4Summer deserializeSchoolIsOut4SummerMap(Map<String, dynamic> data) =>
-      SchoolIsOut4Summer(
-          name: data.stringValueOrThrow(key: "name"),
-          friends: data.listValueOrThrow(key: "friends").map<String>(stringOrThrow).toList());
-    """;
+void main() {
+  test("Analyze int", () {
+    given:
+    final outputFolder = Directory.systemTemp.absolute.path;
+
+    final fileToScan = "int".createResponse;
 
     when:
-    final generated = generator.generateMethods(type: customType);
+    cli.analyzeFile(
+        pathToFile: fileToScan,
+        pathToOutputFolder: outputFolder,
+    );
 
     then:
-    expect(
-        generated.replaceAll(" ", "").replaceAll("\n", "") ==
-            expected.replaceAll(" ", "").replaceAll("\n", ""),
-        true);
+    final scanResult =
+      File("$outputFolder${Platform.pathSeparator}simpleresponse.txt");
+
+    expect(scanResult.existsSync(), true);
+    print(scanResult.readAsStringSync());
   });
+
+
 }
