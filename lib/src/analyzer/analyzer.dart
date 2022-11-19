@@ -27,6 +27,7 @@ import "package:analyzer/dart/ast/visitor.dart";
 
 import "../../squint.dart";
 import "../ast/ast.dart";
+import "../common/common.dart";
 
 ///
 List<AbstractType> analyze(

@@ -43,7 +43,6 @@ void main() {
       File("$outputFolder${Platform.pathSeparator}simpleresponse.txt");
 
     expect(scanResult.existsSync(), true);
-    print(scanResult.readAsStringSync());
   });
 
 

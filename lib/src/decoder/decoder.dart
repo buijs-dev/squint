@@ -18,29 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON map element wrapper.
-abstract class SquintElement {
-  /// SquintElement const.
-  const SquintElement();
-}
+// ignore_for_file: unnecessary_this
 
-/// Not-null value for JSON key.
-class SquintValue extends SquintElement {
-  /// Construct a new SquintValue instance with a not-null value.
-  const SquintValue(this.value);
+library decoder;
 
-  /// The actual value as extracted from the JSON map.
-  final dynamic value;
-}
-
-/// Null value for JSON key.
-class SquintNullValue extends SquintElement {
-  /// SquintNullValue const.
-  const SquintNullValue();
-}
-
-/// An element which does not exist in the JSON map.
-class UnknownKey extends SquintElement {
-  /// UnknownKey const.
-  const UnknownKey();
-}
+export "array.dart";
+export "json.dart";

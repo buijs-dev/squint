@@ -23,6 +23,7 @@ import "dart:io";
 import "../../squint.dart";
 import "../analyzer/analyzer.dart" as analyzer;
 import "../ast/ast.dart";
+import "../common/common.dart";
 
 ///
 void analyzeFile({

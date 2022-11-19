@@ -21,5 +21,5 @@
 ///
 library squint;
 
-export "src/common/common.dart";
-export "src/parser/parser.dart";
+export "src/ast/ast.dart";
+export "src/decoder/decoder.dart";

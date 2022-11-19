@@ -32,4 +32,36 @@ extension StringUtils on String {
 
     return substring(0, lastIndex);
   }
+
+  /// Convert a String to camelcase.
+  String get camelcase {
+
+    var hasUnderscore = false;
+
+    final characters = split("");
+
+    final firstCharacter = characters.removeAt(0).toUpperCase();
+
+    final buffer = StringBuffer()
+      ..write(firstCharacter);
+
+    for(final char in characters) {
+      if(char == "_") {
+        hasUnderscore = true;
+        continue;
+      }
+
+      if(hasUnderscore) {
+        hasUnderscore = false;
+        buffer.write(char.toUpperCase());
+        continue;
+      }
+
+      buffer.write(char);
+    }
+
+    return buffer.toString();
+
+  }
+
 }

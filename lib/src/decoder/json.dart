@@ -19,12 +19,10 @@
 // SOFTWARE.
 
 // ignore_for_file: unnecessary_this
+import "../ast/json.dart";
+import "../common/common.dart";
 
-import "../../squint.dart";
-import "../common/normalize_spaces.dart";
-import "json_elements.dart";
-
-/// Decoded a JSON String to a [ParsedJsonElement] and/or [Map].
+/// Decoded a JSON String to a [JsonObject].
 extension JsonDecoder on String {
 
   /// Decode a JSON String to [JsonElement]
@@ -37,26 +35,24 @@ extension JsonDecoder on String {
     final data = <String, JsonElement>{};
 
     while(chars.isNotEmpty) {
-      final procesKey = ProcessingKey(chars);
-      final key = procesKey.key;
-      chars = procesKey.chars;
+      final pkey = ProcessingKey(chars);
+      final key = pkey.key;
+      chars = pkey.chars;
 
       if(key == null) {
-        break;
+        continue;
       }
 
-      final procesValue = ProcessingValue(key, chars);
-      final value = procesValue.value;
-      chars = procesValue.chars;
+      final pval = ProcessingValue(key, chars);
+      final value = pval.value;
+      chars = pval.chars;
 
       if(value != null) {
         data[key] = value;
       }
-
     }
 
     return JsonObject(data);
-
   }
 
 }
@@ -86,7 +82,7 @@ class ProcessingKey extends JsonProcessingStep {
     }
 
     final keyList = subList.sublist(0, endIndex);
-    key = keyList.join();
+    this.key = keyList.join();
     this.chars = subList.sublist(endIndex + 1, subList.length);
   }
 
@@ -110,7 +106,7 @@ class ProcessingValue extends JsonProcessingStep {
     index +=1;
 
     while(processing) {
-      var token = chars[index];
+      final token = chars[index];
 
       switch(token) {
         case "":
@@ -227,28 +223,45 @@ class _BracketCount {
     required this.closingBracket,
   });
 
+  /// List of characters to be processed.
   final List<String> characters;
 
+  /// Index of String where processing should start.
   final int startIndex;
 
+  /// Type of opening bracket, e.g. '[' or ''{.
   final String openingBracket;
 
+  /// Type of closing bracket, e.g. ']' or '}'.
   final String closingBracket;
 
-  int _totalDepth = 1;
+  /// Deepest depth encountered.
+  ///
+  /// Example:
+  /// ```[[]]``` == depth of 2.
+  /// ```[]```   == depth of 1.
+  int _totalDepth = 0;
 
+  /// Last index processed.
   int _endIndex = 1;
 
   int get totalDepth => _totalDepth;
 
   int get endIndex => _endIndex;
 
+  /// List of all characters between opening and closing bracket.
+  ///
+  /// Example:
+  /// [[1,2,3,4],[4,6,8],[1,0,1,1]], "anotherKey": []
+  ///
+  /// ContentBetweenBrackets == [[1,2,3,4],[4,6,8],[1,0,1,1]].
   List<String> get contentBetweenBrackets {
-    final subList = characters.sublist(startIndex, characters.length);
-
     _totalDepth = 1;
 
-    var depth = 1;
+    final subList = characters.sublist(
+        startIndex,
+        characters.length,
+    );
 
     var countTotalDepth = true;
 
@@ -256,15 +269,19 @@ class _BracketCount {
 
     String token;
 
+    var depth = 1;
+
     while(depth != 0) {
       index += 1;
       token = characters[index];
 
       if(token == openingBracket) {
-        _totalDepth = countTotalDepth
-            ? _totalDepth + 1
-            : _totalDepth;
         depth += 1;
+
+        if(countTotalDepth) {
+          _totalDepth +=1;
+        }
+
       }
 
       if(token == closingBracket) {
@@ -275,6 +292,10 @@ class _BracketCount {
 
     _endIndex = index;
     return subList.sublist(0, index);
+  }
+
+  void countOpeningBracket() {
+
   }
 
 }

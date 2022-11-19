@@ -18,16 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../common/normalize_spaces.dart";
+import "../ast/json.dart";
+import "../common/common.dart";
 
 ///
-extension RepeatedBuilder on Map<String,String> {
-
-  ///
-  Map<String,dynamic> toMap() {
-    // TODO
-    return <String,dynamic>{};
-  }
+extension RepeatedBuilder on Map<String,JsonElement> {
 
   ///
   List<dynamic> toList() {
@@ -36,7 +31,7 @@ extension RepeatedBuilder on Map<String,String> {
     for(final key in keys) {
 
       // The value to be stored in a List.
-      final value = this[key];
+      final dynamic value = this[key]?.data;
 
       // Remove final number because width does not matter here.
       // Then split on . (dot) to index of each list.
@@ -68,21 +63,7 @@ extension RepeatedBuilder on Map<String,String> {
 extension ParseUtil on String {
 
   ///
-  Map<String,String> unwrapObject({
-
-    /// Can be set to true for testing purposes.
-    ///
-    /// The squint json decode method will normalize
-    /// the entire JSON content before calling any methods.
-    bool normalizeSpaces = false,
-  }) {
-
-    // TODO
-    return {};
-  }
-
-  ///
-  Map<String,String> unwrapList({
+  Map<String,JsonElement> unwrapList({
     required int maxDepth,
 
     /// Can be set to true for testing purposes.
@@ -100,7 +81,7 @@ extension ParseUtil on String {
       size[i] = 0;
     }
 
-    final output = <String, String>{};
+    final output = <String, JsonElement>{};
 
     var key = ".0";
 
@@ -156,7 +137,7 @@ class ListClosingBracketToken extends _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, String> output,
+    required Map<String, JsonElement> output,
   }): super(
       depth: currentDepth -1,
       size: _size(currentSize, currentDepth),
@@ -175,7 +156,7 @@ class ListValueSeparatorToken extends _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, String> output,
+    required Map<String, JsonElement> output,
   }): super(
     depth: currentDepth,
     size: _size(currentSize, currentDepth),
@@ -219,33 +200,73 @@ class ListValueToken extends _Token {
     size: currentSize,
     value: "$currentValue$currentCharacter",
     key: currentKey,
-  ) ;
+  );
 
 }
 
 String _value({
   required String currentValue,
   required String currentKey,
-  required Map<String,String> output,
+  required Map<String,JsonElement> output,
 }) {
   var value = currentValue;
 
   if(value == "") {
-    return value;
+    return "";
   }
 
   value = value.trim();
 
-  if(value.startsWith('"')) {
-    value = value.substring(1, value.length);
+  /// String
+  if(value.startsWith('"') && value.endsWith('"')) {
+    output[currentKey] = JsonString(
+        key: currentKey,
+        data: value.substring(1, value.length).substring(0, value.length - 2),
+    );
+    return "";
   }
 
-  if(value.endsWith('"')) {
-    value = value.substring(0, value.length-1);
+  /// - Boolean TRUE
+  if(value.toUpperCase() == "TRUE") {
+    output[currentKey] = JsonBoolean(
+      key: currentKey,
+      data: true,
+    );
+    return "";
   }
 
-  output[currentKey] = value;
-  return "";
+  /// - Boolean TRUE
+  if(value.toUpperCase() == "FALSE") {
+    output[currentKey] = JsonBoolean(
+      key: currentKey,
+      data: false,
+    );
+    return "";
+  }
+
+  /// - NULL
+  if(value.toUpperCase() == "NULL") {
+    output[currentKey] = JsonNull(
+      key: currentKey,
+    );
+    return "";
+  }
+
+  /// - Number
+  final doubleValue =
+    double.tryParse(value);
+
+  if(doubleValue != null) {
+    output[currentKey] = JsonNumber(
+      key: currentKey,
+      data: doubleValue
+    );
+    return "";
+  }
+
+  throw SquintException(
+      "Unsupported JSON value: '$value'. Not a String, Boolean, Null or Number value.",
+  );
 
 }
 
@@ -278,7 +299,7 @@ abstract class _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, String> output,
+    required Map<String, JsonElement> output,
   }) {
     switch(character) {
       case "[" :

@@ -18,31 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import '../../squint.dart';
-import 'json_decoder.dart';
-import "list_decoder.dart";
+import "dart:convert";
 
-/// A (part of) JSON, one of:
-/// - [UnparsedJsonElement] unprocessed.
-/// - [ParsedJsonElement] processed.
-abstract class JsonElement {
-  /// Construct a new [JsonElement].
-  const JsonElement();
-}
-
-/// A JsonObject that needs processing.
-class UnparsedJsonElement extends JsonElement {
-  /// Construct a new [UnparsedJsonElement].
-  const UnparsedJsonElement(this.text);
-
-  /// The JSON content to be processed.
-  final String text;
-}
+import "../../squint.dart";
+import "../common/common.dart";
+import "../decoder/array.dart";
 
 /// A (part of) JSON.
-class ParsedJsonElement<T> extends JsonElement {
-  /// Construct a new [ParsedJsonElement].
-  const ParsedJsonElement({
+abstract class JsonElement<T> {
+  /// Construct a new [JsonElement].
+  const JsonElement();
+
+  ///
+  T get data;
+}
+
+/// A (part of) JSON containing data of type T.
+class JsonElementType<T> extends JsonElement<T> {
+  /// Construct a new [JsonElementType].
+  const JsonElementType({
     required this.key,
     required this.data,
   });
@@ -51,17 +45,20 @@ class ParsedJsonElement<T> extends JsonElement {
   final String key;
 
   /// The JSON data of type T.
+  @override
   final T data;
+
+  ///
+  Map<String, T> toJson() {
+    return {key: data};
+  }
 }
 
 /// JSON Object (Map) element.
-class JsonObject extends JsonElement {
+class JsonObject extends JsonElementType<Map<String,JsonElement>> {
 
   /// Construct a new [JsonObject] instance.
-  JsonObject(this.data);
-
-  /// JSON content parsed as Map.
-  final Map<String, JsonElement> data;
+  JsonObject(Map<String, JsonElement> data, [String key = "root"]): super(key: key, data: data);
 
   /// Get JsonElement by [String] key.
   ///
@@ -95,6 +92,15 @@ class JsonObject extends JsonElement {
   }
 
   ///
+  JsonBoolean boolean(String key) {
+    if(!data.containsKey(key)) {
+      throw SquintException("JSON key not found: '$key'");
+    }
+
+    return data[key]! as JsonBoolean;
+  }
+
+  ///
   JsonObject object(String key) {
     if(!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
@@ -102,6 +108,10 @@ class JsonObject extends JsonElement {
 
     return data[key]! as JsonObject;
   }
+
+  ///
+  String get stringify => jsonEncode(data);
+
 }
 
 /// A JSON element containing a String value.
@@ -114,7 +124,7 @@ class JsonObject extends JsonElement {
 ///
 /// key = name
 /// data = Luke Skywalker
-class JsonString extends ParsedJsonElement<String> {
+class JsonString extends JsonElementType<String> {
 
   /// Construct a new [JsonString] instance.
   const JsonString({
@@ -134,7 +144,7 @@ class JsonString extends ParsedJsonElement<String> {
 ///
 /// key = friends
 /// data = 0
-class JsonNumber extends ParsedJsonElement<double> {
+class JsonNumber extends JsonElementType<double> {
 
   /// Construct a new [JsonNumber] instance.
   const JsonNumber({
@@ -142,6 +152,7 @@ class JsonNumber extends ParsedJsonElement<double> {
     required double data,
   }): super(key: key, data: data);
 
+  ///
   factory JsonNumber.parse({
     required String key,
     required String data,
@@ -159,7 +170,7 @@ class JsonNumber extends ParsedJsonElement<double> {
 ///
 /// key = foo
 /// data = null
-class JsonNull extends ParsedJsonElement<Object?> {
+class JsonNull extends JsonElementType<Object?> {
 
   /// Construct a new [JsonNull] instance.
   const JsonNull({
@@ -178,7 +189,7 @@ class JsonNull extends ParsedJsonElement<Object?> {
 ///
 /// key = dark-side
 /// data = false
-class JsonBoolean extends ParsedJsonElement<bool> {
+class JsonBoolean extends JsonElementType<bool> {
 
   /// Construct a new [JsonBoolean] instance.
   const JsonBoolean({
@@ -199,7 +210,7 @@ class JsonBoolean extends ParsedJsonElement<bool> {
 /// key = padawans
 /// data = ["Anakin", "Obi-Wan"]
 /// T = String
-class JsonArray<T> extends ParsedJsonElement<List<T>> {
+class JsonArray<T> extends JsonElementType<List<T>> {
 
   /// Construct a new [JsonArray] instance.
   const JsonArray({

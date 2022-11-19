@@ -24,3 +24,5 @@ library common;
 export "annotation.dart";
 export "exception.dart";
 export "logger.dart";
+export "normalize_spaces.dart";
+export "strings.dart";

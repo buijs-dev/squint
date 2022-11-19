@@ -18,14 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/analyzer/json_decoder.dart";
-import 'package:squint/src/analyzer/json_elements.dart';
-import "package:squint/src/analyzer/list_decoder.dart";
+import 'package:squint/src/ast/ast.dart';
+import "package:squint/src/decoder/decoder.dart";
 import "package:test/test.dart";
 
 void main() {
 
-  test("verify unwrapping a single list", () {
+  test("verify unwrapping a list of numbers", () {
 
     // when
     final unwrapped =  """
@@ -38,8 +37,8 @@ void main() {
     );
 
     // then
-    expect(unwrapped[".0.0"], "hi !");
-    expect(unwrapped[".0.1"], "aye");
+    expect(unwrapped[".0.0"]!.data, "hi !");
+    expect(unwrapped[".0.1"]!.data, "aye");
 
   });
 
@@ -59,10 +58,10 @@ void main() {
     );
 
     // then
-    expect(unwrapped[".0.0.0.0"], "hi !");
-    expect(unwrapped[".0.0.0.1"], "aye");
-    expect(unwrapped[".0.0.1.1"], "lol");
-    expect(unwrapped[".0.0.1.2"], "x");
+    expect(unwrapped[".0.0.0.0"]!.data, "hi !");
+    expect(unwrapped[".0.0.0.1"]!.data, "aye");
+    expect(unwrapped[".0.0.1.1"]!.data, "lol");
+    expect(unwrapped[".0.0.1.2"]!.data, "x");
 
   });
 
@@ -145,6 +144,22 @@ void main() {
 
   });
 
+  test("verify decoding a list of numbers", () {
+    final json = """
+          {
+            "getReady4TheLaunch": [0,2,44,33],
+          }
+          """.jsonDecode;
+
+    // then
+    final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonArray;
+    expect(getReady4TheLaunch.key, "getReady4TheLaunch");
+    expect(getReady4TheLaunch.data[0], 0);
+    expect(getReady4TheLaunch.data[1], 2);
+    expect(getReady4TheLaunch.data[2], 44);
+    expect(getReady4TheLaunch.data[3], 33);
+  });
+
   test("verify ListValueToken", () {
     // given
     final token = ListValueToken(
@@ -164,10 +179,10 @@ void main() {
 
   test("verify ListValueSeparatorToken", () {
     // given
-    final output = <String,String>{};
+    final output = <String,JsonElement>{};
     final token = ListValueSeparatorToken(
       currentKey: ".0.0",
-      currentValue: "Anakin",
+      currentValue: '"Anakin"',
       currentSize: {0:0},
       currentDepth: 0,
       output: output,
@@ -179,15 +194,15 @@ void main() {
     expect(token.key, ".0.1", reason: "final width (.0) marker is incremented by 1 (.0.1)");
     expect(token.value, "", reason: "value is resetted after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
-    expect(output[".0.0"], "Anakin", reason: "value is added to the output map");
+    expect(output[".0.0"]!.data, "Anakin", reason: "value is added to the output map");
   });
 
   test("verify ListClosingBracketToken", () {
     // given
-    final output = <String,String>{};
+    final output = <String,JsonElement>{};
     final token = ListClosingBracketToken(
       currentKey: ".1.5",
-      currentValue: "Anakin",
+      currentValue: '"Anakin"',
       currentSize: {0:0, 1:0},
       currentDepth: 1,
       output: output,
@@ -199,7 +214,7 @@ void main() {
     expect(token.key, ".1", reason: "final width (.0) marker is removed from key");
     expect(token.value, "", reason: "value is resetted after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
-    expect(output[".1.5"], "Anakin", reason: "value is added to the output map");
+    expect(output[".1.5"]!.data, "Anakin", reason: "value is added to the output map");
   });
 
   test("verify ListOpeningBracketToken", () {

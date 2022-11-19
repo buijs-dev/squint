@@ -20,13 +20,16 @@
 
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
-import "dart:convert";
+library ast;
+
 import "dart:io";
 
 import "../common/common.dart";
-import "../common/strings.dart";
-import "../parser/parser.dart";
-import "types.dart";
+import "../decoder/decoder.dart";
+import "ast.dart";
+
+export "json.dart";
+export "types.dart";
 
 /// Parent for all types in the ast package.
 abstract class AbstractType {
@@ -92,33 +95,33 @@ class TypeMember {
 extension CustomTypeFromDebugFile on File {
   ///
   CustomType? get customType {
-    final json = tryJsonDecode;
+    final json = readAsStringSync().jsonDecode;
 
-    if (json == null) {
-      "Failed to JSON decode file: '$this'".log(context: readAsStringSync());
-      return null;
-    }
+    final className = json.string("className").data;
 
-    final className = json.stringValueOrThrow(key: "className");
+    final data = json.array("members").data;
 
-    final members = json
-        .listValueOrThrow(key: "members")
-        .map((dynamic o) => o as List<dynamic>)
-        .map((List<dynamic> o) {
-      if (o.length != 3) {
+    final members = <TypeMember>[];
+
+    for(final object in data) {
+
+      if (object.length != 3) {
         throw SquintException(
-            "JSON content incomplete. Expected 3 elements but found: '$o'");
+            "JSON content incomplete. Expected 3 elements but found: '$object'");
       }
 
-      final name = stringOrThrow(o[0]);
-      final type = stringOrThrow(o[1]);
-      final nullable = boolOrThrow(o[2]);
+      final name = object[0] as String;
+      final type = object[1] as String;
+      final nullable = object[2] as bool;
 
-      return TypeMember(
-        name: name,
-        type: type.abstractType(nullable: nullable),
+      members.add(
+          TypeMember(
+            name: name,
+            type: type.abstractType(nullable: nullable),
+          ),
       );
-    }).toList();
+
+    }
 
     return CustomType(
       className: className,
@@ -126,14 +129,6 @@ extension CustomTypeFromDebugFile on File {
     );
   }
 
-  /// JsonDecode this file or return null.
-  Map<String, dynamic>? get tryJsonDecode {
-    try {
-      return jsonDecode(readAsStringSync()) as Map<String, dynamic>;
-    } on Exception {
-      return null;
-    }
-  }
 }
 
 /// Find matching AbstractType for String value.
@@ -161,11 +156,10 @@ extension AbstractTypeFromString on String {
 
     final mapType = _mapRegex.firstMatch(withoutPostfix);
 
-    // TODO test nested Map, check regex etc
     if (mapType != null) {
       final matches = <String>[];
       for (var i = 0; i <= mapType.groupCount; i++) {
-        matches.add(mapType!.group(i) ?? "");
+        matches.add(mapType.group(i) ?? "");
       }
 
       final key = mapType.group(3)?.abstractType();
