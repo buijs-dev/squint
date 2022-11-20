@@ -18,11 +18,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+/// Length of indentation per level.
+///
+/// Options:
+/// - tab: '    ' e.g. 4 x spaces
+/// - space: ' '
+/// - doubleSpace: '  ' e.g. 2 x space
+enum JsonIndentationSize {
+  /// Indentation of 4 spaces.
+  ///
+  /// Example output:
+  ///
+  /// ```
+  /// {
+  ///     "key": "value"
+  /// }
+  /// ```
+  tab(4),
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "logger.dart";
-export "strings.dart";
+  /// Indentation of a single space.
+  ///
+  /// Example output:
+  ///
+  /// ```
+  /// {
+  ///  "key": "value"
+  /// }
+  /// ```
+  space(1),
+
+  /// Indentation of 2 spaces.
+  ///
+  /// Example output:
+  ///
+  /// ```
+  /// {
+  ///   "key": "value"
+  /// }
+  /// ```
+  doubleSpace(2);
+
+  /// Construct a JsonIndentationSize instance.
+  const JsonIndentationSize(this.length);
+
+  /// Length of indentation in spaces.
+  final int length;
+}

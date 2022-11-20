@@ -18,11 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "dart:convert";
-
 import "../../squint.dart";
 import "../common/common.dart";
 import "../decoder/array.dart";
+import "../encoder/formatter.dart";
 
 /// A (part of) JSON.
 abstract class JsonElement<T> {
@@ -31,10 +30,14 @@ abstract class JsonElement<T> {
 
   ///
   T get data;
+
+  ///
+  String get stringify;
+
 }
 
 /// A (part of) JSON containing data of type T.
-class JsonElementType<T> extends JsonElement<T> {
+abstract class JsonElementType<T> extends JsonElement<T> {
   /// Construct a new [JsonElementType].
   const JsonElementType({
     required this.key,
@@ -48,17 +51,13 @@ class JsonElementType<T> extends JsonElement<T> {
   @override
   final T data;
 
-  ///
-  Map<String, T> toJson() {
-    return {key: data};
-  }
 }
 
 /// JSON Object (Map) element.
 class JsonObject extends JsonElementType<Map<String,JsonElement>> {
 
   /// Construct a new [JsonObject] instance.
-  JsonObject(Map<String, JsonElement> data, [String key = "root"]): super(key: key, data: data);
+  JsonObject(Map<String, JsonElement> data, [String key = ""]): super(key: key, data: data);
 
   /// Get JsonElement by [String] key.
   ///
@@ -110,7 +109,13 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
   }
 
   ///
-  String get stringify => jsonEncode(data);
+  @override
+  String get stringify {
+    final json = key == ""
+        ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
+        : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
+    return json.formatJson();
+  }
 
 }
 
@@ -132,6 +137,11 @@ class JsonString extends JsonElementType<String> {
     required String data,
   }): super(key: key, data: data);
 
+  ///
+  @override
+  String get stringify {
+    return '"$key": "$data"';
+  }
 }
 
 /// A JSON element containing a double value.
@@ -158,6 +168,11 @@ class JsonNumber extends JsonElementType<double> {
     required String data,
   }) => JsonNumber(key: key, data: double.parse(data));
 
+  ///
+  @override
+  String get stringify {
+    return '"$key": $data';
+  }
 }
 
 /// A JSON element containing a null value.
@@ -176,6 +191,12 @@ class JsonNull extends JsonElementType<Object?> {
   const JsonNull({
     required String key,
   }): super(key: key, data: null);
+
+  ///
+  @override
+  String get stringify {
+    return '"$key": null';
+  }
 
 }
 
@@ -197,6 +218,11 @@ class JsonBoolean extends JsonElementType<bool> {
     required bool data,
   }): super(key: key, data: data);
 
+  ///
+  @override
+  String get stringify {
+    return '"$key": $data';
+  }
 }
 
 /// A JSON element containing an Array value.
@@ -228,4 +254,28 @@ class JsonArray<T> extends JsonElementType<List<T>> {
       data: content.unwrapList(maxDepth: depth).toList(),
   );
 
+  ///
+  @override
+  String get stringify {
+    return '"$key":${data.map<dynamic>(_quotedStringValue).toList()}';
+  }
+
+}
+
+dynamic _quotedStringValue(dynamic value) {
+  if(value is List) {
+    return value
+        .map<dynamic>(_quotedStringValue)
+        .toList();
+  }
+
+  if(value is String) {
+    return '"$value"';
+  }
+
+  if(value is JsonElement) {
+    return _quotedStringValue(value.data);
+  }
+
+  return value;
 }

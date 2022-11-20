@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/common/normalize_spaces.dart";
+import "package:squint/src/common/common.dart";
 import "package:test/test.dart";
 
 const example = """

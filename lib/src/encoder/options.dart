@@ -18,11 +18,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+import "indentation.dart";
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "logger.dart";
-export "strings.dart";
+///
+class JsonFormattingOptions {
+  /// Construct a [JsonFormattingOptions] instance.
+  const JsonFormattingOptions({
+    required this.indentation,
+    required this.colonPadding,
+  });
+
+  /// Length of indentation per level.
+  final int indentation;
+
+  /// Padding size arround colons.
+  final int colonPadding;
+}
+
+/// Default JSON formatting options.
+const standardJsonFormatting = JsonFormattingOptions(
+  indentation: 4,
+  colonPadding: 1,
+);
+
+///
+extension JsonFormattingOptionsBuilder on JsonFormattingOptions {
+  ///
+  JsonFormattingOptions copyWith([
+    JsonIndentationSize? indentationSize,
+    int? indentationSizeInt,
+    int? colonPadding,
+  ]) => JsonFormattingOptions(
+  indentation: indentationSize?.length
+      ?? indentationSizeInt
+      ?? indentation,
+  colonPadding: colonPadding ?? this.colonPadding,
+  );
+}
