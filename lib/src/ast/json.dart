@@ -33,7 +33,6 @@ abstract class JsonElement<T> {
 
   ///
   String get stringify;
-
 }
 
 /// A (part of) JSON containing data of type T.
@@ -50,20 +49,23 @@ abstract class JsonElementType<T> extends JsonElement<T> {
   /// The JSON data of type T.
   @override
   final T data;
-
 }
 
 /// JSON Object (Map) element.
-class JsonObject extends JsonElementType<Map<String,JsonElement>> {
-
+class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Construct a new [JsonObject] instance.
-  JsonObject(Map<String, JsonElement> data, [String key = ""]): super(key: key, data: data);
+  JsonObject(Map<String, JsonElement> data, [String key = ""])
+      : super(key: key, data: data);
+
+  /// Construct a new [JsonObject] using the specified key values of each [JsonElementType].
+  factory JsonObject.elements(List<JsonElementType> elements) =>
+      JsonObject({for (var element in elements) element.key: element});
 
   /// Get JsonElement by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
   JsonElement byKey(String key) {
-    if(!data.containsKey(key)) {
+    if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
 
@@ -74,7 +76,7 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
   ///
   /// Throws [SquintException] if key is not found.
   JsonString string(String key) {
-    if(!data.containsKey(key)) {
+    if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
 
@@ -82,17 +84,22 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
   }
 
   ///
-  JsonArray<dynamic> array(String key) {
-    if(!data.containsKey(key)) {
+  JsonArray<List<T>> array<T>(String key) {
+    if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
 
-    return data[key]! as JsonArray;
+    final array = data[key]!;
+
+    return JsonArray<List<T>>(
+      key: key,
+      data: (array.data as List).cast<T>().toList(),
+    );
   }
 
   ///
   JsonBoolean boolean(String key) {
-    if(!data.containsKey(key)) {
+    if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
 
@@ -101,7 +108,7 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
 
   ///
   JsonObject object(String key) {
-    if(!data.containsKey(key)) {
+    if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
 
@@ -116,7 +123,6 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
         : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
     return json.formatJson();
   }
-
 }
 
 /// A JSON element containing a String value.
@@ -130,12 +136,11 @@ class JsonObject extends JsonElementType<Map<String,JsonElement>> {
 /// key = name
 /// data = Luke Skywalker
 class JsonString extends JsonElementType<String> {
-
   /// Construct a new [JsonString] instance.
   const JsonString({
     required String key,
     required String data,
-  }): super(key: key, data: data);
+  }) : super(key: key, data: data);
 
   ///
   @override
@@ -155,18 +160,18 @@ class JsonString extends JsonElementType<String> {
 /// key = friends
 /// data = 0
 class JsonNumber extends JsonElementType<double> {
-
   /// Construct a new [JsonNumber] instance.
   const JsonNumber({
     required String key,
     required double data,
-  }): super(key: key, data: data);
+  }) : super(key: key, data: data);
 
   ///
   factory JsonNumber.parse({
     required String key,
     required String data,
-  }) => JsonNumber(key: key, data: double.parse(data));
+  }) =>
+      JsonNumber(key: key, data: double.parse(data));
 
   ///
   @override
@@ -186,18 +191,16 @@ class JsonNumber extends JsonElementType<double> {
 /// key = foo
 /// data = null
 class JsonNull extends JsonElementType<Object?> {
-
   /// Construct a new [JsonNull] instance.
   const JsonNull({
     required String key,
-  }): super(key: key, data: null);
+  }) : super(key: key, data: null);
 
   ///
   @override
   String get stringify {
     return '"$key": null';
   }
-
 }
 
 /// A JSON element containing a bool value.
@@ -211,12 +214,11 @@ class JsonNull extends JsonElementType<Object?> {
 /// key = dark-side
 /// data = false
 class JsonBoolean extends JsonElementType<bool> {
-
   /// Construct a new [JsonBoolean] instance.
   const JsonBoolean({
     required String key,
     required bool data,
-  }): super(key: key, data: data);
+  }) : super(key: key, data: data);
 
   ///
   @override
@@ -236,44 +238,41 @@ class JsonBoolean extends JsonElementType<bool> {
 /// key = padawans
 /// data = ["Anakin", "Obi-Wan"]
 /// T = String
-class JsonArray<T> extends JsonElementType<List<T>> {
-
+class JsonArray<T> extends JsonElementType<T> {
   /// Construct a new [JsonArray] instance.
   const JsonArray({
     required String key,
-    required List<T> data,
-  }): super(key: key, data: data);
+    required T data,
+  }) : super(key: key, data: data);
 
   ///
-  static JsonArray<dynamic> parse({
+  static JsonArray parse({
     required String key,
     required String content,
     int depth = 1,
-  }) => JsonArray<dynamic>(
-      key: key,
-      data: content.unwrapList(maxDepth: depth).toList(),
-  );
+  }) =>
+      JsonArray<dynamic>(
+        key: key,
+        data: content.unwrapList(maxDepth: depth).toList(),
+      );
 
   ///
   @override
   String get stringify {
-    return '"$key":${data.map<dynamic>(_quotedStringValue).toList()}';
+    return '"$key":${(data as List).map<dynamic>(_quotedStringValue).toList()}';
   }
-
 }
 
 dynamic _quotedStringValue(dynamic value) {
-  if(value is List) {
-    return value
-        .map<dynamic>(_quotedStringValue)
-        .toList();
+  if (value is List) {
+    return value.map<dynamic>(_quotedStringValue).toList();
   }
 
-  if(value is String) {
+  if (value is String) {
     return '"$value"';
   }
 
-  if(value is JsonElement) {
+  if (value is JsonElement) {
     return _quotedStringValue(value.data);
   }
 

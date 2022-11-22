@@ -24,22 +24,19 @@ import "../common/common.dart";
 
 /// Decoded a JSON String to a [JsonObject].
 extension JsonDecoder on String {
-
   /// Decode a JSON String to [JsonElement]
   JsonObject get jsonDecode {
-
-    var chars = substring(indexOf("{") + 1, lastIndexOf("}"))
-        .split("")
-        .normalizeSpaces;
+    var chars =
+        substring(indexOf("{") + 1, lastIndexOf("}")).split("").normalizeSpaces;
 
     final data = <String, JsonElement>{};
 
-    while(chars.isNotEmpty) {
+    while (chars.isNotEmpty) {
       final pkey = ProcessingKey(chars);
       final key = pkey.key;
       chars = pkey.chars;
 
-      if(key == null) {
+      if (key == null) {
         continue;
       }
 
@@ -47,14 +44,13 @@ extension JsonDecoder on String {
       final value = pval.value;
       chars = pval.chars;
 
-      if(value != null) {
+      if (value != null) {
         data[key] = value;
       }
     }
 
     return JsonObject(data);
   }
-
 }
 
 ///
@@ -65,19 +61,18 @@ abstract class JsonProcessingStep {
 
 ///
 class ProcessingKey extends JsonProcessingStep {
-
   ///
   ProcessingKey(List<String> chars) {
     final startIndex = chars.indexOf('"');
 
-    if(startIndex == -1) {
+    if (startIndex == -1) {
       return;
     }
 
-    final subList = chars.sublist(startIndex+1, chars.length);
+    final subList = chars.sublist(startIndex + 1, chars.length);
     final endIndex = subList.indexOf('"');
 
-    if(endIndex == -1) {
+    if (endIndex == -1) {
       return;
     }
 
@@ -91,31 +86,29 @@ class ProcessingKey extends JsonProcessingStep {
 
   ///
   List<String> chars = [];
-
 }
 
 ///
 class ProcessingValue extends JsonProcessingStep {
-
   ///
   ProcessingValue(String key, List<String> chars) {
     var index = chars.indexOf(":");
 
     var processing = index != -1;
 
-    index +=1;
+    index += 1;
 
-    while(processing) {
+    while (processing) {
       final token = chars[index];
 
-      switch(token) {
+      switch (token) {
         case "":
         case " ":
-          index +=1;
+          index += 1;
           continue;
         case '"':
           processing = false;
-          final subList = chars.sublist(index+1, chars.length);
+          final subList = chars.sublist(index + 1, chars.length);
           final endIndex = subList.indexOf('"');
           final valueList = subList.sublist(0, endIndex);
           value = JsonString(key: key, data: valueList.join());
@@ -124,20 +117,19 @@ class ProcessingValue extends JsonProcessingStep {
         case "[":
           processing = false;
 
-          final counter = _BracketCount(
+          final counter = BracketCount(
             characters: chars,
             startIndex: index,
             openingBracket: "[",
             closingBracket: "]",
           );
 
-          final sublist =
-              counter.contentBetweenBrackets;
+          final sublist = counter.contentBetweenBrackets;
 
           this.value = JsonArray.parse(
-              key: key,
-              content: sublist.join(),
-              depth: counter.totalDepth,
+            key: key,
+            content: sublist.join(),
+            depth: counter.totalDepth,
           );
 
           this.chars = chars.sublist(counter.endIndex, chars.length);
@@ -146,7 +138,7 @@ class ProcessingValue extends JsonProcessingStep {
         case "{":
           processing = false;
 
-          final counter = _BracketCount(
+          final counter = BracketCount(
             characters: chars,
             startIndex: index,
             openingBracket: "{",
@@ -160,19 +152,19 @@ class ProcessingValue extends JsonProcessingStep {
         default:
           processing = false;
 
-          if("NULL" == chars.sublist(index, index + 4).join().toUpperCase()) {
+          if ("NULL" == chars.sublist(index, index + 4).join().toUpperCase()) {
             this.value = JsonNull(key: key);
             this.chars = chars.sublist(index + 4, chars.length);
             return;
           }
 
-          if("TRUE" == chars.sublist(index, index + 4).join().toUpperCase()) {
+          if ("TRUE" == chars.sublist(index, index + 4).join().toUpperCase()) {
             this.value = JsonBoolean(key: key, data: true);
             this.chars = chars.sublist(index + 4, chars.length);
             return;
           }
 
-          if("FALSE" == chars.sublist(index, index + 5).join().toUpperCase()) {
+          if ("FALSE" == chars.sublist(index, index + 5).join().toUpperCase()) {
             this.value = JsonBoolean(key: key, data: false);
             this.chars = chars.sublist(index + 5, chars.length);
             return;
@@ -182,12 +174,12 @@ class ProcessingValue extends JsonProcessingStep {
 
           final subList = [chars[index]];
 
-          while(index < chars.length) {
-            index +=1;
+          while (index < chars.length) {
+            index += 1;
 
             final char = chars[index];
 
-            if(breakers.contains(char)) {
+            if (breakers.contains(char)) {
               this.chars = chars.sublist(index, chars.length);
               this.value = JsonNumber.parse(
                 key: key,
@@ -201,9 +193,7 @@ class ProcessingValue extends JsonProcessingStep {
 
           throw SquintException("Failed to parse JSON");
       }
-
     }
-
   }
 
   ///
@@ -211,12 +201,12 @@ class ProcessingValue extends JsonProcessingStep {
 
   ///
   List<String> chars = [];
-
 }
 
-class _BracketCount {
-
-  _BracketCount({
+///
+class BracketCount {
+  ///
+  BracketCount({
     required this.characters,
     required this.startIndex,
     required this.openingBracket,
@@ -245,8 +235,10 @@ class _BracketCount {
   /// Last index processed.
   int _endIndex = 1;
 
+  ///
   int get totalDepth => _totalDepth;
 
+  ///
   int get endIndex => _endIndex;
 
   /// List of all characters between opening and closing bracket.
@@ -259,8 +251,8 @@ class _BracketCount {
     _totalDepth = 1;
 
     final subList = characters.sublist(
-        startIndex,
-        characters.length,
+      startIndex,
+      characters.length,
     );
 
     var countTotalDepth = true;
@@ -271,20 +263,19 @@ class _BracketCount {
 
     var depth = 1;
 
-    while(depth != 0) {
+    while (depth != 0) {
       index += 1;
       token = characters[index];
 
-      if(token == openingBracket) {
+      if (token == openingBracket) {
         depth += 1;
 
-        if(countTotalDepth) {
-          _totalDepth +=1;
+        if (countTotalDepth) {
+          _totalDepth += 1;
         }
-
       }
 
-      if(token == closingBracket) {
+      if (token == closingBracket) {
         depth -= 1;
         countTotalDepth = false;
       }
@@ -293,9 +284,4 @@ class _BracketCount {
     _endIndex = index;
     return subList.sublist(0, index);
   }
-
-  void countOpeningBracket() {
-
-  }
-
 }

@@ -34,16 +34,14 @@ void main() {
 
     when:
     cli.analyzeFile(
-        pathToFile: fileToScan,
-        pathToOutputFolder: outputFolder,
+      pathToFile: fileToScan,
+      pathToOutputFolder: outputFolder,
     );
 
     then:
     final scanResult =
-      File("$outputFolder${Platform.pathSeparator}simpleresponse.txt");
+        File("$outputFolder${Platform.pathSeparator}simpleresponse.txt");
 
     expect(scanResult.existsSync(), true);
   });
-
-
 }

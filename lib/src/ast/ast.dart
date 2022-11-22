@@ -52,13 +52,13 @@ class StandardType extends AbstractType {
   final bool nullable;
 
   @override
-  bool operator ==(dynamic other) => other is StandardType
-      && className == other.className
-      && nullable == other.nullable;
+  bool operator ==(dynamic other) =>
+      other is StandardType &&
+      className == other.className &&
+      nullable == other.nullable;
 
   @override
   int get hashCode => className.hashCode + nullable.hashCode;
-
 }
 
 /// A custom class definition.
@@ -99,28 +99,26 @@ extension CustomTypeFromDebugFile on File {
 
     final className = json.string("className").data;
 
-    final data = json.array("members").data;
+    final dynamic data = json.array<dynamic>("members").data;
 
     final members = <TypeMember>[];
 
-    for(final object in data) {
+    for (final object in data) {
+      // if (object.length != 3) {
+      //   throw SquintException(
+      //       "JSON content incomplete. Expected 3 elements but found: '$object'");
+      // }
 
-      if (object.length != 3) {
-        throw SquintException(
-            "JSON content incomplete. Expected 3 elements but found: '$object'");
-      }
-
-      final name = object[0] as String;
-      final type = object[1] as String;
-      final nullable = object[2] as bool;
+      final name = object["name"] as String;
+      final type = object["type"] as String;
+      final nullable = object["nullable"] as bool;
 
       members.add(
-          TypeMember(
-            name: name,
-            type: type.abstractType(nullable: nullable),
-          ),
+        TypeMember(
+          name: name,
+          type: type.abstractType(nullable: nullable),
+        ),
       );
-
     }
 
     return CustomType(
@@ -128,7 +126,6 @@ extension CustomTypeFromDebugFile on File {
       members: members,
     );
   }
-
 }
 
 /// Find matching AbstractType for String value.

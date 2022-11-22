@@ -33,25 +33,36 @@ extension StringUtils on String {
     return substring(0, lastIndex);
   }
 
+  /// Remove the prefix of a String
+  /// if present
+  /// or return current String.
+  String removePrefixIfPresent(String toRemove) {
+    if (!startsWith(toRemove)) {
+      return this;
+    }
+
+    final lastIndex = lastIndexOf(toRemove);
+
+    return substring(lastIndex, length);
+  }
+
   /// Convert a String to camelcase.
   String get camelcase {
-
     var hasUnderscore = false;
 
     final characters = split("");
 
     final firstCharacter = characters.removeAt(0).toUpperCase();
 
-    final buffer = StringBuffer()
-      ..write(firstCharacter);
+    final buffer = StringBuffer()..write(firstCharacter);
 
-    for(final char in characters) {
-      if(char == "_") {
+    for (final char in characters) {
+      if (char == "_") {
         hasUnderscore = true;
         continue;
       }
 
-      if(hasUnderscore) {
+      if (hasUnderscore) {
         hasUnderscore = false;
         buffer.write(char.toUpperCase());
         continue;
@@ -61,7 +72,36 @@ extension StringUtils on String {
     }
 
     return buffer.toString();
-
   }
 
+  /// Utility to print templated Strings.
+  ///
+  /// Example:
+  ///
+  /// Given a templated String:
+  /// ```
+  /// final String foo = """|A multi-line message
+  ///                       |is a message
+  ///                       |that exists of
+  ///                       |multiple lines.
+  ///                       |
+  ///                       |True story"""";
+  /// ```
+  ///
+  /// Will produce a multi-line String:
+  ///
+  /// 'A multi-line message
+  /// is a message
+  /// that exists of
+  /// multiple lines.
+  ///
+  /// True story'
+  String get format => replaceAllMapped(
+          // Find all '|' char including preceding whitespaces.
+          RegExp(r"(\s+?\|)"),
+          // Replace them with a single linebreak.
+          (_) => "\n")
+      .replaceAll(RegExp(r"(!?,)\|"), "")
+      .trimLeft()
+      .replaceAll(",|", "|");
 }

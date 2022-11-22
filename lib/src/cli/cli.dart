@@ -26,27 +26,21 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 
 ///
-void analyzeFile({
-  required String pathToFile,
-  required String pathToOutputFolder
-}) {
-
-  if(!File(pathToFile).existsSync()) {
+void analyzeFile(
+    {required String pathToFile, required String pathToOutputFolder}) {
+  if (!File(pathToFile).existsSync()) {
     throw SquintException("File does not exist: $pathToFile");
   }
 
-  if(!Directory(pathToOutputFolder).existsSync()) {
+  if (!Directory(pathToOutputFolder).existsSync()) {
     throw SquintException("Output folder does not exist: $pathToOutputFolder");
   }
 
-  analyzer.analyze(pathToFile)
-      .whereType<CustomType>()
-      .forEach((type) {
-        pathToOutputFolder
-            .resolve("${type.className.toLowerCase()}.txt")
-            .writeAsStringSync("${type.className}\n${type.members}");
-      });
-
+  analyzer.analyze(pathToFile).whereType<CustomType>().forEach((type) {
+    pathToOutputFolder
+        .resolve("${type.className.toLowerCase()}.txt")
+        .writeAsStringSync("${type.className}\n${type.members}");
+  });
 }
 
 extension on String {

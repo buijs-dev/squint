@@ -48,10 +48,10 @@ extension JsonFormattingOptionsBuilder on JsonFormattingOptions {
     JsonIndentationSize? indentationSize,
     int? indentationSizeInt,
     int? colonPadding,
-  ]) => JsonFormattingOptions(
-  indentation: indentationSize?.length
-      ?? indentationSizeInt
-      ?? indentation,
-  colonPadding: colonPadding ?? this.colonPadding,
-  );
+  ]) =>
+      JsonFormattingOptions(
+        indentation:
+            indentationSize?.length ?? indentationSizeInt ?? indentation,
+        colonPadding: colonPadding ?? this.colonPadding,
+      );
 }

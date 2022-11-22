@@ -28,65 +28,65 @@ import "package:test/test.dart";
 void main() {
   test("Analyze int", () {
     "int".createResponse.executeTest(
-        first: const IntType(),
-        second: const NullableIntType(),
-    );
+          first: const IntType(),
+          second: const NullableIntType(),
+        );
   });
 
   test("Analyze double", () {
     "double".createResponse.executeTest(
-        first: const DoubleType(),
-        second: const NullableDoubleType(),
-    );
+          first: const DoubleType(),
+          second: const NullableDoubleType(),
+        );
   });
 
   test("Analyze bool", () {
     "bool".createResponse.executeTest(
-        first: const BooleanType(),
-        second: const NullableBooleanType(),
-    );
+          first: const BooleanType(),
+          second: const NullableBooleanType(),
+        );
   });
 
   test("Analyze String", () {
     "String".createResponse.executeTest(
-        first: const StringType(),
-        second: const NullableStringType(),
-    );
+          first: const StringType(),
+          second: const NullableStringType(),
+        );
   });
 
   test("Analyze Uint8List", () {
     "Uint8List".createResponse.executeTest(
-        first: const Uint8ListType(),
-        second: const NullableUint8ListType(),
-    );
+          first: const Uint8ListType(),
+          second: const NullableUint8ListType(),
+        );
   });
 
   test("Analyze Int32List", () {
     "Int32List".createResponse.executeTest(
-        first: const Int32ListType(),
-        second: const NullableInt32ListType(),
-    );
+          first: const Int32ListType(),
+          second: const NullableInt32ListType(),
+        );
   });
 
   test("Analyze Int64List", () {
     "Int64List".createResponse.executeTest(
-        first: const Int64ListType(),
-        second: const NullableInt64ListType(),
-    );
+          first: const Int64ListType(),
+          second: const NullableInt64ListType(),
+        );
   });
 
   test("Analyze Float32List", () {
     "Float32List".createResponse.executeTest(
-        first: const Float32ListType(),
-        second: const NullableFloat32ListType(),
-    );
+          first: const Float32ListType(),
+          second: const NullableFloat32ListType(),
+        );
   });
 
   test("Analyze Float64List", () {
     "Float64List".createResponse.executeTest(
-        first: const Float64ListType(),
-        second: const NullableFloat64ListType(),
-    );
+          first: const Float64ListType(),
+          second: const NullableFloat64ListType(),
+        );
   });
 
   test("Analyze List", () {

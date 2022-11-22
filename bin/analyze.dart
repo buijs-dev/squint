@@ -30,10 +30,11 @@ Future<void> main(List<String> args) async {
   ════════════════════════════════════════════
   """);
 
-  if(args.length != 2) {
+  if (args.length != 2) {
     print("Invalid arguments for command 'analyze'.");
     print("Specify file to scan and output folder to store scan result.");
-    print("Example command: 'flutter pub run squint:analyze foo/some_class_file.dart foo/bar/output'");
+    print(
+        "Example command: 'flutter pub run squint:analyze foo/some_class_file.dart foo/bar/output'");
     return;
   }
 
@@ -42,8 +43,7 @@ Future<void> main(List<String> args) async {
   final pathToOutputFolder = args[1];
 
   cli.analyzeFile(
-      pathToFile: pathToFile,
-      pathToOutputFolder: pathToOutputFolder,
+    pathToFile: pathToFile,
+    pathToOutputFolder: pathToOutputFolder,
   );
-
 }

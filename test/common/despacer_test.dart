@@ -66,10 +66,7 @@ const example2 = """
         ]
       }""";
 
-
-
 void main() {
-
   test("normalizeSpaces deletes unnecessary spaces and new lines", () {
     // given:
     final input = """
@@ -88,7 +85,8 @@ void main() {
     expect(actual, """[[["hi !","aye"],["lol","x"]]]""");
   });
 
-  test("normalizeSpaces saves spaces and new lines when inside quotation marks", () {
+  test("normalizeSpaces saves spaces and new lines when inside quotation marks",
+      () {
     // given:
     final input = """
            [[["hi !", "aye" ], 
@@ -103,5 +101,4 @@ void main() {
     // then:
     expect(actual, """[[["hi !","aye"],["lol","\n","x"]]]""");
   });
-
 }

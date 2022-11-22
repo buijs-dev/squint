@@ -20,12 +20,11 @@
 
 // ignore_for_file: avoid_dynamic_calls
 
-import 'package:squint/src/ast/ast.dart';
+import "package:squint/src/ast/ast.dart";
 import "package:squint/src/decoder/decoder.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("decode JSON object", () {
     // given
     const example = """
@@ -72,14 +71,14 @@ void main() {
     expect(greeting.data, "Welcome to Squint!");
 
     // and
-    final instructions = decoded.array("instructions");
+    final instructions = decoded.array<String>("instructions");
     expect(instructions.data[0], "Type or paste JSON here");
     expect(instructions.data[1], "Or choose a sample above");
     expect(instructions.data[2], "squint will generate code in your");
     expect(instructions.data[3], "chosen language to parse the sample data");
 
     // and
-    final nestedness = decoded.array("nestedness");
+    final nestedness = decoded.array<dynamic>("nestedness");
     expect(nestedness.data[0][0][0][0], "hi!");
     expect(nestedness.data[0][0][0][1], "aye");
     expect(nestedness.data[0][0][1][0], "hi3!");
@@ -90,5 +89,4 @@ void main() {
     final x = foobject.data["x"]! as JsonString;
     expect(x.data, "y");
   });
-
 }

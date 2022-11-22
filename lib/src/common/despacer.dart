@@ -20,7 +20,6 @@
 
 ///
 extension UnquotedSpaceRemover on List<String> {
-
   /// Delete all unnecessary spaces.
   ///
   /// Any space outside quotation marks is deleted.
@@ -42,14 +41,13 @@ extension UnquotedSpaceRemover on List<String> {
     /// Previous processed token.
     var previous = "";
 
-    for(final char in this) {
-
+    for (final char in this) {
       final token = _Token.fromChar(
         current: char,
         previous: previous,
       );
 
-      if(token.shouldSkip(insideQuotationMarks)) {
+      if (token.shouldSkip(insideQuotationMarks)) {
         continue;
       }
 
@@ -57,13 +55,11 @@ extension UnquotedSpaceRemover on List<String> {
 
       previous = char;
 
-      insideQuotationMarks = token
-          .isInsideQuotationMarks(insideQuotationMarks);
+      insideQuotationMarks = token.isInsideQuotationMarks(insideQuotationMarks);
     }
 
     return output;
   }
-
 }
 
 class _Token {
@@ -76,11 +72,12 @@ class _Token {
   factory _Token.fromChar({
     required String current,
     required String previous,
-  }) => _Token(
-    isEscapedValue: previous == r"\",
-    isQuotationMark: current == '"',
-    isEmptyCharacter: current.trim().isEmpty,
-  );
+  }) =>
+      _Token(
+        isEscapedValue: previous == r"\",
+        isQuotationMark: current == '"',
+        isEmptyCharacter: current.trim().isEmpty,
+      );
 
   /// Bool value indicating the current character
   /// is escaped by the previous character.
@@ -97,11 +94,11 @@ class _Token {
   /// If token is empty and not inside quotation marks
   /// then it should be skipped.
   bool shouldSkip(bool insideQuotationMarks) {
-    if(!isEmptyCharacter) {
+    if (!isEmptyCharacter) {
       return false;
     }
 
-    if(insideQuotationMarks) {
+    if (insideQuotationMarks) {
       return false;
     }
 
@@ -111,15 +108,14 @@ class _Token {
   /// Return bool value indicating the next token to be processed
   /// is between quotation marks or not.
   bool isInsideQuotationMarks(bool insideQuotationMarks) {
-    if(!isQuotationMark) {
+    if (!isQuotationMark) {
       return insideQuotationMarks;
     }
 
-    if(isEscapedValue) {
+    if (isEscapedValue) {
       return insideQuotationMarks;
     }
 
     return !insideQuotationMarks;
   }
-
 }

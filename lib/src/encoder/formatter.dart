@@ -23,12 +23,10 @@ import "options.dart";
 
 ///
 extension JsonFormatter on String {
-
   /// Get JSON String formatted.
   String formatJson([
     JsonFormattingOptions options = standardJsonFormatting,
   ]) {
-
     final indenting = options.indentation;
 
     final characters = split("").normalizeSpaces;
@@ -37,52 +35,52 @@ extension JsonFormatter on String {
 
     var depth = 0;
 
-    for(final character in characters) {
+    for (final character in characters) {
       final buffer = StringBuffer();
-      if(character == "{") {
-        depth +=1;
+      if (character == "{") {
+        depth += 1;
         buffer.write("{\n");
-        for(var i = 0; i < depth; i++) {
-          for(var y = 0; y < indenting; y++) {
+        for (var i = 0; i < depth; i++) {
+          for (var y = 0; y < indenting; y++) {
             buffer.write(" ");
           }
         }
         output.add(buffer.toString());
-      } else if(character == "}") {
+      } else if (character == "}") {
         buffer.write("\n");
-        depth -=1;
-        for(var i = 0; i < depth; i++) {
-          for(var y = 0; y < indenting; y++) {
+        depth -= 1;
+        for (var i = 0; i < depth; i++) {
+          for (var y = 0; y < indenting; y++) {
             buffer.write(" ");
           }
         }
         buffer.write("}");
         output.add(buffer.toString());
-      } else if(character == "[") {
-        depth +=1;
+      } else if (character == "[") {
+        depth += 1;
         buffer.write("[\n");
-        for(var i = 0; i < depth; i++) {
-          for(var y = 0; y < indenting; y++) {
+        for (var i = 0; i < depth; i++) {
+          for (var y = 0; y < indenting; y++) {
             buffer.write(" ");
           }
         }
         output.add(buffer.toString());
-      } else if(character == "]") {
+      } else if (character == "]") {
         buffer.write("\n");
-        depth -=1;
-        for(var i = 0; i < depth; i++) {
-          for(var y = 0; y < indenting; y++) {
+        depth -= 1;
+        for (var i = 0; i < depth; i++) {
+          for (var y = 0; y < indenting; y++) {
             buffer.write(" ");
           }
         }
         buffer.write("]");
         output.add(buffer.toString());
-      } else if(character == ":") {
+      } else if (character == ":") {
         output.add(" : ");
-      } else if(character == ",") {
+      } else if (character == ",") {
         buffer.write(",\n");
-        for(var i = 0; i < depth; i++) {
-          for(var y = 0; y < indenting; y++) {
+        for (var i = 0; i < depth; i++) {
+          for (var y = 0; y < indenting; y++) {
             buffer.write(" ");
           }
         }
@@ -90,14 +88,11 @@ extension JsonFormatter on String {
       } else {
         output.add(character);
       }
-
     }
     print(output.join());
     return output.join();
   }
 
   /// Get JSON String without indentation line breaks.
-  String get unformatted =>
-      split("").normalizeSpaces.join();
-
+  String get unformatted => split("").normalizeSpaces.join();
 }

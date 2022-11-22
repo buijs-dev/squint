@@ -120,15 +120,26 @@ extension on String {
         """
              {
               "className": "MyResponse",
-               "members": [ ["a1", "$this", false], ["a2", "$this", true] ]
+               "members": [ {
+                    "name": "a1", 
+                    "type": "$this", 
+                    "nullable": false
+                  }, 
+                  {
+                    "name": "a2", 
+                    "type": "$this", 
+                    "nullable": true
+                 } ]
               }""",
       );
 
     return file.absolute.path;
   }
 
-  bool executeTest(
-      {required StandardType first, required StandardType second}) {
+  bool executeTest({
+    required StandardType first,
+    required StandardType second,
+  }) {
     when:
     final types = analyzer.analyze(this);
 

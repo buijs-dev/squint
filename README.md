@@ -23,7 +23,7 @@ expect(myArray.data[0][0][0][1], "Ho-Oh");
 <B>Important:</B> Unpublished library, this is a POC.
 
 # Features
-[x] Deserialize JSON properly, including (nested) arrays.
-[ ] Serialize to JSON without implementing toJson/fromJson methods using Squint.
-[ ] Generate toJson/fromJson methods for using dart:convert.
-[ ] Generate data class from JSON content.
+- [x] Deserialize JSON properly, including (nested) arrays.
+- [ ] Serialize to JSON without implementing toJson/fromJson methods using Squint.
+- [x] Generate data class from JSON content.
+- [x] Format JSON messages.

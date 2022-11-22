@@ -20,76 +20,86 @@
 
 import "../../squint.dart";
 import "../ast/ast.dart";
-import '../common/common.dart';
+import "../common/common.dart";
 
-///
+/// Convert a [JsonObject] String to a [CustomType].
 extension Json2CustomType on JsonObject {
-
   /// Convert a [JsonObject] to a [CustomType].
   CustomType toCustomType({
     required String className,
-  }) => CustomType(
-      className: className,
-      members: data.map((key, value) {
-        return MapEntry(key, TypeMember(
+  }) =>
+      CustomType(
+        className: className,
+        members: data.toTypeMembers,
+      );
+}
+
+extension on Map<String, JsonElement> {
+  List<TypeMember> get toTypeMembers {
+    final output = <TypeMember>[];
+
+    forEach((key, value) {
+      output.add(
+        TypeMember(
           name: key,
           type: value.toAbstractType(key),
-        ));
-      }).values.toList());
+        ),
+      );
+    });
 
+    return output;
+  }
 }
 
 extension on JsonElement {
   AbstractType toAbstractType(String key) {
-    if(this is JsonString) {
+    if (this is JsonString) {
       return const StringType();
     }
 
-    if(this is JsonBoolean) {
+    if (this is JsonBoolean) {
       return const BooleanType();
     }
 
-    if(this is JsonNumber) {
+    if (this is JsonNumber) {
       return const DoubleType();
     }
 
-    if(this is JsonNull) {
+    if (this is JsonNull) {
       return const NullableStringType();
     }
 
-    if(this is JsonArray) {
+    if (this is JsonArray) {
       final array = this as JsonArray;
-      final data = array.data;
+      final data = array.data as List<dynamic>;
 
-      final noNullValues =
-        data.where((dynamic e) => e != null);
+      final noNullValues = data.where((dynamic e) => e != null);
 
-      final hasNullValues =
-          noNullValues.length != data.length;
+      final hasNullValues = noNullValues.length != data.length;
 
-      if(noNullValues.every((dynamic element) => element is String)) {
+      if (noNullValues.every((dynamic element) => element is String)) {
         return hasNullValues
             ? const ListType(NullableStringType())
             : const ListType(StringType());
       }
 
-      if(noNullValues.every((dynamic element) => element is bool)) {
+      if (noNullValues.every((dynamic element) => element is bool)) {
         return hasNullValues
             ? const ListType(NullableBooleanType())
             : const ListType(BooleanType());
       }
 
-      if(noNullValues.every((dynamic element) => element is double)) {
+      if (noNullValues.every((dynamic element) => element is double)) {
         return hasNullValues
             ? const ListType(NullableDoubleType())
             : const ListType(DoubleType());
       }
 
-      throw SquintException("Unable to determine List child type for data: $data");
-
+      throw SquintException(
+          "Unable to determine List child type for data: $data");
     }
 
-    if(this is JsonObject) {
+    if (this is JsonObject) {
       return (this as JsonObject).toCustomType(className: key.camelcase);
     }
 

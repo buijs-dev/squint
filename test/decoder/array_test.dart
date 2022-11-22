@@ -18,32 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import 'package:squint/src/ast/ast.dart';
+import "package:squint/src/ast/ast.dart";
 import "package:squint/src/decoder/decoder.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify unwrapping a list of numbers", () {
-
     // when
-    final unwrapped =  """
+    final unwrapped = """
        ["hi !", 
                   
                   "aye" ]
-                  """.unwrapList(
-        normalizeSpaces: true,
-        maxDepth: 1,
+                  """
+        .unwrapList(
+      normalizeSpaces: true,
+      maxDepth: 1,
     );
 
     // then
     expect(unwrapped[".0.0"]!.data, "hi !");
     expect(unwrapped[".0.1"]!.data, "aye");
-
   });
 
   test("verify unwrapping multiple nested lists", () {
-
     // when
     final unwrapped = """
           [[["hi !", "aye" ], 
@@ -52,7 +49,8 @@ void main() {
                   
                   "x"]      
                   ]       ]
-          """.unwrapList(
+          """
+        .unwrapList(
       normalizeSpaces: true,
       maxDepth: 4,
     );
@@ -62,7 +60,6 @@ void main() {
     expect(unwrapped[".0.0.0.1"]!.data, "aye");
     expect(unwrapped[".0.0.1.1"]!.data, "lol");
     expect(unwrapped[".0.0.1.2"]!.data, "x");
-
   });
 
   test("verify decoding a nested List", () {
@@ -75,12 +72,13 @@ void main() {
                   "x"]      
                   ]       ]
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
-    final arr = json.array("xyz");
+    final arr = json.array<dynamic>("xyz");
     expect(arr.key, "xyz");
 
-    final data = arr.data;
+    final dynamic data = arr.data;
     expect(data[0][0][0], "hi !");
     expect(data[0][0][1], "aye");
     expect(data[0][1][0], "lol");
@@ -92,12 +90,13 @@ void main() {
           {
             "xyz":["hi !", "aye" ]
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
-    final arr = json.array("xyz");
+    final arr = json.array<String>("xyz");
     expect(arr.key, "xyz");
 
-    final data = arr.data;
+    final dynamic data = arr.data;
     expect(data[0], "hi !");
     expect(data[1], "aye");
   });
@@ -107,7 +106,8 @@ void main() {
           {
             "xyz": null
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
     final nullable = json.byKey("xyz") as JsonNull;
     expect(nullable.key, "xyz");
@@ -120,7 +120,8 @@ void main() {
             "sayYes": false,
             "sayNoNoNoCanDo": true,
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
     final sayYes = json.byKey("sayYes") as JsonBoolean;
     expect(sayYes.key, "sayYes");
@@ -136,12 +137,12 @@ void main() {
           {
             "getReady4TheLaunch": 12345,
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
     final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonNumber;
     expect(getReady4TheLaunch.key, "getReady4TheLaunch");
     expect(getReady4TheLaunch.data, 12345);
-
   });
 
   test("verify decoding a list of numbers", () {
@@ -149,7 +150,8 @@ void main() {
           {
             "getReady4TheLaunch": [0,2,44,33],
           }
-          """.jsonDecode;
+          """
+        .jsonDecode;
 
     // then
     final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonArray;
@@ -166,55 +168,70 @@ void main() {
       currentCharacter: "y",
       currentKey: ".0.0",
       currentValue: "x",
-      currentSize: {0:0},
+      currentSize: {0: 0},
       currentDepth: 0,
+      index: 0,
     );
 
     // expect
-    expect(token.size, {0:0}, reason: "size does not change while processing a value");
-    expect(token.depth, 0, reason: "depth does not change while processing a value");
-    expect(token.key, ".0.0", reason: "key does not change while processing a value");
-    expect(token.value, "xy", reason: "tokens are appended while processing a value");
+    expect(token.size, {0: 0},
+        reason: "size does not change while processing a value");
+    expect(token.depth, 0,
+        reason: "depth does not change while processing a value");
+    expect(token.key, ".0.0",
+        reason: "key does not change while processing a value");
+    expect(token.value, "xy",
+        reason: "tokens are appended while processing a value");
   });
 
   test("verify ListValueSeparatorToken", () {
     // given
-    final output = <String,JsonElement>{};
+    final output = <String, JsonElement>{};
     final token = ListValueSeparatorToken(
       currentKey: ".0.0",
       currentValue: '"Anakin"',
-      currentSize: {0:0},
+      currentSize: {0: 0},
       currentDepth: 0,
       output: output,
+      index: 0,
     );
 
     // expect
-    expect(token.size, {0:1}, reason: "at depth 0 there is 1 value added (width is 1)");
-    expect(token.depth, 0, reason: "depth does not change while processing a value");
-    expect(token.key, ".0.1", reason: "final width (.0) marker is incremented by 1 (.0.1)");
+    expect(token.size, {0: 1},
+        reason: "at depth 0 there is 1 value added (width is 1)");
+    expect(token.depth, 0,
+        reason: "depth does not change while processing a value");
+    expect(token.key, ".0.1",
+        reason: "final width (.0) marker is incremented by 1 (.0.1)");
     expect(token.value, "", reason: "value is resetted after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
-    expect(output[".0.0"]!.data, "Anakin", reason: "value is added to the output map");
+    expect(output[".0.0"]!.data, "Anakin",
+        reason: "value is added to the output map");
   });
 
   test("verify ListClosingBracketToken", () {
     // given
-    final output = <String,JsonElement>{};
+    final output = <String, JsonElement>{};
     final token = ListClosingBracketToken(
       currentKey: ".1.5",
       currentValue: '"Anakin"',
-      currentSize: {0:0, 1:0},
+      currentSize: {0: 0, 1: 0},
       currentDepth: 1,
       output: output,
+      index: 0,
     );
 
     // expect
-    expect(token.size, {0:0, 1:1}, reason: "at depth 1 there is 1 value added (width is 1)");
-    expect(token.depth, 0, reason: "depth is decreased by 1 after closing a list");
-    expect(token.key, ".1", reason: "final width (.0) marker is removed from key");
+    expect(token.size, {0: 0, 1: 1},
+        reason: "at depth 1 there is 1 value added (width is 1)");
+    expect(token.depth, 0,
+        reason: "depth is decreased by 1 after closing a list");
+    expect(token.key, ".1",
+        reason: "final width (.0) marker is removed from key");
     expect(token.value, "", reason: "value is resetted after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
-    expect(output[".1.5"]!.data, "Anakin", reason: "value is added to the output map");
+    expect(output[".1.5"]!.data, "Anakin",
+        reason: "value is added to the output map");
   });
 
   test("verify ListOpeningBracketToken", () {
@@ -222,17 +239,16 @@ void main() {
     final token = ListOpeningBracketToken(
       currentKey: ".1.0.0",
       currentValue: "",
-      currentSize: {
-        0:0,
-        1:0,
-        2:0
-      },
+      currentSize: {0: 0, 1: 0, 2: 0},
       currentDepth: 2,
+      index: 0,
     );
 
     // expect
-    expect(token.size, { 0:0, 1:0, 2:0}, reason: "size does not change when adding depth");
-    expect(token.depth, 3, reason: "depth is increased by 1 after opening a list");
+    expect(token.size, {0: 0, 1: 0, 2: 0},
+        reason: "size does not change when adding depth");
+    expect(token.depth, 3,
+        reason: "depth is increased by 1 after opening a list");
     expect(token.key, ".1.0.0.0", reason: "final width marker is added to key");
     expect(token.value, "", reason: "value does not change");
   });

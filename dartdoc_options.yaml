@@ -1,0 +1,12 @@
+dartdoc:
+  categories:
+    "consumer":
+      markdown: doc/consumer.md
+      name: consumer
+    "producer":
+      markdown: doc/producer.md
+      name: producer
+    "gradle":
+      markdown: doc/gradle.md
+      name: gradle
+  categoryOrder: ["consumer", "producer", "gradle"]
