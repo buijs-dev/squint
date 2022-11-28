@@ -1,5 +1,6 @@
-[![GitHub](https://img.shields.io/github/license/buijs-dev/squint?color=black&style=for-the-badge)](https://github.com/buijs-dev/squint/blob/main/LICENSE)
-[![Codecov](https://img.shields.io/codecov/c/github/buijs-dev/squint?logo=codecov&style=for-the-badge)](https://codecov.io/gh/buijs-dev/squint)
+[![GitHub](https://img.shields.io/github/license/buijs-dev/squint?color=black)](https://github.com/buijs-dev/squint/blob/main/LICENSE)
+[![CodeScene Code Health](https://codescene.io/projects/32221/status-badges/code-health)](https://codescene.io/projects/32221)
+[![codecov](https://codecov.io/gh/buijs-dev/squint/branch/main/graph/badge.svg?token=yxUBpDvGFg)](https://codecov.io/gh/buijs-dev/squint)
 
 Lightweight JSON processing code generator. Safely deserialize JSON decoded Strings to Dart Types.
 A JSON decoding library that actually decodes nested lists. No more dynamic mapping!
