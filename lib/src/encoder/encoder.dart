@@ -18,4 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/// JSON encoding utilities.
+///
+/// Convert objects to JSON Strings.
 library encoder;
+
+export "formatter.dart";
+export "indentation.dart";
+export "options.dart";
+export "utils.dart";

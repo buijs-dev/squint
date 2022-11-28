@@ -18,9 +18,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Simplified abstract syntax tree for JSON processing and code generation.
-library ast;
+import "../ast/ast.dart";
 
-export "json.dart";
-export "types.dart";
-export "utils.dart";
+/// Return a quoted String value for JSON if the current value is a String.
+///
+/// Example:
+///
+/// Given a [String] value foo will return:
+///
+/// ```
+///   "foo"
+/// ```
+///
+/// Given an [int] value 10 will return:
+///
+/// ```
+///   10
+/// ```
+///
+/// {@category encoder}
+dynamic maybeAddQuotes(dynamic value) {
+  if (value is List) {
+    return value.map<dynamic>(maybeAddQuotes).toList();
+  }
+
+  if (value is String) {
+    return '"$value"';
+  }
+
+  if (value is JsonElement) {
+    return value.data.maybeAddQuotes;
+  }
+
+  return value;
+}

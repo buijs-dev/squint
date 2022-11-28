@@ -71,8 +71,8 @@ class StandardType extends AbstractType {
   @override
   bool operator ==(dynamic other) =>
       other is StandardType &&
-          className == other.className &&
-          nullable == other.nullable;
+      className == other.className &&
+      nullable == other.nullable;
 
   @override
   int get hashCode => className.hashCode + nullable.hashCode;

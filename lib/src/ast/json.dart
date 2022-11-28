@@ -19,9 +19,6 @@
 // SOFTWARE.
 
 import "../../squint.dart";
-import "../common/common.dart";
-import "../decoder/array.dart";
-import "../encoder/formatter.dart";
 
 /// A (part of) JSON.
 ///
@@ -32,10 +29,10 @@ abstract class JsonElement<T> {
   /// Construct a new [JsonElement].
   const JsonElement();
 
-  ///
+  /// The JSON data value.
   T get data;
 
-  ///
+  /// Convert to formatted JSON String.
   String get stringify;
 }
 
@@ -57,6 +54,10 @@ abstract class JsonElementType<T> extends JsonElement<T> {
   /// The JSON data of type T.
   @override
   final T data;
+
+  /// Convert to formatted JSON String.
+  @override
+  String get stringify => '"$key": ${maybeAddQuotes(data)}';
 }
 
 /// JSON Object (Map) element.
@@ -84,28 +85,95 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
     return data[key]!;
   }
 
-  /// Get JsonElement by [String] key.
+  /// Get [JsonString] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
   JsonString string(String key) =>
-      byKey(key) as JsonString;
+      _byKeyOfType<JsonString>(key, false)!;
 
+  /// Get [JsonString] or null by [String] key.
   ///
-  JsonArray<List<T>> array<T>(String key) =>
-      JsonArray<List<T>>(
-        key: key,
-        data: (byKey(key).data as List).cast<T>().toList(),
-      );
+  /// Throws [SquintException] if key is not found.
+  JsonString? stringOrNull(String key) =>
+      _byKeyOfType<JsonString>(key, true);
 
+  /// Get [JsonNumber] by [String] key.
   ///
+  /// Throws [SquintException] if key is not found.
+  JsonNumber number(String key) =>
+      _byKeyOfType<JsonNumber>(key, false)!;
+
+  /// Get [JsonNumber] or null by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  JsonNumber? numberOrNull(String key) =>
+      _byKeyOfType<JsonNumber>(key, true);
+
+  /// Get [JsonArray] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  JsonArray<List<T>> array<T>(String key) => JsonArray<List<T>>(
+    key: key,
+    data: (byKey(key).data as List).cast<T>().toList(),
+  );
+
+  /// Get [JsonArray] or null by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  JsonArray<List<T>>? arrayOrNull<T>(String key) {
+    final element = byKey(key);
+
+    if(element.data == null) {
+      return null;
+    }
+
+    return JsonArray<List<T>>(
+      key: key,
+      data: (byKey(key).data as List).cast<T>().toList(),
+    );
+  }
+
+  /// Get [JsonBoolean] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
   JsonBoolean boolean(String key) =>
-      byKey(key) as JsonBoolean;
+      _byKeyOfType<JsonBoolean>(key, false)!;
 
+  /// Get [JsonBoolean] or null by [String] key.
   ///
+  /// Throws [SquintException] if key is not found.
+  JsonBoolean? booleanOrNull(String key) =>
+      _byKeyOfType<JsonBoolean>(key, true);
+
+  /// Get [JsonObject] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
   JsonObject object(String key) =>
-      byKey(key) as JsonObject;
+      _byKeyOfType<JsonObject>(key, false)!;
 
+  /// Get [JsonObject] or null by [String] key.
   ///
+  /// Throws [SquintException] if key is not found.
+  JsonObject? objectOrNull(String key) =>
+      _byKeyOfType<JsonObject>(key, true);
+
+  R? _byKeyOfType<R>(String key, bool nullable) {
+    final data = byKey(key);
+
+    if (data is R) {
+      return data as R;
+    }
+
+    if(nullable && data is JsonNull) {
+      return null;
+    }
+
+    throw SquintException(
+      "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
+    );
+  }
+
+  /// Convert to formatted JSON String.
   @override
   String get stringify {
     final json = key == ""
@@ -135,12 +203,6 @@ class JsonString extends JsonElementType<String> {
     required String key,
     required String data,
   }) : super(key: key, data: data);
-
-  ///
-  @override
-  String get stringify {
-    return '"$key": "$data"';
-  }
 }
 
 /// A JSON element containing a double value.
@@ -164,18 +226,13 @@ class JsonNumber extends JsonElementType<double> {
     required double data,
   }) : super(key: key, data: data);
 
-  ///
+  /// Construct a new [JsonNumber] instance
+  /// by parsing the data as double value.
   factory JsonNumber.parse({
     required String key,
     required String data,
   }) =>
       JsonNumber(key: key, data: double.parse(data));
-
-  ///
-  @override
-  String get stringify {
-    return '"$key": $data';
-  }
 }
 
 /// A JSON element containing a null value.
@@ -198,11 +255,9 @@ class JsonNull extends JsonElementType<Object?> {
     required String key,
   }) : super(key: key, data: null);
 
-  ///
+  /// Convert to formatted JSON String.
   @override
-  String get stringify {
-    return '"$key": null';
-  }
+  String get stringify => '"$key": null';
 }
 
 /// A JSON element containing a bool value.
@@ -225,12 +280,6 @@ class JsonBoolean extends JsonElementType<bool> {
     required String key,
     required bool data,
   }) : super(key: key, data: data);
-
-  ///
-  @override
-  String get stringify {
-    return '"$key": $data';
-  }
 }
 
 /// A JSON element containing an Array value.
@@ -255,7 +304,8 @@ class JsonArray<T> extends JsonElementType<T> {
     required T data,
   }) : super(key: key, data: data);
 
-  ///
+  /// Construct a new [JsonNumber] instance
+  /// by parsing the data as List value.
   static JsonArray parse({
     required String key,
     required String content,
@@ -266,42 +316,7 @@ class JsonArray<T> extends JsonElementType<T> {
         data: content.unwrapList(maxDepth: depth).toList(),
       );
 
-  ///
+  /// Convert to formatted JSON String.
   @override
-  String get stringify {
-    return '"$key":${(data as List).map<dynamic>(_quotedStringValue).toList()}';
-  }
-}
-
-/// Return a quoted String value for JSON if the current value is a String.
-///
-/// Example:
-///
-/// Given a [String] value foo will return:
-///
-/// ```
-///   "foo"
-/// ```
-///
-/// Given an [int] value 10 will return:
-///
-/// ```
-///   10
-/// ```
-///
-/// {@category encoder}
-dynamic _quotedStringValue(dynamic value) {
-  if (value is List) {
-    return value.map<dynamic>(_quotedStringValue).toList();
-  }
-
-  if (value is String) {
-    return '"$value"';
-  }
-
-  if (value is JsonElement) {
-    return _quotedStringValue(value.data);
-  }
-
-  return value;
+  String get stringify => '"$key":${maybeAddQuotes(data)}';
 }

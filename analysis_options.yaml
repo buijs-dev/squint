@@ -13,6 +13,10 @@ analyzer:
     included_file_warning: ignore
 linter:
   rules:
+    # Pretty much unavoidable in this library as it's intention
+    # is to go from dynamic values to strongly typed values.
+    avoid_dynamic_calls: false
+
     # Personal preference. I love it ;)
     cascade_invocations: true
 
