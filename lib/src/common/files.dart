@@ -20,30 +20,9 @@
 
 import "dart:io";
 
-import "../../squint.dart";
-import "../analyzer/analyzer.dart" as analyzer;
-import "../ast/ast.dart";
-import "../common/common.dart";
-
-///
-void analyzeFile(
-    {required String pathToFile, required String pathToOutputFolder}) {
-  if (!File(pathToFile).existsSync()) {
-    throw SquintException("File does not exist: $pathToFile");
-  }
-
-  if (!Directory(pathToOutputFolder).existsSync()) {
-    throw SquintException("Output folder does not exist: $pathToOutputFolder");
-  }
-
-  analyzer.analyze(pathToFile).whereType<CustomType>().forEach((type) {
-    pathToOutputFolder
-        .resolve("${type.className.toLowerCase()}.txt")
-        .writeAsStringSync("${type.className}\n${type.members}");
-  });
-}
-
-extension on String {
+/// File processing utilities.
+extension FileUtil on Directory {
+  /// Return current directory + filename.
   File resolve(String filename) =>
-      File("${this}${Platform.pathSeparator}$filename");
+      File("${absolute.path}${Platform.pathSeparator}$filename");
 }

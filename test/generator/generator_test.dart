@@ -103,7 +103,7 @@ void main() {
       ..writeAsStringSync(exampleClass);
 
     // and
-    final analysis = analyzer.analyze(file.absolute.path);
+    final analysis = analyzer.analyze(pathToFile: file.absolute.path);
 
     // when
     final dataclass = (analysis[0] as CustomType).generate.trim();

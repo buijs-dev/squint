@@ -20,7 +20,7 @@
 
 // ignore_for_file: avoid_print
 
-import "package:squint/src/cli/cli.dart" as cli;
+import "package:squint/src/analyzer/analyzer.dart" as analyzer;
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {
@@ -42,7 +42,7 @@ Future<void> main(List<String> args) async {
 
   final pathToOutputFolder = args[1];
 
-  cli.analyzeFile(
+  analyzer.analyze(
     pathToFile: pathToFile,
     pathToOutputFolder: pathToOutputFolder,
   );

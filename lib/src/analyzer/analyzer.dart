@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_dynamic_calls
 // Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,87 +23,157 @@ import "dart:io";
 
 import "package:analyzer/dart/analysis/features.dart";
 import "package:analyzer/dart/analysis/utilities.dart";
-import "package:analyzer/dart/ast/ast.dart";
-import "package:analyzer/dart/ast/visitor.dart";
 
 import "../../squint.dart";
-import "../ast/ast.dart";
 import "../common/common.dart";
+import "visitor.dart";
 
+/// Marker prefix used for metadata debug files.
 ///
-List<AbstractType> analyze(
-  String path,
-) {
-  if (path.contains("sqdb_")) {
-    final customType = File(path).customType;
+/// Example:
+///
+/// Storing analysis result of a dataclass named 'SimpleResponse'
+/// will be stored in metadata file named: 'sqdb_simpleresponse.json'
+///
+/// {@category analyzer}
+const metadataMarkerPrefix = "sqdb_";
 
-    if (customType != null) {
-      return [customType];
-    } else {
-      return [];
+/// The analyzer can read files and return metadata about (dart) classes.
+///
+/// Metadata can be read and written as JSON files.
+/// The analyzer supports:
+/// 1. Any .dart file containing valid dart classes.
+/// 2. Metadata file in AST JSON format.
+///
+/// {@category analyzer}
+List<AbstractType> analyze({
+  /// File to be analyzed.
+  ///
+  /// Must be a valid .dart file containing 1 or more classes
+  /// or a metadata JSON file.
+  required String pathToFile,
+
+  /// Folder to store analysis result as JSON.
+  ///
+  /// For each data class a new file is created in this folder.
+  String? pathToOutputFolder,
+}) {
+  final file = File(pathToFile);
+
+  if (!file.existsSync()) {
+    throw SquintException("File does not exist: $pathToFile");
+  }
+
+  final types = pathToFile.contains(metadataMarkerPrefix)
+      ? [file.parseMetadata]
+      : file.parseDataClass;
+
+  if (pathToOutputFolder != null) {
+    if (!Directory(pathToOutputFolder).existsSync()) {
+      throw SquintException("Folder does not exist: $pathToOutputFolder");
     }
+
+    types.saveAsJson(pathToOutputFolder);
   }
 
-  final result = parseFile(
-    path: path,
-    featureSet: FeatureSet.latestLanguageVersion(),
-  );
-
-  final declarations = result.unit.declarations;
-
-  if (declarations.isEmpty) {
-    return [];
-  }
-
-  final visitor = _JsonVisitor();
-  declarations.accept(visitor);
-  return visitor.collected;
+  return types;
 }
 
-/// Visit a class
-class _JsonVisitor extends SimpleAstVisitor<dynamic> {
-  final collected = <AbstractType>[];
+/// {@category analyzer}
+extension on File {
+  /// Use [JsonVisitor] to collect Metadata from dart class.
+  List<CustomType> get parseDataClass {
+    final visitor = JsonVisitor();
+    parseFile(
+      path: absolute.path,
+      featureSet: FeatureSet.latestLanguageVersion(),
+    ).unit.declarations.accept(visitor);
+    return visitor.collected;
+  }
 
-  @override
-  dynamic visitClassDeclaration(ClassDeclaration node) {
-    if (!node.metadata.any((annotation) => annotation.name.name == "squint")) {
-      return null;
+  /// JSON decode current file and return [CustomType].
+  ///
+  /// The JSON is expected to contain metadata for a single data class.
+  CustomType get parseMetadata {
+    final json = readAsStringSync().jsonDecode;
+
+    final className = json.string("className").data;
+
+    final dynamic data = json.array<dynamic>("members").data;
+
+    final members = <TypeMember>[];
+
+    for (final object in data) {
+      final name = object["name"] as String;
+      final type = object["type"] as String;
+      final nullable = object["nullable"] as bool;
+
+      members.add(
+        TypeMember(
+          name: name,
+          type: type.abstractType(nullable: nullable),
+        ),
+      );
     }
 
-    final className = node.name.toString();
-
-    final members = node.members
-        .whereType<FieldDeclaration>()
-        .map((e) => e.fields)
-        .map(typeMember)
-        .toList();
-
-    final customType = CustomType(
+    return CustomType(
       className: className,
       members: members,
     );
-
-    collected.add(customType);
-    return collected;
   }
+}
 
-  TypeMember typeMember(VariableDeclarationList? variable) {
-    final type = variable?.type;
-    final rawType = type?.toString().trim();
+/// {@category analyzer}
+extension on List<AbstractType> {
+  void saveAsJson(String pathToOutputFolder) {
+    final output = Directory(pathToOutputFolder);
 
-    if (rawType == null) {
-      throw SquintException("Unable to determine rawType: $type");
+    whereType<CustomType>().forEach((type) {
+      output
+          .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json")
+        ..createSync()
+        ..writeAsStringSync("""
+          {
+            "className": "${type.className}",
+            "members": [
+              ${type.members.map((e) => """
+                { 
+                  "name": "${e.name}",
+                  "type": "${e.type.printType}",
+                  "nullable": ${e.type is StandardType && (e.type as StandardType).nullable},
+                }
+                """).join(",")}
+            ]
+          }""");
+    });
+  }
+}
+
+/// {@category analyzer}
+extension on AbstractType {
+  String get printType {
+    if (this is ListType) {
+      return "List<${(this as ListType).child.printType}>";
     }
 
-    final name = variable?.variables.toList().first.name.toString();
-
-    if (name == null) {
-      throw SquintException("Unable to determine variable name: $variable");
+    if (this is NullableListType) {
+      return "List<${(this as NullableListType).child.printType}>?";
     }
 
-    return TypeMember(
-      name: name,
-      type: rawType.abstractType(),
-    );
+    if (this is MapType) {
+      final map = this as MapType;
+      return "Map<${map.key.printType}, ${map.value.printType}>";
+    }
+
+    if (this is NullableMapType) {
+      final map = this as NullableMapType;
+      return "Map<${map.key.printType}, ${map.value.printType}>?";
+    }
+
+    if (this is StandardType && (this as StandardType).nullable) {
+      return "$className?";
+    }
+
+    return className;
   }
 }

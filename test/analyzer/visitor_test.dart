@@ -18,12 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+import "package:squint/src/analyzer/analyzer.dart" as analyzer;
+import "package:squint/src/common/common.dart";
+import "package:test/test.dart";
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "files.dart";
-export "logger.dart";
-export "strings.dart";
+void main() {
+
+  test("An exception is thrown if typemember class is not determined", () {
+
+    expect(() =>  analyzer.analyze(pathToFile: "doesnotexist"),
+        throwsA(predicate((e) =>
+        e is SquintException &&
+            e.cause.startsWith("File does not exist:") &&
+            e.cause.endsWith("doesnotexist")
+        )));
+  });
+
+
+}

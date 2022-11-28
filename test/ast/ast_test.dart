@@ -18,12 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+import "package:squint/src/ast/ast.dart";
+import "package:test/test.dart";
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "files.dart";
-export "logger.dart";
-export "strings.dart";
+void main() {
+
+  test("verify equals and hashcode from StandardType", () {
+    // given:
+    expect(const StringType() == const StringType(), true);
+    expect(const NullableIntType().hashCode == const NullableIntType().hashCode, true);
+    expect(const NullableListType(StringType()).hashCode == const ListType(StringType()).hashCode, false);
+    expect(const NullableListType(StringType()).hashCode == const StringType().hashCode, false);
+  });
+
+}

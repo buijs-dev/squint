@@ -18,30 +18,4 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "dart:io";
-
-import "package:squint/src/cli/cli.dart" as cli;
-import "package:test/test.dart";
-
-import "../analyzer/analyzer_classfile_test.dart";
-
-void main() {
-  test("Analyze int", () {
-    given:
-    final outputFolder = Directory.systemTemp.absolute.path;
-
-    final fileToScan = "int".createResponse;
-
-    when:
-    cli.analyzeFile(
-      pathToFile: fileToScan,
-      pathToOutputFolder: outputFolder,
-    );
-
-    then:
-    final scanResult =
-        File("$outputFolder${Platform.pathSeparator}simpleresponse.txt");
-
-    expect(scanResult.existsSync(), true);
-  });
-}
+library encoder;

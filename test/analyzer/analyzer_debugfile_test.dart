@@ -20,6 +20,7 @@
 
 import "dart:io";
 
+import 'package:squint/squint.dart';
 import "package:squint/src/analyzer/analyzer.dart" as analyzer;
 import "package:squint/src/ast/ast.dart";
 import "package:squint/src/ast/types.dart";
@@ -114,7 +115,7 @@ final basePath =
 
 extension on String {
   String get createResponse {
-    final file = File("$basePath${this}sqdb_$this.dart")
+    final file = File("$basePath${this}$metadataMarkerPrefix$this.dart")
       ..createSync()
       ..writeAsStringSync(
         """
@@ -141,7 +142,7 @@ extension on String {
     required StandardType second,
   }) {
     when:
-    final types = analyzer.analyze(this);
+    final types = analyzer.analyze(pathToFile: this);
 
     then:
     expect(types.length, 1, reason: "Should have found 1 type");

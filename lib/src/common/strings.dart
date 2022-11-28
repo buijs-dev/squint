@@ -105,3 +105,15 @@ extension StringUtils on String {
       .trimLeft()
       .replaceAll(",|", "|");
 }
+
+/// String processing utilities for when nulls are allowed.
+extension NullableStringUtils on String? {
+  /// Return String value or throw [Exception] e if null.
+  String orElseThrow(Exception e) {
+    if (this == null) {
+      throw e;
+    } else {
+      return this!;
+    }
+  }
+}

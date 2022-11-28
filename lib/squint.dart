@@ -21,5 +21,8 @@
 ///
 library squint;
 
+export "src/analyzer/analyzer.dart";
 export "src/ast/ast.dart";
 export "src/decoder/decoder.dart";
+export "src/encoder/encoder.dart";
+export "src/generator/generator.dart";

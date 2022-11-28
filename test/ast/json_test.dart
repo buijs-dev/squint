@@ -18,12 +18,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+import "package:squint/src/ast/ast.dart";
+import 'package:squint/src/common/common.dart';
+import "package:test/test.dart";
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "files.dart";
-export "logger.dart";
-export "strings.dart";
+void main() {
+
+  test("an exception is thrown if the request key is not found", () {
+    expect(() =>  JsonObject({}).byKey("xyz"),
+        throwsA(predicate((e) =>
+        e is SquintException &&
+            e.cause == "JSON key not found: 'xyz'"
+        )));
+  });
+
+}

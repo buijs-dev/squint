@@ -18,12 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Common utilities and helpers.
-library common;
+import "package:squint/src/ast/ast.dart";
+import 'package:squint/src/common/common.dart';
+import "package:test/test.dart";
 
-export "annotation.dart";
-export "despacer.dart";
-export "exception.dart";
-export "files.dart";
-export "logger.dart";
-export "strings.dart";
+void main() {
+
+  test("verify TypeMember toString", () {
+    // given:
+    const typeMember = TypeMember(name: "aVariable", type: StringType());
+    expect(
+        typeMember.toString(),
+        "TypeMember(name='aVariable',type='StandardType(name=String, nullable=false)')"
+    );
+
+  });
+
+}

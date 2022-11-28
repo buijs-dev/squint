@@ -1,12 +1,24 @@
 dartdoc:
   categories:
-    "consumer":
-      markdown: doc/consumer.md
-      name: consumer
-    "producer":
-      markdown: doc/producer.md
-      name: producer
-    "gradle":
-      markdown: doc/gradle.md
-      name: gradle
-  categoryOrder: ["consumer", "producer", "gradle"]
+    "analyzer":
+      markdown: doc/analyzer.md
+      name: Analyser
+    "ast":
+      markdown: doc/ast.md
+      name: AST
+    "decoder":
+      markdown: doc/decoder.md
+      name: Decoder
+    "encoder":
+      markdown: doc/encoder.md
+      name: Encoder
+    "generator":
+      markdown: doc/generator.md
+      name: Generator
+  categoryOrder: [
+    "analyzer",
+    "ast",
+    "decoder",
+    "encoder",
+    "generator"
+  ]

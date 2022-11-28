@@ -118,7 +118,7 @@ void main() {
     final path = file.absolute.path;
 
     // when:
-    final types = analyzer.analyze(path);
+    final types = analyzer.analyze(pathToFile: path);
 
     // then:
     expect(types.length, 1, reason: "Should have found 1 type");
@@ -205,7 +205,7 @@ void main() {
     final path = file.absolute.path;
 
     // when:
-    final types = analyzer.analyze(path);
+    final types = analyzer.analyze(pathToFile: path);
 
     // then:
     expect(types.length, 1, reason: "Should have found 1 type");
@@ -311,7 +311,7 @@ extension TestFileWriter on String {
     required StandardType second,
   }) {
     // when:
-    final types = analyzer.analyze(this);
+    final types = analyzer.analyze(pathToFile: this);
 
     // then:
     expect(types.length, 1, reason: "Should have found 1 type");

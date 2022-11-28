@@ -24,6 +24,10 @@ import "../decoder/array.dart";
 import "../encoder/formatter.dart";
 
 /// A (part of) JSON.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 abstract class JsonElement<T> {
   /// Construct a new [JsonElement].
   const JsonElement();
@@ -36,6 +40,10 @@ abstract class JsonElement<T> {
 }
 
 /// A (part of) JSON containing data of type T.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 abstract class JsonElementType<T> extends JsonElement<T> {
   /// Construct a new [JsonElementType].
   const JsonElementType({
@@ -52,6 +60,10 @@ abstract class JsonElementType<T> extends JsonElement<T> {
 }
 
 /// JSON Object (Map) element.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Construct a new [JsonObject] instance.
   JsonObject(Map<String, JsonElement> data, [String key = ""])
@@ -75,45 +87,23 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Get JsonElement by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonString string(String key) {
-    if (!data.containsKey(key)) {
-      throw SquintException("JSON key not found: '$key'");
-    }
-
-    return data[key]! as JsonString;
-  }
+  JsonString string(String key) =>
+      byKey(key) as JsonString;
 
   ///
-  JsonArray<List<T>> array<T>(String key) {
-    if (!data.containsKey(key)) {
-      throw SquintException("JSON key not found: '$key'");
-    }
-
-    final array = data[key]!;
-
-    return JsonArray<List<T>>(
-      key: key,
-      data: (array.data as List).cast<T>().toList(),
-    );
-  }
+  JsonArray<List<T>> array<T>(String key) =>
+      JsonArray<List<T>>(
+        key: key,
+        data: (byKey(key).data as List).cast<T>().toList(),
+      );
 
   ///
-  JsonBoolean boolean(String key) {
-    if (!data.containsKey(key)) {
-      throw SquintException("JSON key not found: '$key'");
-    }
-
-    return data[key]! as JsonBoolean;
-  }
+  JsonBoolean boolean(String key) =>
+      byKey(key) as JsonBoolean;
 
   ///
-  JsonObject object(String key) {
-    if (!data.containsKey(key)) {
-      throw SquintException("JSON key not found: '$key'");
-    }
-
-    return data[key]! as JsonObject;
-  }
+  JsonObject object(String key) =>
+      byKey(key) as JsonObject;
 
   ///
   @override
@@ -135,6 +125,10 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
 ///
 /// key = name
 /// data = Luke Skywalker
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonString extends JsonElementType<String> {
   /// Construct a new [JsonString] instance.
   const JsonString({
@@ -159,6 +153,10 @@ class JsonString extends JsonElementType<String> {
 ///
 /// key = friends
 /// data = 0
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonNumber extends JsonElementType<double> {
   /// Construct a new [JsonNumber] instance.
   const JsonNumber({
@@ -190,6 +188,10 @@ class JsonNumber extends JsonElementType<double> {
 ///
 /// key = foo
 /// data = null
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonNull extends JsonElementType<Object?> {
   /// Construct a new [JsonNull] instance.
   const JsonNull({
@@ -213,6 +215,10 @@ class JsonNull extends JsonElementType<Object?> {
 ///
 /// key = dark-side
 /// data = false
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonBoolean extends JsonElementType<bool> {
   /// Construct a new [JsonBoolean] instance.
   const JsonBoolean({
@@ -238,6 +244,10 @@ class JsonBoolean extends JsonElementType<bool> {
 /// key = padawans
 /// data = ["Anakin", "Obi-Wan"]
 /// T = String
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonArray<T> extends JsonElementType<T> {
   /// Construct a new [JsonArray] instance.
   const JsonArray({
@@ -263,6 +273,23 @@ class JsonArray<T> extends JsonElementType<T> {
   }
 }
 
+/// Return a quoted String value for JSON if the current value is a String.
+///
+/// Example:
+///
+/// Given a [String] value foo will return:
+///
+/// ```
+///   "foo"
+/// ```
+///
+/// Given an [int] value 10 will return:
+///
+/// ```
+///   10
+/// ```
+///
+/// {@category encoder}
 dynamic _quotedStringValue(dynamic value) {
   if (value is List) {
     return value.map<dynamic>(_quotedStringValue).toList();
