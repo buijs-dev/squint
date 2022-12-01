@@ -18,9 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON decoding utilities.
-library decoder;
+import "package:squint/squint.dart";
+import "package:test/test.dart";
 
-export "array.dart";
-export "json.dart";
-export "utils.dart";
+void main() {
+
+  test("verify logger without context", () {
+    expect("hello!".log(), "hello!");
+  });
+
+  test("verify logger with context", () {
+    expect("hello!".log(context: const StringType()), "hello!\nStandardType(name=String, nullable=false)");
+  });
+
+}

@@ -24,8 +24,9 @@ import "dart:io";
 import "package:analyzer/dart/analysis/features.dart";
 import "package:analyzer/dart/analysis/utilities.dart";
 
-import "../../squint.dart";
+import "../ast/ast.dart";
 import "../common/common.dart";
+import "../decoder/decoder.dart";
 import "visitor.dart";
 
 /// Marker prefix used for metadata debug files.
@@ -111,7 +112,7 @@ extension on File {
       members.add(
         TypeMember(
           name: name,
-          type: type.abstractType(nullable: nullable),
+          type: type.toAbstractType(nullable: nullable),
         ),
       );
     }

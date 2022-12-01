@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+final _isAlphabeticRegex = RegExp(r"""^[a-zA-Z]$""");
+
 /// String processing utilities.
 extension StringUtils on String {
   /// Remove the postfix of a String
@@ -41,9 +43,7 @@ extension StringUtils on String {
       return this;
     }
 
-    final lastIndex = lastIndexOf(toRemove);
-
-    return substring(lastIndex, length);
+    return replaceFirst(toRemove, "");
   }
 
   /// Convert a String to camelcase.
@@ -69,6 +69,28 @@ extension StringUtils on String {
       }
 
       buffer.write(char);
+    }
+
+    return buffer.toString();
+  }
+
+  /// Convert a String to snake_case
+  String get snakecase {
+    final characters = split("");
+
+    final firstCharacter = characters.removeAt(0).toLowerCase();
+
+    final buffer = StringBuffer()..write(firstCharacter);
+
+    for (final char in characters) {
+      if (_isAlphabeticRegex.firstMatch(char) != null &&
+          char.toUpperCase() == char) {
+        buffer
+          ..write("_")
+          ..write(char.toLowerCase());
+      } else {
+        buffer.write(char);
+      }
     }
 
     return buffer.toString();
@@ -104,16 +126,4 @@ extension StringUtils on String {
       .replaceAll(RegExp(r"(!?,)\|"), "")
       .trimLeft()
       .replaceAll(",|", "|");
-}
-
-/// String processing utilities for when nulls are allowed.
-extension NullableStringUtils on String? {
-  /// Return String value or throw [Exception] e if null.
-  String orElseThrow(Exception e) {
-    if (this == null) {
-      throw e;
-    } else {
-      return this!;
-    }
-  }
 }

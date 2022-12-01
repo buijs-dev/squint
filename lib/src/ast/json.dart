@@ -18,7 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../../squint.dart";
+import "../common/common.dart";
+import "../decoder/decoder.dart";
+import "../encoder/encoder.dart";
 
 /// A (part of) JSON.
 ///
@@ -71,8 +73,13 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
       : super(key: key, data: data);
 
   /// Construct a new [JsonObject] using the specified key values of each [JsonElementType].
-  factory JsonObject.elements(List<JsonElementType> elements) =>
-      JsonObject({for (var element in elements) element.key: element});
+  factory JsonObject.elements(List<JsonElementType> elements,
+          [String key = ""]) =>
+      JsonObject({for (var element in elements) element.key: element}, key);
+
+  /// Construct a new [JsonObject] using the specified key values of each [JsonElementType].
+  factory JsonObject.fromMap(Map<String, dynamic> data, [String key = ""]) =>
+      JsonObject(data.map(_buildJsonElement), key);
 
   /// Get JsonElement by [String] key.
   ///
@@ -88,34 +95,30 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Get [JsonString] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonString string(String key) =>
-      _byKeyOfType<JsonString>(key, false)!;
+  JsonString string(String key) => _byKeyOfType<JsonString>(key, false)!;
 
   /// Get [JsonString] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonString? stringOrNull(String key) =>
-      _byKeyOfType<JsonString>(key, true);
+  JsonString? stringOrNull(String key) => _byKeyOfType<JsonString>(key, true);
 
   /// Get [JsonNumber] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonNumber number(String key) =>
-      _byKeyOfType<JsonNumber>(key, false)!;
+  JsonNumber number(String key) => _byKeyOfType<JsonNumber>(key, false)!;
 
   /// Get [JsonNumber] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonNumber? numberOrNull(String key) =>
-      _byKeyOfType<JsonNumber>(key, true);
+  JsonNumber? numberOrNull(String key) => _byKeyOfType<JsonNumber>(key, true);
 
   /// Get [JsonArray] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
   JsonArray<List<T>> array<T>(String key) => JsonArray<List<T>>(
-    key: key,
-    data: (byKey(key).data as List).cast<T>().toList(),
-  );
+        key: key,
+        data: (byKey(key).data as List).cast<T>().toList(),
+      );
 
   /// Get [JsonArray] or null by [String] key.
   ///
@@ -123,7 +126,7 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   JsonArray<List<T>>? arrayOrNull<T>(String key) {
     final element = byKey(key);
 
-    if(element.data == null) {
+    if (element.data == null) {
       return null;
     }
 
@@ -136,8 +139,7 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Get [JsonBoolean] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonBoolean boolean(String key) =>
-      _byKeyOfType<JsonBoolean>(key, false)!;
+  JsonBoolean boolean(String key) => _byKeyOfType<JsonBoolean>(key, false)!;
 
   /// Get [JsonBoolean] or null by [String] key.
   ///
@@ -148,14 +150,12 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Get [JsonObject] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonObject object(String key) =>
-      _byKeyOfType<JsonObject>(key, false)!;
+  JsonObject object(String key) => _byKeyOfType<JsonObject>(key, false)!;
 
   /// Get [JsonObject] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonObject? objectOrNull(String key) =>
-      _byKeyOfType<JsonObject>(key, true);
+  JsonObject? objectOrNull(String key) => _byKeyOfType<JsonObject>(key, true);
 
   R? _byKeyOfType<R>(String key, bool nullable) {
     final data = byKey(key);
@@ -164,7 +164,7 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
       return data as R;
     }
 
-    if(nullable && data is JsonNull) {
+    if (nullable && data is JsonNull) {
       return null;
     }
 
@@ -172,6 +172,18 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
       "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
     );
   }
+
+  /// Return raw (unwrapped) object data as Map<String, R>
+  /// where R is not of type JsonElement but a dart [StandardType] (String, bool, etc).
+  Map<String, R> rawData<R>() => data.map((key, value) {
+        dynamic data = value;
+
+        while (data is JsonElement) {
+          data = data.data;
+        }
+
+        return MapEntry(key, data as R);
+      });
 
   /// Convert to formatted JSON String.
   @override
@@ -181,6 +193,39 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
         : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
     return json.formatJson();
   }
+}
+
+MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
+  if (value == null) {
+    return MapEntry(key, JsonNull(key: key));
+  }
+
+  if (value is JsonElement) {
+    return MapEntry(key, value);
+  }
+
+  if (value is String) {
+    return MapEntry(key, JsonString(key: key, data: value));
+  }
+
+  if (value is double) {
+    return MapEntry(key, JsonNumber(key: key, data: value));
+  }
+
+  if (value is bool) {
+    return MapEntry(key, JsonBoolean(key: key, data: value));
+  }
+
+  if (value is List) {
+    return MapEntry(key, JsonArray<dynamic>(key: key, data: value));
+  }
+
+  if (value is Map && value.keys.every((dynamic k) => k is String)) {
+    return MapEntry(key, JsonObject.fromMap(value as Map<String, dynamic>));
+  }
+
+  throw SquintException(
+      "Unable to convert Map<String, dynamic> to Map<String,JsonElement>");
 }
 
 /// A JSON element containing a String value.
@@ -257,7 +302,7 @@ class JsonNull extends JsonElementType<Object?> {
 
   /// Convert to formatted JSON String.
   @override
-  String get stringify => '"$key": null';
+  String get stringify => '"$key":null';
 }
 
 /// A JSON element containing a bool value.

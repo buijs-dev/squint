@@ -18,9 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON decoding utilities.
-library decoder;
+/// Regex processing utilities.
+extension RegexValues on RegExpMatch {
+  /// Get all Regex groups as List of Strings.
+  List<String> get matches {
+    final matches = <String>[];
 
-export "array.dart";
-export "json.dart";
-export "utils.dart";
+    for (var i = 0; i <= groupCount; i++) {
+      matches.add(group(i) ?? "");
+    }
+
+    return matches;
+  }
+}

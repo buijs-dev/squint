@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import "package:squint/src/ast/ast.dart";
+import "package:squint/src/common/exception.dart";
 import "package:squint/src/decoder/decoder.dart";
 import "package:squint/src/generator/dataclass.dart";
 import "package:test/test.dart";
@@ -32,7 +33,6 @@ void main() {
           "fake-data": true,
           "real_data": false,
           "greeting": "Welcome to Squint!",
-          "empty": null,
           "instructions": [
             "Type or paste JSON here",
             "Or choose a sample above",
@@ -43,7 +43,10 @@ void main() {
           "objective": { 
             "indicator": false,
             "instructions": [false, true, true, false]
-          }
+          },
+          "objectList": [
+            { "a" : 1 }
+          ]
         }""";
 
     // when:
@@ -68,26 +71,45 @@ void main() {
     expect(podo.members[3].name, "greeting");
     expect(podo.members[3].type, const StringType());
 
-    // JSON element 'empty' is null and defaults to String
-    expect(podo.members[4].name, "empty");
-    expect(podo.members[4].type, const NullableStringType());
-
     // JSON element 'instructions' is a List of Strings
-    expect(podo.members[5].name, "instructions");
-    expect(podo.members[5].type.className, "List");
-    expect((podo.members[5].type as ListType).child, const StringType());
+    expect(podo.members[4].name, "instructions");
+    expect(podo.members[4].type.className, "List");
+    expect((podo.members[4].type as ListType).child, const StringType());
 
     // JSON element 'numbers' is a List of doubles
-    expect(podo.members[6].name, "numbers");
-    expect(podo.members[6].type.className, "List");
-    expect((podo.members[6].type as ListType).child, const DoubleType());
+    expect(podo.members[5].name, "numbers");
+    expect(podo.members[5].type.className, "List");
+    expect((podo.members[5].type as ListType).child, const DoubleType());
 
     // JSON element 'objective' is a CustomType
     // with classname Objective
     // and member 'indicator' of type Boolean
-    expect(podo.members[7].name, "objective");
-    expect(podo.members[7].type.className, "Objective");
-    expect((podo.members[7].type as CustomType).members[0].type,
+    expect(podo.members[6].name, "objective");
+    expect(podo.members[6].type.className, "Objective");
+    expect((podo.members[6].type as CustomType).members[0].type,
         const BooleanType());
   });
+
+  test("Verify a list of objects is decoded successfully", () {
+    // given
+    const example = """
+        {
+          "objectList": [
+            { "a" : 1 }
+          ]
+        }""";
+
+    // when:
+    final decoded = example.jsonDecode;
+
+    // then:
+    expect(decoded.array<Map>("objectList").data[0]["a"], 1);
+  });
+
+  test("verify an exception is thrown if the JsonElement can not be converted to an AbstractType", () {
+    expect(() =>  JsonObject({"abc": const JsonNull(key:"xyz")}).toCustomType(className: "Foo"),
+        throwsA(predicate((e) => e is SquintException && e.cause == "Unable to convert JSON String to CustomType"
+        )));
+  });
+
 }

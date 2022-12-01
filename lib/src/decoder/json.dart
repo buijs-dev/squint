@@ -19,7 +19,8 @@
 // SOFTWARE.
 
 // ignore_for_file: unnecessary_this
-import "../ast/json.dart";
+
+import "../ast/ast.dart";
 import "../common/common.dart";
 
 /// Decoded a JSON String to a [JsonObject].
@@ -152,31 +153,44 @@ class ProcessingValue extends JsonProcessingStep {
         default:
           processing = false;
 
-          if ("NULL" == chars.sublist(index, index + 4).join().toUpperCase()) {
-            this.value = JsonNull(key: key);
-            this.chars = chars.sublist(index + 4, chars.length);
+          final maybeNumber =
+              double.tryParse(chars.sublist(index, chars.length).join());
+          if (maybeNumber != null) {
+            this.value = JsonNumber(key: key, data: maybeNumber);
+            this.chars = [];
             return;
           }
 
-          if ("TRUE" == chars.sublist(index, index + 4).join().toUpperCase()) {
-            this.value = JsonBoolean(key: key, data: true);
-            this.chars = chars.sublist(index + 4, chars.length);
-            return;
+          if (chars.length >= index + 4) {
+            if ("NULL" ==
+                chars.sublist(index, index + 4).join().toUpperCase()) {
+              this.value = JsonNull(key: key);
+              this.chars = chars.sublist(index + 4, chars.length);
+              return;
+            }
+
+            if ("TRUE" ==
+                chars.sublist(index, index + 4).join().toUpperCase()) {
+              this.value = JsonBoolean(key: key, data: true);
+              this.chars = chars.sublist(index + 4, chars.length);
+              return;
+            }
           }
 
-          if ("FALSE" == chars.sublist(index, index + 5).join().toUpperCase()) {
-            this.value = JsonBoolean(key: key, data: false);
-            this.chars = chars.sublist(index + 5, chars.length);
-            return;
+          if (chars.length >= index + 5) {
+            if ("FALSE" ==
+                chars.sublist(index, index + 5).join().toUpperCase()) {
+              this.value = JsonBoolean(key: key, data: false);
+              this.chars = chars.sublist(index + 5, chars.length);
+              return;
+            }
           }
 
           final breakers = [" ", "[", "]", "{", "}", ","];
 
           final subList = [chars[index]];
-
+          index += 1;
           while (index < chars.length) {
-            index += 1;
-
             final char = chars[index];
 
             if (breakers.contains(char)) {
@@ -189,6 +203,8 @@ class ProcessingValue extends JsonProcessingStep {
             } else {
               subList.add(char);
             }
+
+            index += 1;
           }
 
           throw SquintException("Failed to parse JSON");

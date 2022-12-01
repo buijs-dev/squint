@@ -18,11 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:analyzer/dart/ast/ast.dart";
+import "package:analyzer/dart/ast/ast.dart"
+    show ClassDeclaration, FieldDeclaration, VariableDeclarationList;
+import "package:analyzer/dart/ast/syntactic_entity.dart";
 import "package:analyzer/dart/ast/visitor.dart";
 
 import "../ast/ast.dart";
 import "../common/common.dart";
+import "../decoder/decoder.dart";
+
+/// Regex to find @JsonDecode annotation.
+final _jsonDecodeRegex = RegExp(
+  r"""^(@JsonDecode)(<(.+?),(.+?)>)\(using:([^\)]+?)\)""",
+);
+
+/// Regex to find @JsonEncode annotation.
+final _jsonEncoderRegex = RegExp(
+  r"""^(@JsonEncode)\(using:([^\)]+?)\)""",
+);
+
+/// Regex to find @JsonValue annotation.
+final _jsonValueRegex = RegExp(
+  r"""^(@JsonValue)\("([^"]+?)"\)""",
+);
 
 /// Visit a dart data class and return metadata as [CustomType].
 ///
@@ -33,20 +51,11 @@ class JsonVisitor extends SimpleAstVisitor<dynamic> {
 
   @override
   dynamic visitClassDeclaration(ClassDeclaration node) {
-    if (!node.hasSquintAnnotation) {
+    if (node.hasSquintAnnotation) {
+      return collected..add(node.toCustomType);
+    } else {
       return null;
     }
-
-    final className = node.name.toString();
-
-    final members = node.typeMembers;
-
-    final customType = CustomType(
-      className: className,
-      members: members,
-    );
-
-    return collected..add(customType);
   }
 }
 
@@ -55,31 +64,88 @@ extension on ClassDeclaration {
   /// Return true if squint annotation is present.
   bool get hasSquintAnnotation => metadata.any((o) => o.name.name == "squint");
 
-  /// Convert every [FieldDeclaration] to a [TypeMember].
-  List<TypeMember> get typeMembers => members
-      .whereType<FieldDeclaration>()
-      .map((e) => e.fields)
-      .map(_typeMember)
-      .toList();
+  CustomType get toCustomType => CustomType(
+        className: name.toString(),
+        members: members
+            .whereType<FieldDeclaration>()
+            .map((e) => e.fields)
+            .whereType<VariableDeclarationList>()
+            .map(_typeMember)
+            .toList(),
+      );
 
-  TypeMember _typeMember(VariableDeclarationList? variable) {
-    final type = variable?.type;
-
-    final rawType = type?.toString().trim().orElseThrow(
-          SquintException(
-            "Unable to determine rawType: $type",
-          ),
-        );
-
-    final name = variable?.variables.toList().first.name.toString().orElseThrow(
-          SquintException(
-            "Unable to determine variable name: $variable",
-          ),
-        );
-
+  TypeMember _typeMember(VariableDeclarationList variable) {
+    final abstractType = variable.type?.toString().trim().toAbstractType();
+    if (abstractType == null) {
+      SquintException("Unable to determine rawType: ${variable.type}");
+    }
+    final name = variable.variables.toList().first.name.toString();
+    final annotations = variable.parent?.childEntities.jsonAnnotations;
     return TypeMember(
-      name: name!,
-      type: rawType!.abstractType(),
+      name: name,
+      type: abstractType!,
+      annotations: annotations ?? [],
     );
   }
+}
+
+extension on Iterable<SyntacticEntity> {
+  List<TypeAnnotation> get jsonAnnotations {
+    final annotations = <TypeAnnotation>[];
+
+    for (final annotation in this) {
+      final jsonDecoderRegexMatch = // Check for @JsonDecode annotation.
+          _jsonDecodeRegex.firstMatch("$annotation");
+      if (jsonDecoderRegexMatch != null) {
+        annotations.add(_jsonDecoder(jsonDecoderRegexMatch));
+        continue;
+      }
+
+      final jsonEncoderRegexMatch = // Check for @JsonEncode annotation.
+          _jsonEncoderRegex.firstMatch("$annotation");
+      if (jsonEncoderRegexMatch != null) {
+        annotations.add(_jsonEncoder(jsonEncoderRegexMatch));
+        continue;
+      }
+
+      final jsonValueRegexMatch = // Check for @JsonValue annotation.
+          _jsonValueRegex.firstMatch("$annotation");
+      if (jsonValueRegexMatch != null) {
+        annotations.add(_jsonValue(jsonValueRegexMatch));
+      }
+    }
+
+    return annotations;
+  }
+}
+
+TypeAnnotation _jsonDecoder(RegExpMatch match) {
+  final matches = match.matches;
+  final jsonElement = matches[4].trim();
+  final using = matches[5].trim();
+  return TypeAnnotation(
+    name: "JsonDecode",
+    data: {
+      "using": using,
+      "jsonElement": jsonElement,
+    },
+  );
+}
+
+TypeAnnotation _jsonEncoder(RegExpMatch match) {
+  final matches = match.matches;
+  final using = matches[2].trim();
+  return TypeAnnotation(
+    name: "JsonEncode",
+    data: {"using": using},
+  );
+}
+
+TypeAnnotation _jsonValue(RegExpMatch match) {
+  final matches = match.matches;
+  final tag = matches[2].trim();
+  return TypeAnnotation(
+    name: "JsonValue",
+    data: {"tag": tag},
+  );
 }

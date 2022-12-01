@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../../squint.dart";
 import "../ast/ast.dart";
 import "../common/common.dart";
 
@@ -51,6 +50,7 @@ extension on Map<String, JsonElement> {
   }
 }
 
+/// Convert a [JsonElement] String to an [AbstractType].
 extension on JsonElement {
   AbstractType toAbstractType(String key) {
     if (this is JsonString) {
@@ -65,38 +65,8 @@ extension on JsonElement {
       return const DoubleType();
     }
 
-    if (this is JsonNull) {
-      return const NullableStringType();
-    }
-
     if (this is JsonArray) {
-      final array = this as JsonArray;
-      final data = array.data as List<dynamic>;
-
-      final noNullValues = data.where((dynamic e) => e != null);
-
-      final hasNullValues = noNullValues.length != data.length;
-
-      if (noNullValues.every((dynamic element) => element is String)) {
-        return hasNullValues
-            ? const ListType(NullableStringType())
-            : const ListType(StringType());
-      }
-
-      if (noNullValues.every((dynamic element) => element is bool)) {
-        return hasNullValues
-            ? const ListType(NullableBooleanType())
-            : const ListType(BooleanType());
-      }
-
-      if (noNullValues.every((dynamic element) => element is double)) {
-        return hasNullValues
-            ? const ListType(NullableDoubleType())
-            : const ListType(DoubleType());
-      }
-
-      throw SquintException(
-          "Unable to determine List child type for data: $data");
+      return (this as JsonArray).toListType;
     }
 
     if (this is JsonObject) {
@@ -104,5 +74,51 @@ extension on JsonElement {
     }
 
     throw SquintException("Unable to convert JSON String to CustomType");
+  }
+}
+
+/// Convert a [JsonArray] String to a [StandardType].
+extension on JsonArray {
+  StandardType get toListType => (data as List<dynamic>).toListType;
+}
+
+/// Convert a [List] to a [StandardType].
+extension on List<dynamic> {
+  StandardType get toListType {
+    final noNullValues = where((dynamic e) => e != null);
+
+    final hasNullValues = noNullValues.length != length;
+
+    if (noNullValues.every((dynamic element) => element is String)) {
+      return hasNullValues
+          ? const ListType(NullableStringType())
+          : const ListType(StringType());
+    }
+
+    if (noNullValues.every((dynamic element) => element is bool)) {
+      return hasNullValues
+          ? const ListType(NullableBooleanType())
+          : const ListType(BooleanType());
+    }
+
+    if (noNullValues.every((dynamic element) => element is double)) {
+      return hasNullValues
+          ? const ListType(NullableDoubleType())
+          : const ListType(DoubleType());
+    }
+
+    if (noNullValues.every((dynamic element) => element is Map)) {
+      final keyType = (noNullValues.first as Map).keys.toList().toListType;
+
+      final valueType = (noNullValues.first as Map).values.toList().toListType;
+
+      return hasNullValues
+          ? ListType(NullableMapType(key: keyType, value: valueType))
+          : ListType(MapType(key: keyType, value: valueType));
+    }
+
+    throw SquintException(
+      "Unable to determine List child type for data: $this",
+    );
   }
 }

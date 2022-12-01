@@ -18,7 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/// Utility to remove all meaningless spaces from a JSON String.
 ///
+/// Any space outside a quoted String has no meaning and will be removed.
 extension UnquotedSpaceRemover on List<String> {
   /// Delete all unnecessary spaces.
   ///

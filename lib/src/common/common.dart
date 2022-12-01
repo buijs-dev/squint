@@ -25,5 +25,7 @@ export "annotation.dart";
 export "despacer.dart";
 export "exception.dart";
 export "files.dart";
+export "lists.dart";
 export "logger.dart";
+export "regex.dart";
 export "strings.dart";

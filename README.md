@@ -24,7 +24,11 @@ expect(myArray.data[0][0][0][1], "Ho-Oh");
 <B>Important:</B> Unpublished library, this is a POC.
 
 # Features
-- [x] Deserialize JSON properly, including (nested) arrays.
-- [ ] Serialize to JSON without implementing toJson/fromJson methods using Squint.
-- [x] Generate data class from JSON content.
-- [x] Format JSON messages.
+- Deserialize JSON properly including (nested) arrays.
+- Deserialize JSON without writing data classes.
+- Generate data classes from JSON content.
+- Generate boilerplate for JSON processing programmatically.
+- Generate boilerplate for JSON processing through cli.
+- Format JSON messages.
+- Easy to use (no build runner, /gen folders etc.)!
+- Extensible: Write and reuse custom JSON data converters.

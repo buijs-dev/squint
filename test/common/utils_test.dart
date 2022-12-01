@@ -18,20 +18,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/analyzer/analyzer.dart" as analyzer;
-import "package:squint/src/common/common.dart";
+import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
 
-  test("An exception is thrown if TypeMember class is not determined", () {
+  test("verify an exception is thrown if the child type of a List can not be determined", () {
+    expect(() =>  "List<>".toAbstractType(), throwsA(predicate((e) => e is SquintException
+        && e.cause.startsWith("Unable to determine type:")
+        && e.cause.contains("List<>")
+    )));
 
-    expect(() =>  analyzer.analyze(pathToFile: "doesnotexist"),
-        throwsA(predicate((e) =>
-        e is SquintException &&
-            e.cause.startsWith("File does not exist:") &&
-            e.cause.endsWith("doesnotexist")
-        )));
+    expect(() =>  "List".toAbstractType(), throwsA(predicate((e) => e is SquintException
+        && e.cause.startsWith("Unable to determine List child type:")
+        && e.cause.contains("List")
+    )));
+  });
+
+  test("verify an exception is thrown if the key type of a Map can not be determined", () {
+    expect(() =>  "Map".toAbstractType(), throwsA(predicate((e) => e is SquintException
+        && e.cause.startsWith("Unable to determine Map key type:")
+        && e.cause.contains("'Map'")
+    )));
+  });
+
+  test("verify an exception is thrown if the a class name is invalid", () {
+    expect(() =>  r"""bla$""".toAbstractType(), throwsA(predicate((e) => e is SquintException
+        && e.cause.startsWith("Unable to determine type:")
+        && e.cause.contains(r"""bla$""")
+    )));
   });
 
 

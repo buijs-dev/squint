@@ -103,6 +103,7 @@ class TypeMember {
   const TypeMember({
     required this.name,
     required this.type,
+    this.annotations = const <TypeAnnotation>[],
   });
 
   /// Name of this field.
@@ -111,8 +112,29 @@ class TypeMember {
   /// Type of this field.
   final AbstractType type;
 
+  /// Type annotations
+  final List<TypeAnnotation> annotations;
+
   @override
-  String toString() => "TypeMember(name='$name',type='$type')";
+  String toString() =>
+      "TypeMember(name='$name',type='$type', annotations =$annotations)";
+}
+
+/// Annotation data.
+///
+/// {@category ast}
+class TypeAnnotation {
+  /// Construct a new TypeAnnotation.
+  const TypeAnnotation({
+    required this.name,
+    this.data = const <String, String>{},
+  });
+
+  /// Name of this annotation.
+  final String name;
+
+  /// All key-value data.
+  final Map<String, String> data;
 }
 
 /// A Integer [StandardType].

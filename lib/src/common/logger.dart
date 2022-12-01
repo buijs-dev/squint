@@ -22,11 +22,9 @@
 /// Helper for logging.
 extension Logger on String {
   /// Log an info message.
-  void log({dynamic context}) {
-    print(this);
-    if (context != null) {
-      print("\n");
-      print(context);
-    }
+  String log({dynamic context}) {
+    final msg = context == null ? this : "$this\n$context";
+    print(msg);
+    return msg;
   }
 }

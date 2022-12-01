@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../common/despacer.dart";
+import "../common/common.dart";
 import "options.dart";
 
 ///
@@ -89,7 +89,6 @@ extension JsonFormatter on String {
         output.add(character);
       }
     }
-    print(output.join());
     return output.join();
   }
 

@@ -18,80 +18,144 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import "../ast/ast.dart";
 import "../common/common.dart";
-import "ast.dart";
 
 /// Find matching AbstractType for String value.
 ///
-/// {@category ast}
+/// {@category decoder}
 extension AbstractTypeFromString on String {
   /// Returns [StandardType] if match found
   /// in [_standardTypes] or [_standardNullableTypes]
   /// and otherwise a new [CustomType].
-  AbstractType abstractType({bool? nullable}) {
+  AbstractType toAbstractType({bool? nullable}) {
     final withPostfix = trim();
+
     final withoutPostfix = withPostfix.removePostfixIfPresent("?");
 
-    final listType = _listRegex.firstMatch(withoutPostfix);
+    final isNullable = nullable ?? withPostfix != withoutPostfix;
+
+    final listType = _listType(
+      strType: withoutPostfix,
+      nullable: isNullable,
+    );
 
     if (listType != null) {
-      final child = listType.group(3)?.abstractType();
-
-      if (child == null) {
-        throw SquintException("Unable to determine List child type: '$this'");
-      }
-
-      return (nullable ?? withPostfix.endsWith("?"))
-          ? NullableListType(child)
-          : ListType(child);
+      return listType;
     }
 
-    final mapType = _mapRegex.firstMatch(withoutPostfix);
+    final mapType = _mapType(
+      strType: withoutPostfix,
+      nullable: isNullable,
+    );
 
     if (mapType != null) {
-      final matches = <String>[];
-      for (var i = 0; i <= mapType.groupCount; i++) {
-        matches.add(mapType.group(i) ?? "");
-      }
-
-      final key = mapType.group(3)?.abstractType();
-
-      if (key == null) {
-        throw SquintException("Unable to determine Map key type: '$this'");
-      }
-
-      final value = mapType.group(4)?.abstractType();
-
-      if (value == null) {
-        throw SquintException("Unable to determine Map value type: '$this'");
-      }
-
-      return (nullable ?? withPostfix.endsWith("?"))
-          ? NullableMapType(key: key, value: value)
-          : MapType(key: key, value: value);
+      return mapType;
     }
 
-    final type = (nullable ?? withPostfix.endsWith("?"))
+    final type = isNullable
         ? _standardNullableTypes[withoutPostfix]
         : _standardTypes[withoutPostfix];
 
-    return type ?? CustomType(className: withoutPostfix, members: []);
+    if (type != null) {
+      return type;
+    }
+
+    final customType = withoutPostfix._toCustomTypeOrNull;
+
+    if (customType != null) {
+      return customType;
+    }
+
+    throw SquintException("Unable to determine type: '$this'");
   }
+
+  CustomType? get _toCustomTypeOrNull {
+    final hasMatch = _customClassNameRegex.hasMatch(this);
+    return hasMatch ? CustomType(className: this, members: []) : null;
+  }
+}
+
+AbstractType? _listType({
+  required String strType,
+  required bool nullable,
+}) {
+  final listType = _listRegex.firstMatch(strType);
+
+  if (listType == null) {
+    return null;
+  }
+
+  final child = listType.group(3)?.toAbstractType();
+
+  if (child == null) {
+    throw SquintException(
+      "Unable to determine List child type: '$strType'",
+    );
+  }
+
+  if (nullable) {
+    return NullableListType(child);
+  }
+
+  return ListType(child);
+}
+
+AbstractType? _mapType({
+  required String strType,
+  required bool nullable,
+}) {
+  final mapType = _mapRegex.firstMatch(strType);
+
+  if (mapType == null) {
+    return null;
+  }
+
+  final matches = <String>[];
+
+  for (var i = 0; i <= mapType.groupCount; i++) {
+    matches.add(mapType.group(i) ?? "");
+  }
+
+  final key = mapType.group(3)?.toAbstractType();
+
+  if (key == null) {
+    throw SquintException("Unable to determine Map key type: '$strType'");
+  }
+
+  // If key is not null then neither can value null.
+  // Regex always returns either key + value or neither.
+  final value = mapType.group(4)!.toAbstractType();
+
+  return nullable
+      ? NullableMapType(key: key, value: value)
+      : MapType(key: key, value: value);
 }
 
 /// Regex to match a List from literal value:
 ///
 /// List<...>
 ///
-/// {@category ast}
+/// {@category decoder}
 final _listRegex = RegExp(r"""^(List)(<(.+?)>|)$""");
 
 /// Regex to match a Map from literal value:
 ///
 /// Map<...,...>
 ///
-/// {@category ast}
+/// {@category decoder}
 final _mapRegex = RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");
+
+/// Regex to verify a literal value is a valid class name:
+///
+/// Rules (lenient):
+/// - Should start with underscore or uppercase letter.
+/// - May contain letters (uppercase/lowercase), numbers, underscores or dollar sign.
+/// - Should end with letter (uppercase/lowercase), number or underscore.
+///
+/// {@category decoder}
+final _customClassNameRegex =
+    RegExp(r"""^[$_A-Z][$_a-zA-Z0-9]+[_a-zA-Z0-9]$""");
 
 /// Map of all standard types.
 ///

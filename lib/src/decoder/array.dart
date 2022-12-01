@@ -18,8 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../../squint.dart";
+import "../ast/ast.dart";
 import "../common/common.dart";
+import "../decoder/decoder.dart";
 
 ///
 extension RepeatedBuilder on Map<String, JsonElement> {

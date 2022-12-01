@@ -18,7 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-///
+/// Lightweight JSON processing code generator.
+/// Safely deserialize JSON decoded Strings to Dart Types.
 library squint;
 
 export "src/analyzer/analyzer.dart";

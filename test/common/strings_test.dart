@@ -18,9 +18,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON decoding utilities.
-library decoder;
+import "package:squint/squint.dart";
+import "package:test/test.dart";
 
-export "array.dart";
-export "json.dart";
-export "utils.dart";
+void main() {
+
+  test("verify camelcase conversion", () {
+
+    // given:
+    const input = "snake_cased_example";
+
+    // when:
+    final output = input.camelcase;
+
+    // then:
+    expect(output, "SnakeCasedExample");
+
+  });
+
+  test("verify snakecase conversion", () {
+
+    // given:
+    const input = "SnakeCased1Example";
+
+    // when:
+    final output = input.snakecase;
+
+    // then:
+    expect(output, "snake_cased1_example");
+
+  });
+
+  test("verify removePrefixIfPresent", () {
+
+    // given:
+    const input = "MY_PREFIXb";
+
+    // when:
+    final output = input.removePrefixIfPresent("MY_PREFIX");
+
+    // then:
+    expect(output, "b");
+
+  });
+
+}

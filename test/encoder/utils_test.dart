@@ -18,9 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON decoding utilities.
-library decoder;
+// ignore_for_file: avoid_dynamic_calls
 
-export "array.dart";
-export "json.dart";
-export "utils.dart";
+import "package:squint/src/ast/ast.dart";
+import "package:squint/src/encoder/encoder.dart";
+import "package:test/test.dart";
+
+void main() {
+  test("verify maybeAddQuotes on JsonElement", () {
+    // given:
+    const element = JsonString(key: "x", data: "hello");
+
+    // when:
+    final dynamic quoted = maybeAddQuotes(element);
+
+    // then:
+    expect(quoted, '"hello"');
+  });
+}

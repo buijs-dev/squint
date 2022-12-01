@@ -18,9 +18,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// JSON decoding utilities.
-library decoder;
+/// List processing utilities.
+extension ListProcessor<T> on Iterable<T> {
+  /// Find object on type T that matches criteria.
+  T? firstBy(bool Function(T t) predicate) {
+    T? maybeValue;
+    forEach((entry) {
+      if (predicate.call(entry)) {
+        // Don't override the first found value.
+        maybeValue = maybeValue ?? entry;
+      }
+    });
 
-export "array.dart";
-export "json.dart";
-export "utils.dart";
+    return maybeValue;
+  }
+}

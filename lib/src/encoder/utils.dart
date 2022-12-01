@@ -47,7 +47,7 @@ dynamic maybeAddQuotes(dynamic value) {
   }
 
   if (value is JsonElement) {
-    return value.data.maybeAddQuotes;
+    return maybeAddQuotes(value.data);
   }
 
   return value;
