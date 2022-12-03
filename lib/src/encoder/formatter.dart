@@ -29,6 +29,8 @@ extension JsonFormatter on String {
   ]) {
     final indenting = options.indentation;
 
+    final colonPadding = options.colonPadding;
+
     final characters = split("").normalizeSpaces;
 
     final output = <String>[];
@@ -76,7 +78,14 @@ extension JsonFormatter on String {
         buffer.write("]");
         output.add(buffer.toString());
       } else if (character == ":") {
-        output.add(" : ");
+        for (var i = 0; i < colonPadding; i++) {
+          output.add(" ");
+        }
+
+        output.add(":");
+        for (var i = 0; i < colonPadding; i++) {
+          output.add(" ");
+        }
       } else if (character == ",") {
         buffer.write(",\n");
         for (var i = 0; i < depth; i++) {

@@ -140,7 +140,7 @@ void main() {
           """
         .jsonDecode;
 
-    final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonNumber;
+    final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonIntegerNumber;
     expect(getReady4TheLaunch.key, "getReady4TheLaunch");
     expect(getReady4TheLaunch.data, 12345);
   });

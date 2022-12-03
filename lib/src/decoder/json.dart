@@ -147,16 +147,20 @@ class ProcessingValue extends JsonProcessingStep {
           );
 
           final sublist = counter.contentBetweenBrackets;
-          this.value = sublist.join().jsonDecode;
+          final object = sublist.join().jsonDecode;
+          this.value = JsonObject(object.data, key);
           this.chars = chars.sublist(counter.endIndex, chars.length);
           return;
         default:
           processing = false;
 
-          final maybeNumber =
-              double.tryParse(chars.sublist(index, chars.length).join());
+          final maybeNumber = _maybeNumber(
+            content: chars.sublist(index, chars.length).join(),
+            key: key,
+          );
+
           if (maybeNumber != null) {
-            this.value = JsonNumber(key: key, data: maybeNumber);
+            this.value = maybeNumber;
             this.chars = [];
             return;
           }
@@ -195,10 +199,7 @@ class ProcessingValue extends JsonProcessingStep {
 
             if (breakers.contains(char)) {
               this.chars = chars.sublist(index, chars.length);
-              this.value = JsonNumber.parse(
-                key: key,
-                data: subList.join(),
-              );
+              this.value = _maybeNumber(key: key, content: subList.join());
               return;
             } else {
               subList.add(char);
@@ -217,6 +218,25 @@ class ProcessingValue extends JsonProcessingStep {
 
   ///
   List<String> chars = [];
+}
+
+JsonElement? _maybeNumber({
+  required String content,
+  required String key,
+}) {
+  final intValue = int.tryParse(content);
+
+  if (intValue != null) {
+    return JsonIntegerNumber(key: key, data: intValue);
+  }
+
+  final doubleValue = double.tryParse(content);
+
+  if (doubleValue != null) {
+    return JsonFloatingNumber(key: key, data: doubleValue);
+  }
+
+  return null;
 }
 
 ///

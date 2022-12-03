@@ -17,6 +17,7 @@ Requirements:
 - All fields are either:
   - of type:
     - String
+    - int
     - double
     - bool
     - List
@@ -106,7 +107,7 @@ class _TestingExample {
   final List<List<String>> multiples;
   final Map<String, double> counters;
 
-  @JsonDecode<int, JsonNumber>(using: _decodeId)
+  @JsonDecode<int, JsonFloatingNumber>(using: _decodeId)
   @JsonEncode(using: _encodeId)
   @JsonValue("id")
   final int noIdea;
@@ -115,7 +116,7 @@ class _TestingExample {
 JsonNumber _encodeId(int id) =>
         JsonNumber(key: "id", data: id.toDouble());
 
-int _decodeId(JsonNumber id) =>
+int _decodeId(JsonFloatingNumber id) =>
         id.data.toInt();
 ```
 
@@ -150,7 +151,7 @@ extension _TestExampleJsonObject2Class on JsonObject {
     random: array<double>("random").data,
     multiples: array<List<String>>("multiples").data,
     counters: object("counters").rawData(),
-    noIdea: _decodeId(number("id")),
+    noIdea: _decodeId(floating("id")),
   );
 }
 ```

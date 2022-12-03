@@ -61,8 +61,12 @@ extension on JsonElement {
       return const BooleanType();
     }
 
-    if (this is JsonNumber) {
+    if (this is JsonFloatingNumber) {
       return const DoubleType();
+    }
+
+    if (this is JsonIntegerNumber) {
+      return const IntType();
     }
 
     if (this is JsonArray) {
@@ -105,6 +109,12 @@ extension on List<dynamic> {
       return hasNullValues
           ? const ListType(NullableDoubleType())
           : const ListType(DoubleType());
+    }
+
+    if (noNullValues.every((dynamic element) => element is int)) {
+      return hasNullValues
+          ? const ListType(NullableIntType())
+          : const ListType(IntType());
     }
 
     if (noNullValues.every((dynamic element) => element is Map)) {

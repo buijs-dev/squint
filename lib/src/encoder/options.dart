@@ -44,11 +44,11 @@ const standardJsonFormatting = JsonFormattingOptions(
 ///
 extension JsonFormattingOptionsBuilder on JsonFormattingOptions {
   ///
-  JsonFormattingOptions copyWith([
+  JsonFormattingOptions copyWith({
     JsonIndentationSize? indentationSize,
     int? indentationSizeInt,
     int? colonPadding,
-  ]) =>
+  }) =>
       JsonFormattingOptions(
         indentation:
             indentationSize?.length ?? indentationSizeInt ?? indentation,

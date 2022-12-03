@@ -115,8 +115,10 @@ extension on TypeMember {
 
       if (unwrapperType == "JsonString") {
         unwrapper = 'string("$jsonKey")';
-      } else if (unwrapperType == "JsonNumber") {
-        unwrapper = 'number("$jsonKey")';
+      } else if (unwrapperType == "JsonFloatingNumber") {
+        unwrapper = 'float("$jsonKey")';
+      } else if (unwrapperType == "JsonIntegerNumber") {
+        unwrapper = 'integer("$jsonKey")';
       } else if (unwrapperType == "JsonBoolean") {
         unwrapper = 'boolean("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
@@ -135,7 +137,9 @@ extension on TypeMember {
       case "String":
         return '$name: string("$jsonKey").data';
       case "double":
-        return '$name: number("$jsonKey").data';
+        return '$name: float("$jsonKey").data';
+      case "int":
+        return '$name: integer("$jsonKey").data';
       case "bool":
         return '$name: boolean("$jsonKey").data';
       case "List":
@@ -168,7 +172,9 @@ extension on TypeMember {
       case "String":
         return 'JsonString(key: "$jsonKey", data: $name)';
       case "double":
-        return 'JsonNumber(key: "$jsonKey", data: $name)';
+        return 'JsonFloatingNumber(key: "$jsonKey", data: $name)';
+      case "int":
+        return 'JsonIntegerNumber(key: "$jsonKey", data: $name)';
       case "bool":
         return 'JsonBoolean(key: "$jsonKey", data: $name)';
       case "List":

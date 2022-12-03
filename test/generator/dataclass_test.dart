@@ -57,7 +57,7 @@ void main() {
 
     // JSON element 'id' is a number
     expect(podo.members[0].name, "id");
-    expect(podo.members[0].type, const DoubleType());
+    expect(podo.members[0].type, const IntType());
 
     // JSON element 'id' is a number
     expect(podo.members[1].name, "fake-data");

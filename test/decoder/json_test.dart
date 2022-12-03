@@ -89,4 +89,73 @@ void main() {
     final x = foobject.data["x"]! as JsonString;
     expect(x.data, "y");
   });
+
+
+  test("verify decoding standard types", () {
+
+    const json = """
+{
+  "id": 1,
+  "fake-data": true,
+  "real_data": false,
+  "greeting": "Welcome to Squint!",
+  "instructions": [
+    "Type or paste JSON here",
+    "Or choose a sample above",
+    "squint will generate code in your",
+    "chosen language to parse the sample data"
+  ],
+  "numbers": [22, 4.4, -15],
+  "objective": { 
+    "indicator": false,
+    "instructions": [false, true, true, false]
+  },
+  "objectList": [
+    { "a" : 1 }
+  ]
+}""";
+
+    final decoded = json.jsonDecode;
+
+    final id = decoded.integer("id");
+    expect(id.key, "id");
+    expect(id.data, 1);
+
+    final fakeData = decoded.boolean("fake-data");
+    expect(fakeData.key, "fake-data");
+    expect(fakeData.data, true);
+
+    final realData = decoded.boolean("real_data");
+    expect(realData.key, "real_data");
+    expect(realData.data, false);
+
+    final greeting = decoded.string("greeting");
+    expect(greeting.key, "greeting");
+    expect(greeting.data, "Welcome to Squint!");
+
+    final instructions = decoded.array<String>("instructions");
+    expect(instructions.key, "instructions");
+    expect(instructions.data[0], "Type or paste JSON here");
+    expect(instructions.data[1], "Or choose a sample above");
+    expect(instructions.data[2], "squint will generate code in your");
+    expect(instructions.data[3], "chosen language to parse the sample data");
+
+    final numbers = decoded.array<double>("numbers");
+    expect(numbers.key, "numbers");
+    // If any number in a List is a floating point,
+    // then they are all stored as double values.
+    expect(numbers.data[0], 22.0);
+    expect(numbers.data[1], 4.4);
+    expect(numbers.data[2], -15);
+
+    final objective = decoded.object("objective");
+    expect(objective.key, "objective");
+    expect(objective.boolean("indicator").data, false);
+    expect(objective.array<bool>("instructions").data[1], true);
+
+    final objectList = decoded.array<dynamic>("objectList");
+    expect(objectList.key, "objectList");
+    expect(objectList.data[0]["a"], 1);
+
+  });
 }

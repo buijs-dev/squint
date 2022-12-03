@@ -54,10 +54,10 @@ void main() {
   });
 
   test("verify an exception is thrown if the request type does not match the decoded type", () {
-    expect(() =>  decoded.number("greeting"),
+    expect(() =>  decoded.float("greeting"),
         throwsA(predicate((e) =>
         e is SquintException &&
-            e.cause == "Data is not of expected type. Expected: 'JsonNumber'. Actual: JsonString"
+            e.cause == "Data is not of expected type. Expected: 'JsonFloatingNumber'. Actual: JsonString"
         )));
   });
 
@@ -76,7 +76,7 @@ void main() {
   });
 
   test("verify number getter returns an object", () {
-    expect(decoded.number("numberuno").data, 1);
+    expect(decoded.integer("numberuno").data, 1);
   });
 
   test("verify boolean getter returns a bool", () {
@@ -88,7 +88,7 @@ void main() {
   });
 
   test("verify nullable number getter can return null", () {
-    expect(decoded.numberOrNull("nothing")?.data, null);
+    expect(decoded.floatOrNull("nothing")?.data, null);
   });
 
   test("verify nullable array getter can return null", () {
@@ -118,7 +118,7 @@ void main() {
   });
 
   test("verify nullable number getter returns a number", () {
-    expect(decoded.numberOrNull("numberuno")!.data, 1);
+    expect(decoded.integerOrNull("numberuno")!.data, 1);
   });
 
   test("verify nullable boolean getter returns a bool", () {
@@ -141,7 +141,7 @@ void main() {
 
     // then:
     expect(jsonObject.string("aString").data, "a");
-    expect(jsonObject.number("bNumber").data, 1.0);
+    expect(jsonObject.float("bNumber").data, 1.0);
     expect(jsonObject.boolean("cBoolean").data, false);
     expect(jsonObject.byKey("dNull").data, null);
     expect(jsonObject.array<String>("eList").data[0], "Hi!");

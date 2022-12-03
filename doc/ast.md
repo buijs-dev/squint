@@ -75,11 +75,12 @@ There is no dynamic mapping. Decoding a List inside a List inside a List, etc.
 does not require multiple mapping.
 
 
-| **AST**                         | **JSON**  |
-|:--------------------------------|-----------|
-| JsonObject                      | object    |
-| JsonArray                       | array     |
-| JsonString                      | string    |
-| JsonNumber                      | number    |
-| JsonNull                        | null      |
-| JsonBoolean                     | boolean   |
+| **AST**            | **JSON**                |
+|:-------------------|-------------------------|
+| JsonObject         | object                  |
+| JsonArray          | array                   |
+| JsonString         | string                  |
+| JsonIntegerNumber  | number (int)            |
+| JsonFloatingNumber | number (floating point) |
+| JsonNull           | null                    |
+| JsonBoolean        | boolean                 |

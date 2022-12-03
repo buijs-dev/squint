@@ -30,6 +30,22 @@ extension RepeatedBuilder on Map<String, JsonElement> {
 
     final isNullable = values.any((o) => o is JsonNull);
 
+    final hasIntegerValues = values.any((o) => o is JsonIntegerNumber);
+    final hasFloatingValues = values.any((o) => o is JsonFloatingNumber);
+
+    // If a List contains both integers and floating point numbers,
+    // then all integers should be cast to a floating point.
+    if (hasIntegerValues && hasFloatingValues) {
+      return map((key, value) {
+        if (value is JsonIntegerNumber) {
+          return MapEntry(
+              key, JsonFloatingNumber(key: key, data: value.data.toDouble()));
+        } else {
+          return MapEntry(key, value);
+        }
+      }).toList();
+    }
+
     for (final key in keys) {
       final element = this[key];
 
@@ -67,16 +83,20 @@ extension RepeatedBuilder on Map<String, JsonElement> {
         if (index == _list.length) {
           if (currentDepth == maxDepth) {
             if (isNullable) {
-              if (element is JsonNumber) {
+              if (element is JsonFloatingNumber) {
                 _list.add(<double?>[]);
+              } else if (element is JsonIntegerNumber) {
+                _list.add(<int?>[]);
               } else if (element is JsonString) {
                 _list.add(<String?>[]);
               } else if (element is JsonBoolean) {
                 _list.add(<bool?>[]);
               }
             } else {
-              if (element is JsonNumber) {
+              if (element is JsonFloatingNumber) {
                 _list.add(<double>[]);
+              } else if (element is JsonIntegerNumber) {
+                _list.add(<int>[]);
               } else if (element is JsonString) {
                 _list.add(<String>[]);
               } else if (element is JsonBoolean) {
@@ -368,11 +388,19 @@ String _simpleValue({
     return "";
   }
 
-  /// - Number
+  /// - Integer Number
+  final intValue = int.tryParse(value);
+
+  if (intValue != null) {
+    output[currentKey] = JsonIntegerNumber(key: currentKey, data: intValue);
+    return "";
+  }
+
+  /// - Floating Number
   final doubleValue = double.tryParse(value);
 
   if (doubleValue != null) {
-    output[currentKey] = JsonNumber(key: currentKey, data: doubleValue);
+    output[currentKey] = JsonFloatingNumber(key: currentKey, data: doubleValue);
     return "";
   }
 

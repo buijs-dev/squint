@@ -102,15 +102,29 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Throws [SquintException] if key is not found.
   JsonString? stringOrNull(String key) => _byKeyOfType<JsonString>(key, true);
 
-  /// Get [JsonNumber] by [String] key.
+  /// Get [JsonFloatingNumber] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonNumber number(String key) => _byKeyOfType<JsonNumber>(key, false)!;
+  JsonFloatingNumber float(String key) =>
+      _byKeyOfType<JsonFloatingNumber>(key, false)!;
 
-  /// Get [JsonNumber] or null by [String] key.
+  /// Get [JsonFloatingNumber] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonNumber? numberOrNull(String key) => _byKeyOfType<JsonNumber>(key, true);
+  JsonFloatingNumber? floatOrNull(String key) =>
+      _byKeyOfType<JsonFloatingNumber>(key, true);
+
+  /// Get [JsonIntegerNumber] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  JsonIntegerNumber integer(String key) =>
+      _byKeyOfType<JsonIntegerNumber>(key, false)!;
+
+  /// Get [JsonIntegerNumber] or null by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  JsonIntegerNumber? integerOrNull(String key) =>
+      _byKeyOfType<JsonIntegerNumber>(key, true);
 
   /// Get [JsonArray] by [String] key.
   ///
@@ -174,7 +188,7 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   }
 
   /// Return raw (unwrapped) object data as Map<String, R>
-  /// where R is not of type JsonElement but a dart [StandardType] (String, bool, etc).
+  /// where R is not of type JsonElement but a dart StandardType (String, bool, etc).
   Map<String, R> rawData<R>() => data.map((key, value) {
         dynamic data = value;
 
@@ -185,14 +199,28 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
         return MapEntry(key, data as R);
       });
 
-  /// Convert to formatted JSON String.
-  @override
-  String get stringify {
-    final json = key == ""
-        ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
-        : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
-    return json.formatJson();
+  JsonFormattingOptions? _formattingOptions;
+
+  /// Set JSON formatting options used when generating JSON with [stringify].
+  set formattingOptions(JsonFormattingOptions options) {
+    _formattingOptions = options;
   }
+
+  /// Get JSON formatting options which returns [standardJsonFormatting] if not set.
+  JsonFormattingOptions get formattingOptions =>
+      _formattingOptions ?? standardJsonFormatting;
+
+  /// Convert to (standard) formatted JSON String.
+  @override
+  String get stringify => _toRawJson.formatJson();
+
+  /// Convert to (custom) formatted JSON String.
+  String stringifyWithFormatting(JsonFormattingOptions options) =>
+      _toRawJson.formatJson(options);
+
+  String get _toRawJson => key == ""
+      ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
+      : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
 }
 
 MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
@@ -209,7 +237,11 @@ MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
   }
 
   if (value is double) {
-    return MapEntry(key, JsonNumber(key: key, data: value));
+    return MapEntry(key, JsonFloatingNumber(key: key, data: value));
+  }
+
+  if (value is int) {
+    return MapEntry(key, JsonIntegerNumber(key: key, data: value));
   }
 
   if (value is bool) {
@@ -255,6 +287,36 @@ class JsonString extends JsonElementType<String> {
 /// Example:
 ///
 /// ```
+/// {"friends":0.0}
+/// ```
+///
+/// key = friends
+/// data = 0.0
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonFloatingNumber extends JsonElementType<double> {
+  /// Construct a new [JsonFloatingNumber] instance.
+  const JsonFloatingNumber({
+    required String key,
+    required double data,
+  }) : super(key: key, data: data);
+
+  /// Construct a new [JsonFloatingNumber] instance
+  /// by parsing the data as double value.
+  factory JsonFloatingNumber.parse({
+    required String key,
+    required String data,
+  }) =>
+      JsonFloatingNumber(key: key, data: double.parse(data));
+}
+
+/// A JSON element containing an int value.
+///
+/// Example:
+///
+/// ```
 /// {"friends":0}
 /// ```
 ///
@@ -264,20 +326,20 @@ class JsonString extends JsonElementType<String> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonNumber extends JsonElementType<double> {
-  /// Construct a new [JsonNumber] instance.
-  const JsonNumber({
+class JsonIntegerNumber extends JsonElementType<int> {
+  /// Construct a new [JsonIntegerNumber] instance.
+  const JsonIntegerNumber({
     required String key,
-    required double data,
+    required int data,
   }) : super(key: key, data: data);
 
-  /// Construct a new [JsonNumber] instance
-  /// by parsing the data as double value.
-  factory JsonNumber.parse({
+  /// Construct a new [JsonIntegerNumber] instance
+  /// by parsing the data as int value.
+  factory JsonIntegerNumber.parse({
     required String key,
     required String data,
   }) =>
-      JsonNumber(key: key, data: double.parse(data));
+      JsonIntegerNumber(key: key, data: int.parse(data));
 }
 
 /// A JSON element containing a null value.
@@ -349,7 +411,7 @@ class JsonArray<T> extends JsonElementType<T> {
     required T data,
   }) : super(key: key, data: data);
 
-  /// Construct a new [JsonNumber] instance
+  /// Construct a new [JsonFloatingNumber] instance
   /// by parsing the data as List value.
   static JsonArray parse({
     required String key,
