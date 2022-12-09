@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import "package:dart_style/dart_style.dart";
+
 final _isAlphabeticRegex = RegExp(r"""^[a-zA-Z]$""");
 
 /// String processing utilities.
@@ -47,12 +49,16 @@ extension StringUtils on String {
   }
 
   /// Convert a String to camelcase.
-  String get camelcase {
+  String camelCase({bool capitalize = true}) {
     var hasUnderscore = false;
 
     final characters = split("");
 
-    final firstCharacter = characters.removeAt(0).toUpperCase();
+    var firstCharacter = characters.removeAt(0).toLowerCase();
+
+    if (capitalize) {
+      firstCharacter = firstCharacter.toUpperCase();
+    }
 
     final buffer = StringBuffer()..write(firstCharacter);
 
@@ -75,7 +81,7 @@ extension StringUtils on String {
   }
 
   /// Convert a String to snake_case
-  String get snakecase {
+  String get snakeCase {
     final characters = split("");
 
     final firstCharacter = characters.removeAt(0).toLowerCase();
@@ -126,4 +132,7 @@ extension StringUtils on String {
       .replaceAll(RegExp(r"(!?,)\|"), "")
       .trimLeft()
       .replaceAll(",|", "|");
+
+  /// Format a String as dart code using dart_style DartFormatter.
+  String get formattedDartCode => DartFormatter().format(format);
 }

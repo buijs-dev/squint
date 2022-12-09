@@ -22,30 +22,32 @@ import "../common/common.dart";
 import "../decoder/decoder.dart";
 import "../encoder/encoder.dart";
 
-/// A (part of) JSON.
+// /// A (part of) JSON.
+// ///
+// /// {@category ast}
+// /// {@category encoder}
+// /// {@category decoder}
+// abstract class JsonNode<T> {
+//   /// Construct a new [JsonNode].
+//   const JsonNode();
+//
+//   /// The JSON data value.
+//   T get data;
+//
+//   /// Convert to formatted JSON String.
+//   String get stringify;
+// }
+
+/// A single JSON node representation consisting of
+/// a [String] key and [T] data.
 ///
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-abstract class JsonElement<T> {
-  /// Construct a new [JsonElement].
-  const JsonElement();
-
-  /// The JSON data value.
-  T get data;
-
-  /// Convert to formatted JSON String.
-  String get stringify;
-}
-
-/// A (part of) JSON containing data of type T.
-///
-/// {@category ast}
-/// {@category encoder}
-/// {@category decoder}
-abstract class JsonElementType<T> extends JsonElement<T> {
-  /// Construct a new [JsonElementType].
-  const JsonElementType({
+abstract class JsonNode<T> {
+  ///extends JsonNode<T> {
+  /// Construct a new [JsonNode].
+  const JsonNode({
     required this.key,
     required this.data,
   });
@@ -54,11 +56,9 @@ abstract class JsonElementType<T> extends JsonElement<T> {
   final String key;
 
   /// The JSON data of type T.
-  @override
   final T data;
 
   /// Convert to formatted JSON String.
-  @override
   String get stringify => '"$key": ${maybeAddQuotes(data)}';
 }
 
@@ -67,24 +67,23 @@ abstract class JsonElementType<T> extends JsonElement<T> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonObject extends JsonElementType<Map<String, JsonElement>> {
+class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Construct a new [JsonObject] instance.
-  JsonObject(Map<String, JsonElement> data, [String key = ""])
+  JsonObject(Map<String, JsonNode> data, [String key = ""])
       : super(key: key, data: data);
 
-  /// Construct a new [JsonObject] using the specified key values of each [JsonElementType].
-  factory JsonObject.elements(List<JsonElementType> elements,
-          [String key = ""]) =>
+  /// Construct a new [JsonObject] using the specified key values of each [JsonNode].
+  factory JsonObject.elements(List<JsonNode> elements, [String key = ""]) =>
       JsonObject({for (var element in elements) element.key: element}, key);
 
-  /// Construct a new [JsonObject] using the specified key values of each [JsonElementType].
+  /// Construct a new [JsonObject] using the specified key values of each [JsonNode].
   factory JsonObject.fromMap(Map<String, dynamic> data, [String key = ""]) =>
-      JsonObject(data.map(_buildJsonElement), key);
+      JsonObject(data.map(_buildJsonNodeMap), key);
 
-  /// Get JsonElement by [String] key.
+  /// Get JsonNode by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonElement byKey(String key) {
+  JsonNode byKey(String key) {
     if (!data.containsKey(key)) {
       throw SquintException("JSON key not found: '$key'");
     }
@@ -92,15 +91,29 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
     return data[key]!;
   }
 
+  /// Get [String] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  String stringValue(String key) => string(key).data;
+
+  /// Get [String] or null by [String] key.
+  String? stringValueOrNull(String key) => stringOrNull(key)?.data;
+
   /// Get [JsonString] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
   JsonString string(String key) => _byKeyOfType<JsonString>(key, false)!;
 
   /// Get [JsonString] or null by [String] key.
+  JsonString? stringOrNull(String key) => _byKeyOfType<JsonString>(key, true);
+
+  /// Get [double] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonString? stringOrNull(String key) => _byKeyOfType<JsonString>(key, true);
+  double floatValue(String key) => float(key).data;
+
+  /// Get [double] or null by [String] key.
+  double? floatValueOrNull(String key) => floatOrNull(key)?.data;
 
   /// Get [JsonFloatingNumber] by [String] key.
   ///
@@ -114,6 +127,14 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   JsonFloatingNumber? floatOrNull(String key) =>
       _byKeyOfType<JsonFloatingNumber>(key, true);
 
+  /// Get [int] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  int integerValue(String key) => integer(key).data;
+
+  /// Get [int] or null by [String] key.
+  int? integerValueOrNull(String key) => integerOrNull(key)?.data;
+
   /// Get [JsonIntegerNumber] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
@@ -125,6 +146,14 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   /// Throws [SquintException] if key is not found.
   JsonIntegerNumber? integerOrNull(String key) =>
       _byKeyOfType<JsonIntegerNumber>(key, true);
+
+  /// Get [List] with child [T] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  List<T> arrayValue<T>(String key) => array<T>(key).data;
+
+  /// Get [List] with child [T] or null by [String] key.
+  List<T>? arrayValueOrNull<T>(String key) => arrayOrNull<T>(key)?.data;
 
   /// Get [JsonArray] by [String] key.
   ///
@@ -149,6 +178,14 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
       data: (byKey(key).data as List).cast<T>().toList(),
     );
   }
+
+  /// Get [bool] by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found.
+  bool booleanValue(String key) => boolean(key).data;
+
+  /// Get [bool] or null by [String] key.
+  bool? booleanValueOrNull(String key) => booleanOrNull(key)?.data;
 
   /// Get [JsonBoolean] by [String] key.
   ///
@@ -188,11 +225,11 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
   }
 
   /// Return raw (unwrapped) object data as Map<String, R>
-  /// where R is not of type JsonElement but a dart StandardType (String, bool, etc).
+  /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, R> rawData<R>() => data.map((key, value) {
         dynamic data = value;
 
-        while (data is JsonElement) {
+        while (data is JsonNode) {
           data = data.data;
         }
 
@@ -223,12 +260,12 @@ class JsonObject extends JsonElementType<Map<String, JsonElement>> {
       : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
 }
 
-MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
+MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
   if (value == null) {
     return MapEntry(key, JsonNull(key: key));
   }
 
-  if (value is JsonElement) {
+  if (value is JsonNode) {
     return MapEntry(key, value);
   }
 
@@ -257,7 +294,8 @@ MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
   }
 
   throw SquintException(
-      "Unable to convert Map<String, dynamic> to Map<String,JsonElement>");
+    "Unable to convert Map<String, dynamic> to Map<String,JsonNode>",
+  );
 }
 
 /// A JSON element containing a String value.
@@ -274,7 +312,7 @@ MapEntry<String, JsonElement> _buildJsonElement(String key, dynamic value) {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonString extends JsonElementType<String> {
+class JsonString extends JsonNode<String> {
   /// Construct a new [JsonString] instance.
   const JsonString({
     required String key,
@@ -296,7 +334,7 @@ class JsonString extends JsonElementType<String> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonFloatingNumber extends JsonElementType<double> {
+class JsonFloatingNumber extends JsonNode<double> {
   /// Construct a new [JsonFloatingNumber] instance.
   const JsonFloatingNumber({
     required String key,
@@ -326,7 +364,7 @@ class JsonFloatingNumber extends JsonElementType<double> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonIntegerNumber extends JsonElementType<int> {
+class JsonIntegerNumber extends JsonNode<int> {
   /// Construct a new [JsonIntegerNumber] instance.
   const JsonIntegerNumber({
     required String key,
@@ -356,7 +394,7 @@ class JsonIntegerNumber extends JsonElementType<int> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonNull extends JsonElementType<Object?> {
+class JsonNull extends JsonNode<Object?> {
   /// Construct a new [JsonNull] instance.
   const JsonNull({
     required String key,
@@ -381,7 +419,7 @@ class JsonNull extends JsonElementType<Object?> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonBoolean extends JsonElementType<bool> {
+class JsonBoolean extends JsonNode<bool> {
   /// Construct a new [JsonBoolean] instance.
   const JsonBoolean({
     required String key,
@@ -404,7 +442,7 @@ class JsonBoolean extends JsonElementType<bool> {
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-class JsonArray<T> extends JsonElementType<T> {
+class JsonArray<T> extends JsonNode<T> {
   /// Construct a new [JsonArray] instance.
   const JsonArray({
     required String key,

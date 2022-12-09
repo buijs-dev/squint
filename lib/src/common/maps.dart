@@ -18,10 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Code generators.
-library encoder;
-
-export "dataclass_generator.dart";
-export "extensions_generator.dart";
-export "options.dart";
-export "shared.dart";
+/// Map processing utilities.
+extension MapProcessor<K, V> on Map<K, V> {
+  /// Convert Map<K,V> to List<T>.
+  List<T> reduce<T>(T Function(K, V) reduce) {
+    return map((K key, V value) {
+      return MapEntry(key, reduce.call(key, value));
+    }).values.toList();
+  }
+}

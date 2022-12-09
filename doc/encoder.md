@@ -1,9 +1,5 @@
 The encoder will generate formatted JSON Strings.
 
-# Examples
-
-## Example 1
-
 Encode a JsonObject with .stringify, and it will be formatted using standardJsonFormatting.
 
 ```dart
@@ -28,8 +24,6 @@ expect(json, """
     ]
 }""");
 ```
-
-## Example 2
 
 Encode a JsonObject with .stringifyWithFormatting, and it will be formatted using custom formatting.
 Use standardJsonFormatting.copyWith to use the standardJsonFormatting as base and only alter what you require.

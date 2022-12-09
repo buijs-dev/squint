@@ -33,7 +33,7 @@ import "visitor.dart";
 ///
 /// Example:
 ///
-/// Storing analysis result of a dataclass named 'SimpleResponse'
+/// Storing analysis result of a data class named 'SimpleResponse'
 /// will be stored in metadata file named: 'sqdb_simpleresponse.json'
 ///
 /// {@category analyzer}
@@ -128,7 +128,6 @@ extension on File {
 extension on List<AbstractType> {
   void saveAsJson(String pathToOutputFolder) {
     final output = Directory(pathToOutputFolder);
-
     whereType<CustomType>().forEach((type) {
       output
           .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json")
@@ -141,7 +140,7 @@ extension on List<AbstractType> {
                 { 
                   "name": "${e.name}",
                   "type": "${e.type.printType}",
-                  "nullable": ${e.type is StandardType && (e.type as StandardType).nullable},
+                  "nullable": ${e.type.nullable},
                 }
                 """).join(",")}
             ]
@@ -151,30 +150,20 @@ extension on List<AbstractType> {
 }
 
 /// {@category analyzer}
-extension on AbstractType {
+extension AbstractTypeSerializer on AbstractType {
+  /// Output [AbstractType] as dart code.
   String get printType {
-    if (this is ListType) {
-      return "List<${(this as ListType).child.printType}>";
-    }
+    final q = nullable ? "?" : "";
 
-    if (this is NullableListType) {
-      return "List<${(this as NullableListType).child.printType}>?";
+    if (this is ListType) {
+      return "List<${(this as ListType).child.printType}>$q";
     }
 
     if (this is MapType) {
       final map = this as MapType;
-      return "Map<${map.key.printType}, ${map.value.printType}>";
+      return "Map<${map.key.printType}, ${map.value.printType}>$q";
     }
 
-    if (this is NullableMapType) {
-      final map = this as NullableMapType;
-      return "Map<${map.key.printType}, ${map.value.printType}>?";
-    }
-
-    if (this is StandardType && (this as StandardType).nullable) {
-      return "$className?";
-    }
-
-    return className;
+    return "$className$q";
   }
 }

@@ -20,8 +20,7 @@
 
 // ignore_for_file: avoid_dynamic_calls
 
-import "package:squint/src/ast/ast.dart";
-import "package:squint/src/decoder/decoder.dart";
+import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -156,6 +155,49 @@ void main() {
     final objectList = decoded.array<dynamic>("objectList");
     expect(objectList.key, "objectList");
     expect(objectList.data[0]["a"], 1);
+
+  });
+
+  test("verify decoding and using direct value getters", (){
+
+    const json = '''
+         {
+            "id": 1,
+            "isJedi": true,
+            "hasPadawan": false,
+            "bff": "Leia",
+            "jedi": [
+              "Obi-Wan", "Anakin", "Luke Skywalker"
+            ],
+            "coordinates": [22, 4.4, -15],
+            "objectives": {
+              "in-mission": false,
+              "mission-results": [false, true, true, false]
+            },
+            "annoyance-rate": [
+              { "JarJarBinks" : 9000 }
+            ]
+          }
+          ''';
+
+    final object = json.jsonDecode;
+    expect(object.integer("id").key, "id");
+    expect(object.integer("id").data, 1);
+    expect(object.integerValue("id"), 1);
+    expect(object.booleanValue("isJedi"), true);
+    expect(object.booleanValue("hasPadawan"), false);
+    expect(object.stringValue("bff"), "Leia");
+    expect(object.arrayValue<String>("jedi")[0], "Obi-Wan");
+    expect(object.arrayValue<String>("jedi")[1], "Anakin");
+    expect(object.arrayValue<String>("jedi")[2],"Luke Skywalker");
+    expect(object.arrayValue<double>("coordinates")[0], 22);
+    expect(object.arrayValue<double>("coordinates")[1], 4.4);
+    expect(object.arrayValue<double>("coordinates")[2], -15);
+    expect(object.object("objectives").booleanValue("in-mission"), false);
+    expect(object.object("objectives").arrayValue<bool>("mission-results")[0], false);
+    expect(object.object("objectives").arrayValue<bool>("mission-results")[1], true);
+    expect(object.arrayValue<dynamic>("annoyance-rate")[0]["JarJarBinks"], 9000);
+
 
   });
 }

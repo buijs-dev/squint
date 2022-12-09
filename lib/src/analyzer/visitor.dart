@@ -27,21 +27,6 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 import "../decoder/decoder.dart";
 
-/// Regex to find @JsonDecode annotation.
-final _jsonDecodeRegex = RegExp(
-  r"""^(@JsonDecode)(<(.+?),(.+?)>)\(using:([^\)]+?)\)""",
-);
-
-/// Regex to find @JsonEncode annotation.
-final _jsonEncoderRegex = RegExp(
-  r"""^(@JsonEncode)\(using:([^\)]+?)\)""",
-);
-
-/// Regex to find @JsonValue annotation.
-final _jsonValueRegex = RegExp(
-  r"""^(@JsonValue)\("([^"]+?)"\)""",
-);
-
 /// Visit a dart data class and return metadata as [CustomType].
 ///
 /// {@category analyzer}
@@ -94,24 +79,22 @@ extension on Iterable<SyntacticEntity> {
     final annotations = <TypeAnnotation>[];
 
     for (final annotation in this) {
-      final jsonDecoderRegexMatch = // Check for @JsonDecode annotation.
-          _jsonDecodeRegex.firstMatch("$annotation");
-      if (jsonDecoderRegexMatch != null) {
-        annotations.add(_jsonDecoder(jsonDecoderRegexMatch));
+      final decode = _JsonDecodeExtractor("$annotation");
+      if (decode.hasMatch) {
+        annotations.add(decode.annotation);
         continue;
       }
 
-      final jsonEncoderRegexMatch = // Check for @JsonEncode annotation.
-          _jsonEncoderRegex.firstMatch("$annotation");
-      if (jsonEncoderRegexMatch != null) {
-        annotations.add(_jsonEncoder(jsonEncoderRegexMatch));
+      final encode = _JsonEncodeExtractor("$annotation");
+      if (encode.hasMatch) {
+        annotations.add(encode.annotation);
         continue;
       }
 
-      final jsonValueRegexMatch = // Check for @JsonValue annotation.
-          _jsonValueRegex.firstMatch("$annotation");
-      if (jsonValueRegexMatch != null) {
-        annotations.add(_jsonValue(jsonValueRegexMatch));
+      final value = _JsonValueExtractor("$annotation");
+      if (value.hasMatch) {
+        annotations.add(value.annotation);
+        continue;
       }
     }
 
@@ -119,33 +102,72 @@ extension on Iterable<SyntacticEntity> {
   }
 }
 
-TypeAnnotation _jsonDecoder(RegExpMatch match) {
-  final matches = match.matches;
-  final jsonElement = matches[4].trim();
-  final using = matches[5].trim();
-  return TypeAnnotation(
-    name: "JsonDecode",
-    data: {
-      "using": using,
-      "jsonElement": jsonElement,
-    },
-  );
+class _JsonValueExtractor extends _AnnotationExtractor {
+  _JsonValueExtractor(String annotation)
+      : super(
+            annotation: annotation,
+            regExp: RegExp(r"""^(@JsonValue)\("([^"]+?)"\)"""),
+            toAnnotation: (RegExpMatch match) {
+              final matches = match.matches;
+              final tag = matches[2].trim();
+              return TypeAnnotation(
+                name: "JsonValue",
+                data: {
+                  "tag": tag,
+                },
+              );
+            });
 }
 
-TypeAnnotation _jsonEncoder(RegExpMatch match) {
-  final matches = match.matches;
-  final using = matches[2].trim();
-  return TypeAnnotation(
-    name: "JsonEncode",
-    data: {"using": using},
-  );
+class _JsonDecodeExtractor extends _AnnotationExtractor {
+  _JsonDecodeExtractor(String annotation)
+      : super(
+            annotation: annotation,
+            regExp:
+                RegExp(r"""^(@JsonDecode)(<(.+?),(.+?)>)\(using:([^\)]+?)\)"""),
+            toAnnotation: (RegExpMatch match) {
+              final matches = match.matches;
+              final jsonElement = matches[4].trim();
+              final using = matches[5].trim();
+              return TypeAnnotation(
+                name: "JsonDecode",
+                data: {
+                  "using": using,
+                  "jsonElement": jsonElement,
+                },
+              );
+            });
 }
 
-TypeAnnotation _jsonValue(RegExpMatch match) {
-  final matches = match.matches;
-  final tag = matches[2].trim();
-  return TypeAnnotation(
-    name: "JsonValue",
-    data: {"tag": tag},
-  );
+class _JsonEncodeExtractor extends _AnnotationExtractor {
+  _JsonEncodeExtractor(String annotation)
+      : super(
+            annotation: annotation,
+            regExp: RegExp(r"""^(@JsonEncode)\(using:([^\)]+?)\)"""),
+            toAnnotation: (RegExpMatch match) {
+              final matches = match.matches;
+              final using = matches[2].trim();
+              return TypeAnnotation(
+                name: "JsonEncode",
+                data: {"using": using},
+              );
+            });
+}
+
+class _AnnotationExtractor {
+  _AnnotationExtractor({
+    required String annotation,
+    required RegExp regExp,
+    required this.toAnnotation,
+  }) {
+    match = regExp.firstMatch(annotation);
+  }
+
+  late final RegExpMatch? match;
+
+  late final TypeAnnotation Function(RegExpMatch) toAnnotation;
+
+  bool get hasMatch => match != null;
+
+  TypeAnnotation get annotation => toAnnotation.call(match!);
 }

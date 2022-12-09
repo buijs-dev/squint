@@ -27,5 +27,6 @@ export "exception.dart";
 export "files.dart";
 export "lists.dart";
 export "logger.dart";
+export "maps.dart";
 export "regex.dart";
 export "strings.dart";

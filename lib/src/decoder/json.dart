@@ -25,12 +25,12 @@ import "../common/common.dart";
 
 /// Decoded a JSON String to a [JsonObject].
 extension JsonDecoder on String {
-  /// Decode a JSON String to [JsonElement]
+  /// Decode a JSON String to [JsonNode]
   JsonObject get jsonDecode {
     var chars =
         substring(indexOf("{") + 1, lastIndexOf("}")).split("").normalizeSpaces;
 
-    final data = <String, JsonElement>{};
+    final data = <String, JsonNode>{};
 
     while (chars.isNotEmpty) {
       final pkey = ProcessingKey(chars);
@@ -214,13 +214,13 @@ class ProcessingValue extends JsonProcessingStep {
   }
 
   ///
-  JsonElement? value;
+  JsonNode? value;
 
   ///
   List<String> chars = [];
 }
 
-JsonElement? _maybeNumber({
+JsonNode? _maybeNumber({
   required String content,
   required String key,
 }) {

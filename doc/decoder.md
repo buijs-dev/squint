@@ -1,15 +1,40 @@
 Decode a JSON String to a JsonObject.
 The decoder will create all actual dart types, including nested lists and/or objects.
-Any meaningless whitespace/formatting will be removed before parsing.
+Any meaningless whitespace/formatting will be removed before parsing. Every JSON node is 
+wrapped in a JsonElement, containing the key and data. See [AST](ast.md) for more
+information about how types are mapped from JSON to dart.
 
-Every JSON node is wrapped in a JsonElement, containing the key and data.
-See [ast](ast.md) for more information about how types are mapped from JSON to dart.
+One of the main features of Squint is it's decoding ability.
+Using dart:convert library, the following will result in an exception
+(type 'List\<dynamic>' is not a subtype of type 'List<List\<String>>' in type cast):
 
-# Examples 
+```dart
+final json = '''
+  {
+      "multiples" : [
+          [
+              "hooray!"
+          ]
+      ]
+  }
+''';
 
-## Example 1
+List<List<String>> multiples = 
+    jsonDecode(json)['multiples'] as List<List<String>>;
+```
 
-Given this JSON containing Lists, inside Lists, inside another List:
+Every sublist requires casting to return the proper Dart type:
+
+```dart
+    List<List<String>> multiples = (jsonDecode(json)['multiples'] as List<dynamic>)
+      .map((dynamic e) => (e as List<dynamic>)
+        .map((dynamic e) => e as String)
+        .toList()
+    ).toList();
+```
+
+Squint automatically returns the correct data type. Given this JSON containing Lists, 
+inside Lists, inside another List:
 
 ```json
 {
@@ -37,8 +62,6 @@ expect(data[0][0][1], "aye");
 expect(data[0][1][0], "bye");
 expect(data[0][1][1], "zzz");
 ```
-
-## Example 2
 
 Bad formatting is ignored:
 
@@ -71,8 +94,6 @@ expect(data[0][0][1], "aye");
 expect(data[0][1][0], "bye");
 expect(data[0][1][1], "zzz");
 ```
-
-## Example 3:
 
 How to retrieve String, Boolean, Integer, Double, List and Map values:
 

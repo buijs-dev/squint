@@ -173,7 +173,7 @@ void main() {
     expect(() =>  JsonObject.fromMap(data),
         throwsA(predicate((e) =>
         e is SquintException &&
-            e.cause == "Unable to convert Map<String, dynamic> to Map<String,JsonElement>"
+            e.cause == "Unable to convert Map<String, dynamic> to Map<String,JsonNode>"
         )));
   });
 

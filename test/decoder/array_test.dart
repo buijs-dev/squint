@@ -186,7 +186,7 @@ void main() {
 
   test("verify ListValueSeparatorToken", () {
     // given
-    final output = <String, JsonElement>{};
+    final output = <String, JsonNode>{};
     final token = ListValueSeparatorToken(
       currentKey: ".0.0",
       currentValue: '"Anakin"',
@@ -203,7 +203,7 @@ void main() {
         reason: "depth does not change while processing a value");
     expect(token.key, ".0.1",
         reason: "final width (.0) marker is incremented by 1 (.0.1)");
-    expect(token.value, "", reason: "value is resetted after storing it");
+    expect(token.value, "", reason: "value is reset after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
     expect(output[".0.0"]!.data, "Anakin",
         reason: "value is added to the output map");
@@ -211,7 +211,7 @@ void main() {
 
   test("verify ListClosingBracketToken", () {
     // given
-    final output = <String, JsonElement>{};
+    final output = <String, JsonNode>{};
     final token = ListClosingBracketToken(
       currentKey: ".1.5",
       currentValue: '"Anakin"',
@@ -228,7 +228,7 @@ void main() {
         reason: "depth is decreased by 1 after closing a list");
     expect(token.key, ".1",
         reason: "final width (.0) marker is removed from key");
-    expect(token.value, "", reason: "value is resetted after storing it");
+    expect(token.value, "", reason: "value is reset after storing it");
     expect(output.length, 1, reason: "value is added to the output map");
     expect(output[".1.5"]!.data, "Anakin",
         reason: "value is added to the output map");

@@ -51,12 +51,12 @@ Future<void> main(List<String> args) async {
       .whereType<CustomType>()
       .forEach((e) {
     final file =
-        inputFile.parent.resolve("${e.className.snakecase}_squint.dart");
+        inputFile.parent.resolve("${e.className.snakeCase}_squint.dart");
     if (file.existsSync()) {
       print(
           "Failed to write generated code because File already exists: ${file.absolute.path}");
     } else {
-      file.writeAsString(e.generateFile(
+      file.writeAsString(e.generateJsonDecodingFile(
           relativeImport: inputFile.path.substring(
               inputFile.path.lastIndexOf(Platform.pathSeparator) + 1)));
     }

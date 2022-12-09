@@ -18,10 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Code generators.
-library encoder;
+/// Converters to safely transform between (AST) types.
+library decoder;
 
-export "dataclass_generator.dart";
-export "extensions_generator.dart";
-export "options.dart";
-export "shared.dart";
+export "node2abstract.dart";
+export "object2custom.dart";

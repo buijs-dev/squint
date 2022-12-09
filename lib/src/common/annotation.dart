@@ -41,8 +41,8 @@ class JsonEncode<T> {
   /// Configure [JsonEncode] to encode a value [using].
   const JsonEncode({required this.using});
 
-  /// Function to convert data of type T to a [JsonElement].
-  final JsonElement Function(T t) using;
+  /// Function to convert data of type T to a [JsonNode].
+  final JsonNode Function(T t) using;
 }
 
 /// Decode a JsonElement to a non-standard dart type.
@@ -50,6 +50,6 @@ class JsonDecode<T, R> {
   /// Configure [JsonDecode] to decode a [JsonElement] [using].
   const JsonDecode({required this.using});
 
-  /// Function to convert a [JsonElement] to data of type T.
+  /// Function to convert a [JsonNode] to data of type T.
   final T Function(R t) using;
 }

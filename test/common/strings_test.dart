@@ -29,7 +29,7 @@ void main() {
     const input = "snake_cased_example";
 
     // when:
-    final output = input.camelcase;
+    final output = input.camelCase();
 
     // then:
     expect(output, "SnakeCasedExample");
@@ -42,7 +42,7 @@ void main() {
     const input = "SnakeCased1Example";
 
     // when:
-    final output = input.snakecase;
+    final output = input.snakeCase;
 
     // then:
     expect(output, "snake_cased1_example");

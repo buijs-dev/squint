@@ -26,7 +26,7 @@ import "../common/common.dart";
 /// {@category decoder}
 extension AbstractTypeFromString on String {
   /// Returns [StandardType] if match found
-  /// in [_standardTypes] or [_standardNullableTypes]
+  /// in [standardTypes] or [standardNullableTypes]
   /// and otherwise a new [CustomType].
   AbstractType toAbstractType({bool? nullable}) {
     final withPostfix = trim();
@@ -54,8 +54,8 @@ extension AbstractTypeFromString on String {
     }
 
     final type = isNullable
-        ? _standardNullableTypes[withoutPostfix]
-        : _standardTypes[withoutPostfix];
+        ? standardNullableTypes[withoutPostfix]
+        : standardTypes[withoutPostfix];
 
     if (type != null) {
       return type;
@@ -160,7 +160,7 @@ final _customClassNameRegex =
 /// Map of all standard types.
 ///
 /// {@category ast}
-const _standardTypes = {
+const standardTypes = {
   "int": IntType(),
   "double": DoubleType(),
   "bool": BooleanType(),
@@ -175,7 +175,7 @@ const _standardTypes = {
 /// Map of all standard nullable types.
 ///
 /// {@category ast}
-const _standardNullableTypes = {
+const standardNullableTypes = {
   "int": NullableIntType(),
   "double": NullableDoubleType(),
   "bool": NullableBooleanType(),

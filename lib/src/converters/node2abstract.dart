@@ -20,38 +20,11 @@
 
 import "../ast/ast.dart";
 import "../common/common.dart";
+import "object2custom.dart";
 
-/// Convert a [JsonObject] String to a [CustomType].
-extension Json2CustomType on JsonObject {
-  /// Convert a [JsonObject] to a [CustomType].
-  CustomType toCustomType({
-    required String className,
-  }) =>
-      CustomType(
-        className: className,
-        members: data.toTypeMembers,
-      );
-}
-
-extension on Map<String, JsonElement> {
-  List<TypeMember> get toTypeMembers {
-    final output = <TypeMember>[];
-
-    forEach((key, value) {
-      output.add(
-        TypeMember(
-          name: key,
-          type: value.toAbstractType(key),
-        ),
-      );
-    });
-
-    return output;
-  }
-}
-
-/// Convert a [JsonElement] String to an [AbstractType].
-extension on JsonElement {
+/// Convert a [JsonNode] to an [AbstractType].
+extension JsonNode2AbstractType on JsonNode {
+  /// Convert a [JsonNode] to an [AbstractType].
   AbstractType toAbstractType(String key) {
     if (this is JsonString) {
       return const StringType();
@@ -70,27 +43,52 @@ extension on JsonElement {
     }
 
     if (this is JsonArray) {
-      return (this as JsonArray).toListType;
+      final arr = this as JsonArray;
+      final data = arr.data as List<dynamic>;
+      if (data.isNotEmpty && data.first is Map) {
+        final type = (data.first as Map).values.first.runtimeType;
+        final allChildrenOfSameType = data.every((dynamic child) {
+          return (child as Map).values.every((dynamic value) {
+            return value.runtimeType == type;
+          });
+        });
+
+        /// If all children are of same type then an strongly typed
+        /// Map can be used and there is no need to create a JsonObject,
+        ///
+        /// Example:
+        ///
+        /// If a List contains a Map<String, dynamic> and all children
+        /// of type dynamic are of the same type, for instance String,
+        /// then this can be returned as Map<String, String>.
+        ///
+        /// If a List contains a Map<String,dynamic> and all all children
+        /// are not of the same type, for instance some are String and
+        /// others double, then this could not be cast to a Map<String,String>
+        /// or Map<String,double>. In this case building a JsonObject and
+        /// converting it to a [CustomType] is better.
+        if (!allChildrenOfSameType) {
+          return ListType(
+            JsonObject.fromMap(data.first as Map<String, dynamic>)
+                .toCustomType(className: key.camelCase()),
+          );
+        }
+      }
+      return (arr.data as List<dynamic>).toListType;
     }
 
     if (this is JsonObject) {
-      return (this as JsonObject).toCustomType(className: key.camelcase);
+      return (this as JsonObject).toCustomType(className: key.camelCase());
     }
 
-    throw SquintException("Unable to convert JSON String to CustomType");
+    return const _UnknownNullableAsDynamic();
   }
-}
-
-/// Convert a [JsonArray] String to a [StandardType].
-extension on JsonArray {
-  StandardType get toListType => (data as List<dynamic>).toListType;
 }
 
 /// Convert a [List] to a [StandardType].
 extension on List<dynamic> {
-  StandardType get toListType {
+  ListType get toListType {
     final noNullValues = where((dynamic e) => e != null);
-
     final hasNullValues = noNullValues.length != length;
 
     if (noNullValues.every((dynamic element) => element is String)) {
@@ -118,17 +116,26 @@ extension on List<dynamic> {
     }
 
     if (noNullValues.every((dynamic element) => element is Map)) {
-      final keyType = (noNullValues.first as Map).keys.toList().toListType;
+      final keyType =
+          (noNullValues.first as Map).keys.toList().toListType.child;
 
-      final valueType = (noNullValues.first as Map).values.toList().toListType;
+      final valueType =
+          (noNullValues.first as Map).values.toList().toListType.child;
 
       return hasNullValues
           ? ListType(NullableMapType(key: keyType, value: valueType))
           : ListType(MapType(key: keyType, value: valueType));
     }
 
-    throw SquintException(
-      "Unable to determine List child type for data: $this",
-    );
+    return const ListType(_UnknownNullableAsDynamic());
   }
+}
+
+/// [AbstractType] to represent a null value which type is unknown.
+class _UnknownNullableAsDynamic extends AbstractType {
+  const _UnknownNullableAsDynamic() : super(className: "dynamic");
+
+  /// Set to false because dynamic nullability is implicit.
+  @override
+  bool get nullable => false;
 }

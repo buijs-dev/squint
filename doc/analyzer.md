@@ -13,8 +13,6 @@ tools in different programming languages. For example analysis could be done on 
 using a Kotlin compiler plugin which then stores the result as JSON. The Squint analyzer can then
 read this metadata JSON and generate dart code (see [generator](../doc/generator.md)).
 
-## Examples
-
 ### Using analyzer programmatically
 
 ```dart
@@ -36,7 +34,6 @@ void analyze() {
 flutter pub run squint:analyze foo/some_class_file.dart foo/bar/output
 ```
 
-### Input: Dart class
 Analyzer reads a .dart file and returns a CustomType instance containing metadata.
 
 Given a valid dart class declaration:
@@ -59,7 +56,6 @@ Will return a CustomType instance:
 - className: SimpleResponse
 - members: [IntType a1, NullableStringType a2]
 
-### Input: AST metadata in JSON format
 Analyzer reads a JSON file and returns a CustomType instance containing metadata.
 
 Given a valid metadata file:

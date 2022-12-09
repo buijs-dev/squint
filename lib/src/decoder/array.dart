@@ -22,28 +22,32 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 import "../decoder/decoder.dart";
 
-///
-extension RepeatedBuilder on Map<String, JsonElement> {
+/// Utility to construct a nested List structure
+/// with strongly typed children.
+extension RepeatedBuilder on Map<String, JsonNode> {
+  /// Create a (nested) List structure from width-depth notation.
   ///
+  /// The key String of this Map is expected to be a dot (.)
+  /// separated list of numbers which act as width and depth
+  /// coordinates for adding [JsonNode] values to the correct
+  /// (sub) List.
+  ///
+  /// Key is constructed by [ParseUtil].
   List<dynamic> toList() {
     final list = <dynamic>[];
 
     final isNullable = values.any((o) => o is JsonNull);
-
     final hasIntegerValues = values.any((o) => o is JsonIntegerNumber);
     final hasFloatingValues = values.any((o) => o is JsonFloatingNumber);
 
-    // If a List contains both integers and floating point numbers,
-    // then all integers should be cast to a floating point.
+    /// If a List contains both integers and floating point numbers,
+    /// then all integers should be cast to a floating point.
     if (hasIntegerValues && hasFloatingValues) {
-      return map((key, value) {
-        if (value is JsonIntegerNumber) {
-          return MapEntry(
-              key, JsonFloatingNumber(key: key, data: value.data.toDouble()));
-        } else {
-          return MapEntry(key, value);
-        }
-      }).toList();
+      return map((key, value) => MapEntry(
+          key,
+          value is JsonIntegerNumber
+              ? JsonFloatingNumber(key: key, data: value.data.toDouble())
+              : value)).toList();
     }
 
     for (final key in keys) {
@@ -52,7 +56,7 @@ extension RepeatedBuilder on Map<String, JsonElement> {
       // The value to be stored in a List.
       dynamic value = element?.data;
 
-      if (value is Map && value.values.first is JsonElement) {
+      if (value is Map && value.values.first is JsonNode) {
         value = value.map<String, dynamic>((dynamic key, dynamic value) {
           return MapEntry<String, dynamic>("$key", value.data);
         });
@@ -122,8 +126,21 @@ extension RepeatedBuilder on Map<String, JsonElement> {
 
 /// Utilities to parse a list value from JSON content.
 extension ParseUtil on String {
+  /// Decode JSON String containing (sub) List(s)
+  /// by saving each value as [JsonNode] and storing
+  /// their position as width/depth coordinates.
   ///
-  Map<String, JsonElement> unwrapList({
+  /// Example:
+  ///
+  /// Given a JSON Array:
+  /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
+  ///
+  /// Would result in the following Map:
+  /// ".0.0.0.0" : "hello"
+  /// ".0.0.0.1" : "goodbye"
+  /// ".0.0.1.1" : "Sam"
+  /// ".0.0.1.2" : "Hanna"
+  Map<String, JsonNode> unwrapList({
     required int maxDepth,
 
     /// Can be set to true for testing purposes.
@@ -138,7 +155,7 @@ extension ParseUtil on String {
       size[i] = 0;
     }
 
-    final output = <String, JsonElement>{};
+    final output = <String, JsonNode>{};
 
     final input = normalizeSpaces ? split("").normalizeSpaces : split("");
 
@@ -203,7 +220,7 @@ class ListClosingBracketToken extends _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, JsonElement> output,
+    required Map<String, JsonNode> output,
     required int index,
   }) : super(
           index: index,
@@ -212,7 +229,8 @@ class ListClosingBracketToken extends _Token {
           value: _simpleValue(
               currentValue: currentValue,
               currentKey: currentKey,
-              output: output),
+              output: output,
+          ),
           key: currentKey.substring(0, currentKey.lastIndexOf(".")),
         );
 }
@@ -225,7 +243,7 @@ class ObjectOpeningBracketToken extends _Token {
     required int currentDepth,
     required String currentKey,
     required int index,
-    required Map<String, JsonElement> output,
+    required Map<String, JsonNode> output,
     required List<String> characters,
     required bool nestedInList,
   }) : super(
@@ -246,7 +264,7 @@ class ObjectOpeningBracketToken extends _Token {
 int _setObjectValueAndReturnRemainder({
   required String key,
   required int index,
-  required Map<String, JsonElement> output,
+  required Map<String, JsonNode> output,
   required List<String> characters,
   required bool nestedInList,
 }) {
@@ -291,7 +309,7 @@ class ListValueSeparatorToken extends _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, JsonElement> output,
+    required Map<String, JsonNode> output,
     required int index,
   }) : super(
           index: index,
@@ -343,7 +361,7 @@ class ListValueToken extends _Token {
 String _simpleValue({
   required String currentValue,
   required String currentKey,
-  required Map<String, JsonElement> output,
+  required Map<String, JsonNode> output,
 }) {
   var value = currentValue;
 
@@ -439,7 +457,7 @@ abstract class _Token {
     required int currentDepth,
     required String currentKey,
     required String currentValue,
-    required Map<String, JsonElement> output,
+    required Map<String, JsonNode> output,
     required int index,
     required _Token? previousToken,
   }) {

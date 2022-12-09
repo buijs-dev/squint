@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import "../common/common.dart";
+
 /// Main type parent implemented by:
 /// - [StandardType]
 /// - [CustomType]
@@ -27,10 +29,15 @@
 /// {@category ast}
 abstract class AbstractType {
   /// Construct a new AbstractType.
-  const AbstractType(this.className);
+  const AbstractType({
+    required this.className,
+  });
 
   /// Name of this class.
   final String className;
+
+  /// Bool indicator if null is allowed.
+  bool get nullable;
 }
 
 /// A standard Dart type being one of:
@@ -58,15 +65,11 @@ abstract class AbstractType {
 /// - [NullableFloat64ListType] Float64List?
 ///
 /// {@category ast}
-class StandardType extends AbstractType {
+abstract class StandardType extends AbstractType {
   /// Construct a new AbstractType.
   const StandardType({
     required String className,
-    required this.nullable,
-  }) : super(className);
-
-  /// Bool indicator if null is allowed.
-  final bool nullable;
+  }) : super(className: className);
 
   @override
   bool operator ==(dynamic other) =>
@@ -89,10 +92,29 @@ class CustomType extends AbstractType {
   const CustomType({
     required String className,
     required this.members,
-  }) : super(className);
+    this.nullable = false,
+  }) : super(className: className);
 
   /// Fields of this class.
   final List<TypeMember> members;
+
+  @override
+  final bool nullable;
+
+  @override
+  bool operator ==(dynamic other) =>
+      other is CustomType &&
+      className == other.className &&
+      nullable == other.nullable &&
+      members.length == other.members.length &&
+      members.every((element) => other.members.contains(element));
+
+  @override
+  int get hashCode => className.hashCode + nullable.hashCode;
+
+  @override
+  String toString() =>
+      "CustomType(name=$className, nullable=$nullable, members=$members)";
 }
 
 /// A class type member (field).
@@ -115,6 +137,24 @@ class TypeMember {
   /// Type annotations
   final List<TypeAnnotation> annotations;
 
+  /// Return value of @JsonValue annotation 'name'
+  /// if present otherwise null.
+  String get jsonNodeKey {
+    bool predicate(TypeAnnotation annotation) => annotation.name == "JsonValue";
+    return annotations.firstBy(predicate)?.data["tag"] ?? name;
+  }
+
+  @override
+  bool operator ==(dynamic other) =>
+      other is TypeMember &&
+          name == other.name &&
+          type == other.type &&
+          annotations.length == other.annotations.length &&
+          annotations.toString() == other.annotations.toString();
+
+  @override
+  int get hashCode => type.hashCode + type.hashCode;
+
   @override
   String toString() =>
       "TypeMember(name='$name',type='$type', annotations =$annotations)";
@@ -135,6 +175,17 @@ class TypeAnnotation {
 
   /// All key-value data.
   final Map<String, String> data;
+
+  @override
+  bool operator ==(dynamic other) =>
+    other is TypeAnnotation && name != other.name && data != other.data;
+
+  @override
+  int get hashCode => name.hashCode;
+
+  @override
+  String toString() =>
+      "TypeAnnotation(name='$name',data=$data)";
 }
 
 /// A Integer [StandardType].
@@ -142,15 +193,21 @@ class TypeAnnotation {
 /// {@category ast}
 class IntType extends StandardType {
   /// Construct a new [IntType].
-  const IntType() : super(className: "int", nullable: false);
+  const IntType() : super(className: "int");
+
+  @override
+  bool get nullable => false;
 }
 
-/// A nullable Integer [StandardType].
+/// A nullable Integer [IntType].
 ///
 /// {@category ast}
-class NullableIntType extends StandardType {
+class NullableIntType extends IntType {
   /// Construct a new [NullableIntType].
-  const NullableIntType() : super(className: "int", nullable: true);
+  const NullableIntType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A double [StandardType].
@@ -158,15 +215,21 @@ class NullableIntType extends StandardType {
 /// {@category ast}
 class DoubleType extends StandardType {
   /// Construct a new [DoubleType].
-  const DoubleType() : super(className: "double", nullable: false);
+  const DoubleType() : super(className: "double");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable double [StandardType].
 ///
 /// {@category ast}
-class NullableDoubleType extends StandardType {
+class NullableDoubleType extends DoubleType {
   /// Construct a new [NullableDoubleType].
-  const NullableDoubleType() : super(className: "double", nullable: true);
+  const NullableDoubleType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Boolean [StandardType].
@@ -174,15 +237,21 @@ class NullableDoubleType extends StandardType {
 /// {@category ast}
 class BooleanType extends StandardType {
   /// Construct a new [BooleanType].
-  const BooleanType() : super(className: "bool", nullable: false);
+  const BooleanType() : super(className: "bool");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Boolean [StandardType].
 ///
 /// {@category ast}
-class NullableBooleanType extends StandardType {
+class NullableBooleanType extends BooleanType {
   /// Construct a new [NullableBooleanType].
-  const NullableBooleanType() : super(className: "bool", nullable: true);
+  const NullableBooleanType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A String [StandardType].
@@ -190,15 +259,21 @@ class NullableBooleanType extends StandardType {
 /// {@category ast}
 class StringType extends StandardType {
   /// Construct a new [StringType].
-  const StringType() : super(className: "String", nullable: false);
+  const StringType() : super(className: "String");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable String [StandardType].
 ///
 /// {@category ast}
-class NullableStringType extends StandardType {
+class NullableStringType extends StringType {
   /// Construct a new [NullableStringType].
-  const NullableStringType() : super(className: "String", nullable: true);
+  const NullableStringType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Uint8List [StandardType].
@@ -206,15 +281,21 @@ class NullableStringType extends StandardType {
 /// {@category ast}
 class Uint8ListType extends StandardType {
   /// Construct a new [Uint8ListType].
-  const Uint8ListType() : super(className: "Uint8List", nullable: false);
+  const Uint8ListType() : super(className: "Uint8List");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Uint8List [StandardType].
 ///
 /// {@category ast}
-class NullableUint8ListType extends StandardType {
+class NullableUint8ListType extends Uint8ListType {
   /// Construct a new [NullableUint8ListType].
-  const NullableUint8ListType() : super(className: "Uint8List", nullable: true);
+  const NullableUint8ListType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Int32List [StandardType].
@@ -222,15 +303,21 @@ class NullableUint8ListType extends StandardType {
 /// {@category ast}
 class Int32ListType extends StandardType {
   /// Construct a new [Int32ListType].
-  const Int32ListType() : super(className: "Int32List", nullable: false);
+  const Int32ListType() : super(className: "Int32List");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Int32List [StandardType].
 ///
 /// {@category ast}
-class NullableInt32ListType extends StandardType {
+class NullableInt32ListType extends Int32ListType {
   /// Construct a new [NullableInt32ListType].
-  const NullableInt32ListType() : super(className: "Int32List", nullable: true);
+  const NullableInt32ListType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Int64List [StandardType].
@@ -238,15 +325,21 @@ class NullableInt32ListType extends StandardType {
 /// {@category ast}
 class Int64ListType extends StandardType {
   /// Construct a new [Int64ListType].
-  const Int64ListType() : super(className: "Int64List", nullable: false);
+  const Int64ListType() : super(className: "Int64List");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Int64List [StandardType].
 ///
 /// {@category ast}
-class NullableInt64ListType extends StandardType {
+class NullableInt64ListType extends Int64ListType {
   /// Construct a new [NullableInt64ListType].
-  const NullableInt64ListType() : super(className: "Int64List", nullable: true);
+  const NullableInt64ListType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Float32List [StandardType].
@@ -254,16 +347,21 @@ class NullableInt64ListType extends StandardType {
 /// {@category ast}
 class Float32ListType extends StandardType {
   /// Construct a new [Float32ListType].
-  const Float32ListType() : super(className: "Float32List", nullable: false);
+  const Float32ListType() : super(className: "Float32List");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Float32List [StandardType].
 ///
 /// {@category ast}
-class NullableFloat32ListType extends StandardType {
+class NullableFloat32ListType extends Float32ListType {
   /// Construct a new [Float32ListType].
-  const NullableFloat32ListType()
-      : super(className: "Float32List", nullable: true);
+  const NullableFloat32ListType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A Float64List [StandardType].
@@ -271,16 +369,21 @@ class NullableFloat32ListType extends StandardType {
 /// {@category ast}
 class Float64ListType extends StandardType {
   /// Construct a new [Float64ListType].
-  const Float64ListType() : super(className: "Float64List", nullable: false);
+  const Float64ListType() : super(className: "Float64List");
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable Float64List [StandardType].
 ///
 /// {@category ast}
-class NullableFloat64ListType extends StandardType {
+class NullableFloat64ListType extends Float64ListType {
   /// Construct a new [NullableFloat64ListType].
-  const NullableFloat64ListType()
-      : super(className: "Float64List", nullable: true);
+  const NullableFloat64ListType();
+
+  @override
+  bool get nullable => true;
 }
 
 /// A List [StandardType].
@@ -288,21 +391,24 @@ class NullableFloat64ListType extends StandardType {
 /// {@category ast}
 class ListType extends StandardType {
   /// Construct a new [ListType].
-  const ListType(this.child) : super(className: "List", nullable: false);
+  const ListType(this.child) : super(className: "List");
 
   /// List child element.
   final AbstractType child;
+
+  @override
+  bool get nullable => false;
 }
 
 /// A nullable List [StandardType].
 ///
 /// {@category ast}
-class NullableListType extends StandardType {
+class NullableListType extends ListType {
   /// Construct a new [NullableListType].
-  const NullableListType(this.child) : super(className: "List", nullable: true);
+  const NullableListType(super.child);
 
-  /// List child element.
-  final AbstractType child;
+  @override
+  bool get nullable => true;
 }
 
 /// A Map [StandardType].
@@ -313,28 +419,28 @@ class MapType extends StandardType {
   const MapType({
     required this.key,
     required this.value,
-  }) : super(className: "Map", nullable: false);
+  }) : super(className: "Map");
 
   /// Map key element.
   final AbstractType key;
 
   /// Map value element.
   final AbstractType value;
+
+  @override
+  bool get nullable => false;
 }
 
-/// A nullable Map [StandardType].
+/// A nullable Map [MapType].
 ///
 /// {@category ast}
-class NullableMapType extends StandardType {
+class NullableMapType extends MapType {
   /// Construct a new [NullableMapType].
   const NullableMapType({
-    required this.key,
-    required this.value,
-  }) : super(className: "Map", nullable: true);
+    required super.key,
+    required super.value,
+  });
 
-  /// Map key element.
-  final AbstractType key;
-
-  /// Map value element.
-  final AbstractType value;
+  @override
+  bool get nullable => true;
 }
