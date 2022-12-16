@@ -20,6 +20,7 @@
 
 import "../ast/ast.dart";
 import "../common/common.dart";
+import '../converters/undetermined.dart';
 
 /// Find matching AbstractType for String value.
 ///
@@ -67,6 +68,10 @@ extension AbstractTypeFromString on String {
       return customType;
     }
 
+    if (this == "dynamic") {
+      return const UndeterminedAsDynamic();
+    }
+
     throw SquintException("Unable to determine type: '$this'");
   }
 
@@ -105,7 +110,7 @@ AbstractType? _mapType({
   required String strType,
   required bool nullable,
 }) {
-  final mapType = _mapRegex.firstMatch(strType);
+  final mapType = mapRegex.firstMatch(strType);
 
   if (mapType == null) {
     return null;
@@ -144,7 +149,7 @@ final _listRegex = RegExp(r"""^(List)(<(.+?)>|)$""");
 /// Map<...,...>
 ///
 /// {@category decoder}
-final _mapRegex = RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");
+final mapRegex = RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");
 
 /// Regex to verify a literal value is a valid class name:
 ///

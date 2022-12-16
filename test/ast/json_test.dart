@@ -62,7 +62,7 @@ void main() {
   });
 
   test("verify object getter returns an object", () {
-    expect(decoded.object("foobject").string("x").data, "y");
+    expect(decoded.object("foobject").rawData<String>()["x"], "y");
   });
 
   test("verify array getter returns an object", () {
@@ -104,13 +104,15 @@ void main() {
   });
 
   test("verify nullable object getter returns an object", () {
-    expect(decoded.objectOrNull("foobject")!.string("x").data, "y");
+    expect(decoded.object("foobject").rawData<String>()["x"], "y");
   });
 
   test("verify nullable array getter returns a List", () {
+    print(decoded.arrayOrNull<List<String?>>("nestedness")!.data);
     expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[0][0], "a");
     expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[0][1], null);
     expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[1][0], "b");
+    expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[2][0], "c");
   });
 
   test("verify nullable String getter returns a String", () {

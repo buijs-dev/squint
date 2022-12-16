@@ -36,25 +36,25 @@ void main() {
             "chosen language to parse the sample data"
           ],
           "nestedness": [ 
-                    [ 
-                      [ 
-                        [ 
-                          "hi!", "aye"
-                        ], 
-                        [
-                          "hi3!" 
-                        ] 
-                      ]
-                    ], 
-                    
-                    [
-                      [
-                        [
-                          "byebye"
-                         ]
-                       ]
-                    ]
-                 ],
+                          [ 
+                            [ 
+                              [ 
+                                "hi!", "aye"
+                              ], 
+                              [
+                                "hi3!" 
+                              ] 
+                            ]
+                          ], 
+                          
+                          [
+                            [
+                              [
+                                "byebye"
+                               ]
+                             ]
+                          ]
+                       ],
                  
           "foobject": { 
             "x": "y"
@@ -81,12 +81,11 @@ void main() {
     expect(nestedness.data[0][0][0][0], "hi!");
     expect(nestedness.data[0][0][0][1], "aye");
     expect(nestedness.data[0][0][1][0], "hi3!");
-    expect(nestedness.data[1][1][1][0], "byebye");
+    expect(nestedness.data[1][0][0][0], "byebye");
 
     // and
     final foobject = decoded.object("foobject");
-    final x = foobject.data["x"]! as JsonString;
-    expect(x.data, "y");
+    expect(foobject.stringValue("x"), "y");
   });
 
 

@@ -30,34 +30,40 @@ void main() {
   test("Verify Converting a JSON String to a data class", () {
     // given
     const example = """
-      {
-        "id": 1,
-        "isJedi": true,
-        "hasPadawan": false,
-        "bff": "Leia",
-        "jedi": [
-          "Obi-Wan", "Anakin", "Luke Skywalker"
-        ],
-        "coordinates": [22, 4.4, -15],
-        "objectives": {
-          "in-mission": false,
-          "mission-results": [false, true, true, false]
-        },
-        "annoyance-rate": [
-          { "JarJarBinks" : 9000 }
-        ],
-        "foo": null,
-        "listOfObjectives": [
-          {
-            "in-mission": true,
-            "mission-results": [false, true, true, true]
-          },
-          {
-            "in-mission": false,
-            "mission-results": [false, true, false, false]
-          }
-        ]
-      }""";
+  {
+     "id": 1,
+     "isJedi": true,
+     "hasPadawan": false,
+     "bff": "Leia",
+     "jedi": [
+       "Obi-Wan", "Anakin", "Luke Skywalker"
+     ],
+     "coordinates": [22, 4.4, -15],
+     "objectives": {
+       "in-mission": false,
+       "mission-results": [false, true, true, false]
+     },
+     "annoyance-rate": [
+       { "JarJarBinks" : 9000 }
+     ],
+     "foo": null,
+     "listOfObjectives": [
+       {
+         "in-mission": true,
+         "mission-results": [false, true, true, true]
+       },
+       {
+         "in-mission": false,
+         "mission-results": [false, true, false, false]
+       }
+     ],
+      "simpleMap": {
+        "a": 1,
+        "b": 2,
+        "c": 4
+      }
+    }
+    """;
 
     // when:
     final podo = example.jsonDecode
@@ -102,6 +108,7 @@ class Example {
     required this.annoyanceRate,
     required this.foo,
     required this.listOfObjectives,
+    required this.simpleMap,
   });
 
   @JsonValue("id")
@@ -135,6 +142,9 @@ class Example {
 
   @JsonValue("listOfObjectives")
   final List<Objectives> listOfObjectives;
+
+  @JsonValue("simpleMap")
+  final Map<String, int> simpleMap;
 }
 
 @squint

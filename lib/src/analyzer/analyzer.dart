@@ -96,6 +96,7 @@ extension on File {
   ///
   /// The JSON is expected to contain metadata for a single data class.
   CustomType get parseMetadata {
+
     final json = readAsStringSync().jsonDecode;
 
     final className = json.string("className").data;
@@ -140,7 +141,7 @@ extension on List<AbstractType> {
                 { 
                   "name": "${e.name}",
                   "type": "${e.type.printType}",
-                  "nullable": ${e.type.nullable},
+                  "nullable": ${e.type.nullable}
                 }
                 """).join(",")}
             ]

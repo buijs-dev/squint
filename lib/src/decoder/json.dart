@@ -27,8 +27,10 @@ import "../common/common.dart";
 extension JsonDecoder on String {
   /// Decode a JSON String to [JsonNode]
   JsonObject get jsonDecode {
-    var chars =
-        substring(indexOf("{") + 1, lastIndexOf("}")).split("").normalizeSpaces;
+    var chars = substring(
+        indexOf("{") + 1,
+        lastIndexOf("}"),
+    ).split("").normalizeSpaces;
 
     final data = <String, JsonNode>{};
 
@@ -52,6 +54,7 @@ extension JsonDecoder on String {
 
     return JsonObject(data);
   }
+
 }
 
 ///
@@ -117,24 +120,19 @@ class ProcessingValue extends JsonProcessingStep {
           return;
         case "[":
           processing = false;
-
           final counter = BracketCount(
             characters: chars,
             startIndex: index,
             openingBracket: "[",
             closingBracket: "]",
           );
-
           final sublist = counter.contentBetweenBrackets;
-
           this.value = JsonArray.parse(
             key: key,
             content: sublist.join(),
             depth: counter.totalDepth,
           );
-
           this.chars = chars.sublist(counter.endIndex, chars.length);
-
           return;
         case "{":
           processing = false;
@@ -147,8 +145,7 @@ class ProcessingValue extends JsonProcessingStep {
           );
 
           final sublist = counter.contentBetweenBrackets;
-          final object = sublist.join().jsonDecode;
-          this.value = JsonObject(object.data, key);
+          this.value = JsonObject(sublist.join().jsonDecode.data, key);
           this.chars = chars.sublist(counter.endIndex, chars.length);
           return;
         default:

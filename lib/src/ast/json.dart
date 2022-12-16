@@ -18,25 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ignore_for_file: avoid_annotating_with_dynamic
+
 import "../common/common.dart";
+import '../converters/object2map.dart';
+import "../converters/undetermined.dart";
 import "../decoder/decoder.dart";
 import "../encoder/encoder.dart";
-
-// /// A (part of) JSON.
-// ///
-// /// {@category ast}
-// /// {@category encoder}
-// /// {@category decoder}
-// abstract class JsonNode<T> {
-//   /// Construct a new [JsonNode].
-//   const JsonNode();
-//
-//   /// The JSON data value.
-//   T get data;
-//
-//   /// Convert to formatted JSON String.
-//   String get stringify;
-// }
+import 'ast.dart';
 
 /// A single JSON node representation consisting of
 /// a [String] key and [T] data.
@@ -62,6 +51,16 @@ abstract class JsonNode<T> {
   String get stringify => '"$key": ${maybeAddQuotes(data)}';
 }
 
+/// JSON node of unknown type.
+///
+/// The data is stored as dynamic
+/// because the type can not be determined.
+/// Value is possibly null.
+UntypedJsonNode dynamicValue({
+  required String key,
+  dynamic data,
+}) => UntypedJsonNode(key: key, data: data);
+
 /// JSON Object (Map) element.
 ///
 /// {@category ast}
@@ -84,11 +83,10 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   ///
   /// Throws [SquintException] if key is not found.
   JsonNode byKey(String key) {
-    if (!data.containsKey(key)) {
-      throw SquintException("JSON key not found: '$key'");
+    if (data.containsKey(key)) {
+      return data[key]!;
     }
-
-    return data[key]!;
+    throw SquintException("JSON key not found: '$key'");
   }
 
   /// Get [String] by [String] key.
@@ -150,23 +148,180 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Get [List] with child [T] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  List<T> arrayValue<T>(String key) => array<T>(key).data;
+  List<T> arrayValue<T>(
+      String key, {
+        T Function(JsonObject)? decodeFromJsonObject,
+        List<Function> decoders = const [],
+        List? childType,
+      }) =>
+      array<T>(key, decodeFromJsonObject: decodeFromJsonObject, decoders: decoders, childType: childType).data;
 
   /// Get [List] with child [T] or null by [String] key.
-  List<T>? arrayValueOrNull<T>(String key) => arrayOrNull<T>(key)?.data;
+  List<T>? arrayValueOrNull<T>(String key, {
+    T Function(JsonObject)? decodeFromJsonObject,
+    List<Function> decoders = const [],
+    List? childType,
+  }) =>
+      arrayOrNull<T>(key, decodeFromJsonObject: decodeFromJsonObject, decoders: decoders, childType: childType)?.data;
 
   /// Get [JsonArray] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonArray<List<T>> array<T>(String key) => JsonArray<List<T>>(
+  JsonArray<List<T>> array<T>(
+      String key, {
+        T Function(JsonObject)? decodeFromJsonObject,
+        List<Function> decoders = const [],
+        List? childType,
+      }) {
+
+    final dynamicData = byKey(key).data as List;
+    final expectedChildType = T.toString();
+    final actualChildType = dynamicData.runtimeType.toString()
+        .removePrefixIfPresent("List<")
+        .removePostfixIfPresent(">");
+
+    // Types match so cast and return List<T>.
+    if(expectedChildType == actualChildType) {
+      return JsonArray<List<T>>(
         key: key,
-        data: (byKey(key).data as List).cast<T>().toList(),
+        data: dynamicData.cast<T>().toList(),
       );
+    }
+
+    // Use decoder to convert to expected child Type
+    // and return as List<T>.
+    if(decodeFromJsonObject != null) {
+      final objects = dynamicData.map<JsonObject>((dynamic e) {
+        if(e is Map) {
+          if(e.values.isNotEmpty && e.values.first is JsonNode) {
+            return JsonObject(e as Map<String,JsonNode>);
+          } else {
+            return JsonObject.fromMap(e as Map<String, dynamic>);
+          }
+        } else {
+          throw SquintException("Expected Map type but found: ${e.runtimeType}");
+        }
+      }).toList();
+      return JsonArray<List<T>>(
+        key: key,
+        data: objects.map(decodeFromJsonObject).toList().cast<T>().toList(),
+      );
+    }
+
+    var depth = 0;
+    var nextChild = actualChildType;
+    while(nextChild.startsWith("List<")) {
+      nextChild = nextChild
+          .removePrefixIfPresent("List<")
+          .removePostfixIfPresent(">");
+      depth +=1;
+    }
+
+    final isMapType = mapRegex.firstMatch(nextChild);
+    if(isMapType != null) {
+      if (depth == 0) {
+        final objects = dynamicData.map<JsonObject>((dynamic e) {
+          if(e is Map) {
+            if(e.values.isNotEmpty && e.values.first is JsonNode) {
+              return JsonObject(e as Map<String,JsonNode>);
+            } else {
+              return JsonObject.fromMap(e as Map<String, dynamic>);
+            }
+          } else {
+            throw SquintException("Expected Map type but found: ${e.runtimeType}");
+          }
+        }).toList();
+        final maps = objects.map<dynamic>((e) {
+          final type = e.valuesAllOfSameType;
+          if(type is StringType) {
+            final stringMap = <String,String>{};
+            e.data.forEach((key, value) {
+              stringMap[key] = value.data as String;
+            });
+            return stringMap;
+          } else if(type is IntType) {
+            final intMap = <String,int>{};
+            e.data.forEach((key, value) {
+              intMap[key] = value.data as int;
+            });
+            return intMap;
+          } else if(type is DoubleType) {
+            final doubleMap = <String,double>{};
+            e.data.forEach((key, value) {
+              doubleMap[key] = value.data as double;
+            });
+            return doubleMap;
+          } else if(type is BooleanType) {
+            final boolMap = <String,bool>{};
+            e.data.forEach((key, value) {
+              boolMap[key] = value.data as bool;
+            });
+            return boolMap;
+          } else {
+
+            if(decoders.isNotEmpty) {
+
+              for(final decoder in decoders) {
+                try {
+                  return decoder.call(e);
+                } catch (e) {
+                  "Tried to decode data with $decoder but failed.".log(context: e);
+                }
+              }
+
+            }
+
+            "All decoders failed or there are no decoders present. Returning data as-is.".log();
+            return e.data;
+          }
+        }).toList();
+        return JsonArray<List<T>>(
+          key: key,
+          data: maps.toList().cast<T>().toList(),
+        );
+      }
+    }
+
+    var hasDecodingFailure = false;
+    final nodes = dynamicData.decodeList;
+    final decoded = <String, JsonNode>{};
+
+    if(decoders.isNotEmpty) {
+      for(final decoder in decoders) {
+        try {
+          nodes.forEach((key, value) {
+            decoded[key] = CustomJsonNode(data: decoder.call(value));
+          });
+        } catch (e) {
+          "Tried to decode data with $decoder but failed.".log(context: e);
+          hasDecodingFailure = true;
+        }
+      }
+    }
+
+    if(decoded.isNotEmpty && !hasDecodingFailure) {
+      final decodedList = decoded.toList(valueList: childType);
+      return JsonArray<List<T>>(
+        key: key,
+        data: decodedList.cast<T>(),
+      );
+    }
+
+    // Return as List with child T.
+    return JsonArray<List<T>>(
+      key: key,
+      data: nodes.toList().cast<T>().toList(),
+    );
+  }
 
   /// Get [JsonArray] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonArray<List<T>>? arrayOrNull<T>(String key) {
+  JsonArray<List<T>>? arrayOrNull<T>(String key, {
+    T Function(JsonObject)? decodeFromJsonObject,
+        List<Function> decoders = const [],
+    List? childType,
+  }) {
     final element = byKey(key);
 
     if (element.data == null) {
@@ -198,15 +353,35 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   JsonBoolean? booleanOrNull(String key) =>
       _byKeyOfType<JsonBoolean>(key, true);
 
+  /// Get Map<String,R> by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found
+  /// or values are not all of type [R].
+  Map<String, R> mapValue<R>(String key) => object(key).rawData();
+
+  /// Get Map<String,R> by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found
+  /// or values are not all of type [R].
+  Map<String, R>? mapValueOrNull<R>(String key) => objectOrNull(key)?.rawData();
+
   /// Get [JsonObject] by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonObject object(String key) => _byKeyOfType<JsonObject>(key, false)!;
+  JsonObject object(String key) => objectOrNull(key)!;
 
   /// Get [JsonObject] or null by [String] key.
   ///
   /// Throws [SquintException] if key is not found.
-  JsonObject? objectOrNull(String key) => _byKeyOfType<JsonObject>(key, true);
+  JsonObject? objectOrNull(String key) {
+    final object = _byKeyOfType<JsonNode<Map<String,JsonNode>>>(key, true);
+
+    if(object == null) {
+      return null;
+    }
+
+    return JsonObject(object.data, object.key);
+  }
 
   R? _byKeyOfType<R>(String key, bool nullable) {
     final data = byKey(key);
@@ -227,14 +402,8 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Return raw (unwrapped) object data as Map<String, R>
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, R> rawData<R>() => data.map((key, value) {
-        dynamic data = value;
-
-        while (data is JsonNode) {
-          data = data.data;
-        }
-
-        return MapEntry(key, data as R);
-      });
+    return MapEntry(key, value.data as R);
+  });
 
   JsonFormattingOptions? _formattingOptions;
 
@@ -258,6 +427,31 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   String get _toRawJson => key == ""
       ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
       : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
+}
+
+/// A JsonObject which children are all of the same type.
+///
+/// When all children are of the same type then
+/// a JSON node can be deserialized as Map with
+/// strongly typed children. This is mostly useful
+/// when a Map is nested inside one or more Lists.
+class JsonMap<T> extends JsonNode<Map<String,JsonNode<T>>> {
+  /// Create a new JsonMap.
+  const JsonMap({required super.key, required super.data});
+
+  /// Convert to (standard) formatted JSON String.
+  @override
+  String get stringify => _toRawJson.formatJson();
+
+  String get _toRawJson => key == ""
+      ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
+      : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
+
+  /// Return raw (unwrapped) object data as Map<String, R>
+  /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
+  Map<String, T> get rawData => data.map((key, value) {
+    return MapEntry(key, value.data);
+  });
 }
 
 MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
@@ -296,6 +490,12 @@ MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
   throw SquintException(
     "Unable to convert Map<String, dynamic> to Map<String,JsonNode>",
   );
+}
+
+///
+class CustomJsonNode extends JsonNode<dynamic> {
+  ///
+  CustomJsonNode({required super.data}):super(key: "");
 }
 
 /// A JSON element containing a String value.
@@ -455,12 +655,15 @@ class JsonArray<T> extends JsonNode<T> {
     required String key,
     required String content,
     int depth = 1,
-  }) =>
-      JsonArray<dynamic>(
-        key: key,
-        data: content.unwrapList(maxDepth: depth).toList(),
-      );
+  }) {
 
+    final data = content.decodeJsonArray(maxDepth: depth).toList();
+    return JsonArray<dynamic>(
+      key: key,
+      data: data,
+    );
+
+  }
   /// Convert to formatted JSON String.
   @override
   String get stringify => '"$key":${maybeAddQuotes(data)}';

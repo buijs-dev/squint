@@ -20,41 +20,29 @@
 
 import "../ast/ast.dart";
 
-/// Return a quoted String value for JSON if the current value is a String.
-///
-/// Example:
-///
-/// Given a [String] value foo will return:
-///
-/// ```
-///   "foo"
-/// ```
-///
-/// Given an [int] value 10 will return:
-///
-/// ```
-///   10
-/// ```
-///
-/// {@category encoder}
-dynamic maybeAddQuotes(dynamic value) {
-  if (value is List) {
-    return value.map<dynamic>(maybeAddQuotes).toList();
-  }
+/// [AbstractType] to represent a null value which type is unknown.
+class UndeterminedAsDynamic extends AbstractType {
+  /// Construct new [UndeterminedAsDynamic] instance.
+  const UndeterminedAsDynamic() : super(className: "dynamic");
 
-  if (value is Map) {
-    return value.map<dynamic,dynamic>((dynamic k, dynamic v){
-      return MapEntry<dynamic, dynamic>(maybeAddQuotes(k), maybeAddQuotes(v));
-    });
-  }
+  /// Set to false because dynamic nullability is implicit.
+  @override
+  bool get nullable => false;
+}
 
-  if (value is String) {
-    return '"$value"';
-  }
-
-  if (value is JsonNode) {
-    return maybeAddQuotes(value.data);
-  }
-
-  return value;
+/// [JsonNode] to represent a JSON node of unknown type.
+///
+/// This [JsonNode] is not exposed as AST type
+/// because mapping to dynamic types is discouraged.
+///
+/// The use of this type is when converting a JSON String
+/// to a data class and/or extension methods. When a field
+/// is null then the type can not be determined.
+///
+/// Without a proper representation of this state
+/// it would be impossible to generate code for
+/// input containing null/unknown types.
+class UntypedJsonNode extends JsonNode<dynamic> {
+  /// Construct a new [UntypedJsonNode].
+  const UntypedJsonNode({required super.key, super.data});
 }

@@ -18,43 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "../ast/ast.dart";
+import "package:squint/src/ast/ast.dart";
+import "package:squint/src/decoder/decoder.dart";
+import 'package:squint/src/decoder/lists.dart';
+import "package:test/test.dart";
 
-/// Return a quoted String value for JSON if the current value is a String.
-///
-/// Example:
-///
-/// Given a [String] value foo will return:
-///
-/// ```
-///   "foo"
-/// ```
-///
-/// Given an [int] value 10 will return:
-///
-/// ```
-///   10
-/// ```
-///
-/// {@category encoder}
-dynamic maybeAddQuotes(dynamic value) {
-  if (value is List) {
-    return value.map<dynamic>(maybeAddQuotes).toList();
-  }
+void main() {
+  test("verify building a nested String List", () {
+    // when
+    final object = getNestedStringList(2);
+    // then
+    expect(object is List<List<List<String>>>, true);
+  });
 
-  if (value is Map) {
-    return value.map<dynamic,dynamic>((dynamic k, dynamic v){
-      return MapEntry<dynamic, dynamic>(maybeAddQuotes(k), maybeAddQuotes(v));
-    });
-  }
 
-  if (value is String) {
-    return '"$value"';
-  }
+  test("verify building a List Structure", () {
+    // when
+    final structure = buildListStructure<String>([[0,0,0,0],[0,0,0,1],[0,0,0]]);
+    // then
+    expect(structure is List<List<List<List<String>>>>, true);
+  });
 
-  if (value is JsonNode) {
-    return maybeAddQuotes(value.data);
-  }
-
-  return value;
 }

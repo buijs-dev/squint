@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import '../analyzer/analyzer.dart';
+import "../analyzer/analyzer.dart";
 import "../ast/ast.dart";
 import "../common/common.dart";
 
@@ -26,8 +26,8 @@ import "../common/common.dart";
 extension JsonElementGenerator on List<TypeMember> {
   ///
   List<String> toJsonNodeSetters({String dataPrefix = ""}) =>
-      map((TypeMember tm) => "    ${tm.toJsonType(dataPrefix: dataPrefix)},")
-          .toList();
+      map((TypeMember tm) => "    ${tm.toJsonSetter(dataPrefix: dataPrefix)},")
+          .toList()..sort((a,b) => a.trim().startsWith("Json") ? -1 : 1);
 
   ///
   List<String> toJsonNodeGetters({String dataPrefix = ""}) =>
@@ -88,12 +88,14 @@ extension on TypeMember {
         return '$name: ${dataPrefix}arrayValue<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
         return '$name: ${dataPrefix}object("$jsonKey").rawData()';
+      case "dynamic":
+        return '$name: ${dataPrefix}byKey("$jsonKey").data';
       default:
         throw SquintException("Unsupported data type: $type");
     }
   }
 
-  String toJsonType({String dataPrefix = ""}) {
+  String toJsonSetter({String dataPrefix = ""}) {
     final valueJsonAnnotated = annotations
         .firstBy((element) => element.name == "JsonValue")
         ?.data["tag"];
@@ -123,6 +125,8 @@ extension on TypeMember {
         return 'JsonArray<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
         return 'JsonObject.fromMap($dataPrefix$name, "$jsonKey")';
+      case "dynamic":
+        return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:
         throw SquintException("Unsupported data type: ${this.type.className}");
     }

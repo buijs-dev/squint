@@ -18,9 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+
+// ignore_for_file: avoid_annotating_with_dynamic
+
 import "../ast/ast.dart";
 import "../common/common.dart";
+import "../converters/converters.dart";
 import "../decoder/decoder.dart";
+import "lists.dart";
 
 /// Utility to construct a nested List structure
 /// with strongly typed children.
@@ -32,102 +37,309 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   /// coordinates for adding [JsonNode] values to the correct
   /// (sub) List.
   ///
-  /// Key is constructed by [ParseUtil].
-  List<dynamic> toList() {
-    final list = <dynamic>[];
+  /// Key is constructed by [JsonArrayDecoder].
+  List toList<T,R>({List<T>? valueList}) {
 
+    // List contains one or more null values if true.
     final isNullable = values.any((o) => o is JsonNull);
-    final hasIntegerValues = values.any((o) => o is JsonIntegerNumber);
-    final hasFloatingValues = values.any((o) => o is JsonFloatingNumber);
+
+    // List without any null values to simplify Type determination.
+    final valuesNotNull = values.where((o) => o is! JsonNull);
+
+    if(valuesNotNull.every((node) => node is JsonString)) {
+      return isNullable ? _toNullableStringList : _toStringList;
+    }
+
+    if(valuesNotNull.every((node) => node is JsonIntegerNumber)) {
+      return isNullable ? _toNullableIntegerList : _toIntegerList;
+    }
+
+    if(valuesNotNull.every((node) => node is JsonFloatingNumber)) {
+      return isNullable ? _toNullableDoubleList : _toDoubleList;
+    }
 
     /// If a List contains both integers and floating point numbers,
     /// then all integers should be cast to a floating point.
-    if (hasIntegerValues && hasFloatingValues) {
+    if(valuesNotNull.every((node) => node is JsonFloatingNumber || node is JsonIntegerNumber)) {
       return map((key, value) => MapEntry(
           key,
           value is JsonIntegerNumber
               ? JsonFloatingNumber(key: key, data: value.data.toDouble())
-              : value)).toList();
+              : value)).toList(valueList: isNullable ? <double?>[] : <double>[]);
+    }
+
+    if(valuesNotNull.every((node) => node is JsonBoolean)) {
+      return isNullable ? _toNullableBooleanList : _toBooleanList;
+    }
+
+    if(valuesNotNull.every((node) => node is JsonObject)) {
+      return _toObjectList(valueList: valueList ?? []);
+    }
+
+    if(valuesNotNull.every((node) => node is CustomJsonNode)) {
+      if(valueList == null) {
+        throw SquintException(
+            "Unable to build a List because not Type is specified for CustomJsonNode.");
+      }
+      return _toCustomObjectList<T>(valueList: valueList);
+    }
+
+    throw SquintException("Unable to build a List because not all children are of the same Type.");
+
+  }
+
+  /// Return a (nested) List of String.
+  List get _toStringList =>
+      _toTypedList<String>(valueList: <String>[]);
+
+  /// Return a (nested) List of String.
+  List get _toNullableStringList =>
+      _toTypedList<String?>(valueList: <String?>[]);
+
+  /// Return a (nested) List of bool.
+  List get _toBooleanList =>
+      _toTypedList<bool>(valueList: <bool>[]);
+
+  /// Return a (nested) List of bool.
+  List get _toNullableBooleanList =>
+      _toTypedList<bool?>(valueList: <bool?>[]);
+
+  /// Return a (nested) List of int.
+  List get _toIntegerList =>
+      _toTypedList<int>(valueList: <int>[]);
+
+  /// Return a (nested) List of int.
+  List get _toNullableIntegerList =>
+      _toTypedList<int?>(valueList: <int?>[]);
+
+  /// Return a (nested) List of double.
+  List get _toDoubleList =>
+      _toTypedList<double>(valueList: <double>[]);
+
+  /// Return a (nested) List of double.
+  List get _toNullableDoubleList =>
+      _toTypedList<double?>(valueList: <double?>[]);
+
+  List _toTypedList<T>({
+    required List<T> valueList,
+  }) {
+    final sizing = keys.map((key) => key.position).toList();
+    final structure = buildListStructure<T>(sizing);
+
+    for (final key in keys) {
+      final node = this[key];
+      if(node != null) {
+        _prefill<T>(
+          value: node.data as T,
+          // Remove first index because you always start
+          // adding inside a List (first index == parent List).
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
+      }
     }
 
     for (final key in keys) {
-      final element = this[key];
+      final node = this[key];
+      if(node != null) {
+        insertAt<T>(
+          value: node.data as T,
+          // Remove first index because you always start
+          // adding inside a List (first index == parent List).
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
+      }
+    }
 
-      // The value to be stored in a List.
-      dynamic value = element?.data;
+    return structure;
+  }
 
-      if (value is Map && value.values.first is JsonNode) {
-        value = value.map<String, dynamic>((dynamic key, dynamic value) {
-          return MapEntry<String, dynamic>("$key", value.data);
-        });
+  List _toObjectList({
+    required List valueList,
+  }) {
+
+    final sizing =
+      keys.map((key) => key.position).toList();
+
+    final structure =
+      buildListStructure(sizing, valueList: valueList);
+
+    for (final key in keys) {
+      final node = this[key];
+      if(node != null) {
+        _prefill(
+          value: node.data,
+          // Remove first index because you always start
+          // adding inside a List (first index == parent List).
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
+      }
+    }
+
+    for (final key in keys) {
+      final node = this[key] as JsonObject?;
+
+      var value = <String,dynamic>{};
+
+      if(node != null) {
+        if (value.values.any((val) => val is JsonNode)) {
+          value = value.map<String, dynamic>((key, value) {
+            return MapEntry<String, dynamic>(key, value.data);
+          });
+        }
+
+        final valueType = node.valuesAllOfSameType;
+
+        if(valueType != null) {
+          switch (valueType.className) {
+            case "String":
+              value = node.toStringMap.rawData;
+              break;
+            case "double":
+              value = node.toFloatMap.rawData;
+              break;
+            case "int":
+              value = node.toIntegerMap.rawData;
+              break;
+            case "bool":
+              value = node.toBooleanMap.rawData;
+              break;
+          }
+        } else {
+          value = node.rawData();
+        }
+
+        // Remove final number because width does not matter here.
+        insertAt(
+          value: value,
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
       }
 
-      // Remove final number because width does not matter here.
-      // Then split on . (dot) to index of each list.
-      final position = key
-          .substring(0, key.lastIndexOf("."))
+    }
+    return structure;
+  }
+
+  List _toCustomObjectList<T>({
+    required List<T> valueList,
+  }) {
+
+    final sizing =
+      keys.map((key) => key.position).toList();
+
+    final structure =
+      buildListStructure<T>(sizing, valueList: valueList);
+
+    for (final key in keys) {
+      final node = this[key];
+      if(node != null) {
+        _prefill<T>(
+          value: node.data as T,
+          // Remove first index because you always start
+          // adding inside a List (first index == parent List).
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
+      }
+    }
+
+    for (final key in keys) {
+      final node = this[key] as CustomJsonNode?;
+
+      if(node != null) {
+        insertAt<T>(
+          value: node.data as T,
+          position: key.position..removeAt(0),
+          valueList: valueList,
+          structure: structure,
+        );
+      }
+    }
+
+    return structure as List<T>;
+  }
+}
+
+///
+void insertAt<T>({
+  required T value,
+  required List<int> position,
+  required List<T> valueList,
+  required List structure,
+}) {
+
+  var temp = structure;
+
+  position.asMap().forEach((index, number) {
+    temp = temp[number] as List;
+  });
+
+  temp.add(value);
+}
+
+void _prefill<T>({
+  required T value,
+  required List<int> position,
+  required List<T> valueList,
+  required List structure,
+}) {
+
+  final valueListRuntimeType = valueList.runtimeType.toString();
+
+  var temp = structure;
+
+  position.asMap().forEach((index, number) {
+    while(number >= temp.length) {
+      // If true then list to be added contains T,
+      // so we need to add <T>[].
+      // if not then we can not specify the Type as T,
+      // because there could be more Lists in between.
+      if (index + 1 == position.length) {
+        temp.add(List.of(valueList));
+      } else {
+        final tempListRuntimeType = temp.runtimeType.toString();
+        final tempListDepth = "List"
+            .allMatches(tempListRuntimeType)
+            .length;
+        final valueListDepth = "List"
+            .allMatches(valueListRuntimeType)
+            .length;
+        final depth = tempListDepth - valueListDepth;
+        if (depth > 0) {
+          temp.add(getNestedList<T>(depth: depth-1, valueList: List.of(valueList)));
+        } else {
+          throw SquintException(
+              "valueList won't ever be a child of tempList because it's depth is deeper: $depth"
+          );
+        }
+      }
+    }
+    temp = temp[number] as List;
+  });
+
+}
+
+extension on String {
+  List<int> get position =>
+      substring(0, lastIndexOf("."))
           .split(".")
           .where((o) => o != "")
           .map(int.parse)
           .toList();
-
-      var _list = list;
-
-      final maxDepth = position.length;
-
-      var currentDepth = 0;
-
-      for (final index in position) {
-        currentDepth += 1;
-
-        while (index > _list.length) {
-          _list.add(<dynamic>[]);
-        }
-
-        if (index == _list.length) {
-          if (currentDepth == maxDepth) {
-            if (isNullable) {
-              if (element is JsonFloatingNumber) {
-                _list.add(<double?>[]);
-              } else if (element is JsonIntegerNumber) {
-                _list.add(<int?>[]);
-              } else if (element is JsonString) {
-                _list.add(<String?>[]);
-              } else if (element is JsonBoolean) {
-                _list.add(<bool?>[]);
-              }
-            } else {
-              if (element is JsonFloatingNumber) {
-                _list.add(<double>[]);
-              } else if (element is JsonIntegerNumber) {
-                _list.add(<int>[]);
-              } else if (element is JsonString) {
-                _list.add(<String>[]);
-              } else if (element is JsonBoolean) {
-                _list.add(<bool>[]);
-              } else if (element is JsonObject) {
-                _list.add(<Map<String, dynamic>>[]);
-              }
-            }
-          } else {
-            _list.add(<dynamic>[]);
-          }
-        }
-
-        _list = _list[index] as List;
-      }
-
-      _list.add(value);
-    }
-
-    return list[0] as List;
-  }
 }
 
-/// Utilities to parse a list value from JSON content.
-extension ParseUtil on String {
+/// Decode a JSON Array String.
+extension JsonArrayDecoder on String {
   /// Decode JSON String containing (sub) List(s)
-  /// by saving each value as [JsonNode] and storing
+  /// by saving each value and storing
   /// their position as width/depth coordinates.
   ///
   /// Example:
@@ -140,7 +352,7 @@ extension ParseUtil on String {
   /// ".0.0.0.1" : "goodbye"
   /// ".0.0.1.1" : "Sam"
   /// ".0.0.1.2" : "Hanna"
-  Map<String, JsonNode> unwrapList({
+  Map<String, JsonNode> decodeJsonArray({
     required int maxDepth,
 
     /// Can be set to true for testing purposes.
@@ -161,7 +373,7 @@ extension ParseUtil on String {
 
     var currentDepth = 0;
 
-    var currentKey = ".0";
+    final keygen = ArrayDecodingKeyGenerator();
 
     var currentValue = "";
 
@@ -172,13 +384,16 @@ extension ParseUtil on String {
     var i = 0;
 
     while (i < input.length) {
+      if(previousToken is ListOpeningBracketToken && currentToken is ListClosingBracketToken) {
+        output[keygen.currentKey] = _PlaceHolder(key: keygen.currentKey);
+      }
       previousToken = currentToken;
       currentToken = _Token.fromChar(
         previousToken: previousToken,
         characters: input,
         currentSize: size,
         currentDepth: currentDepth,
-        currentKey: currentKey,
+        keygen: keygen,
         currentValue: currentValue,
         output: output,
         index: i,
@@ -187,12 +402,48 @@ extension ParseUtil on String {
       i = currentToken.index;
       size = currentToken.size;
       currentDepth = currentToken.depth;
-      currentKey = currentToken.key;
       currentValue = currentToken.value;
     }
 
-    return output;
+    return output..removeWhere((key, value) => value is _PlaceHolder);
   }
+}
+
+class _PlaceHolder extends JsonNode {
+  _PlaceHolder({required super.key}): super(data: "");
+}
+
+/// Decode a Dart List.
+extension ListDecoder on List {
+  /// Decode List(s) by saving each value
+  /// as [JsonNode] and storing
+  /// their position as width/depth coordinates.
+  ///
+  /// Example:
+  ///
+  /// Given a List:
+  /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
+  ///
+  /// Would result in the following Map:
+  /// ".0.0.0.0" : "hello"
+  /// ".0.0.0.1" : "goodbye"
+  /// ".0.0.1.1" : "Sam"
+  /// ".0.0.1.2" : "Hanna"
+  Map<String, JsonNode> get decodeList {
+    var depth = 1;
+    var nextChild = runtimeType.toString();
+    while(nextChild.startsWith("List<")) {
+      nextChild = nextChild
+          .removePrefixIfPresent("List<")
+          .removePostfixIfPresent(">");
+      depth +=1;
+    }
+
+    return JsonArray(key: "foo", data: this).stringify
+        .replaceFirstMapped(RegExp('(^"[^"]+?":)'), (match) => "")
+        .decodeJsonArray(maxDepth: depth);
+  }
+
 }
 
 ///
@@ -201,16 +452,20 @@ class ListOpeningBracketToken extends _Token {
   ListOpeningBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required String currentValue,
+    required Map<String, JsonNode> output,
     required int index,
   }) : super(
             index: index,
             depth: currentDepth + 1,
             size: currentSize,
             value: currentValue,
-            key: "$currentKey.${currentSize[currentDepth]!}");
+            key: keygen.nextKey(output.keys.toList(), ListOpeningBracketToken),
+  );
+
 }
+
 
 ///
 class ListClosingBracketToken extends _Token {
@@ -218,7 +473,7 @@ class ListClosingBracketToken extends _Token {
   ListClosingBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required String currentValue,
     required Map<String, JsonNode> output,
     required int index,
@@ -228,11 +483,11 @@ class ListClosingBracketToken extends _Token {
           size: _size(currentSize, currentDepth),
           value: _simpleValue(
               currentValue: currentValue,
-              currentKey: currentKey,
+              currentKey: keygen.currentKey,
               output: output,
           ),
-          key: currentKey.substring(0, currentKey.lastIndexOf(".")),
-        );
+    key: keygen.nextKey(output.keys.toList(), ListClosingBracketToken),
+  );
 }
 
 ///
@@ -241,7 +496,7 @@ class ObjectOpeningBracketToken extends _Token {
   ObjectOpeningBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required int index,
     required Map<String, JsonNode> output,
     required List<String> characters,
@@ -252,17 +507,17 @@ class ObjectOpeningBracketToken extends _Token {
             output: output,
             characters: characters,
             index: index,
-            key: currentKey.incrementWidth,
+            keygen: keygen,
           ),
           depth: currentDepth,
           size: currentSize,
           value: "",
-          key: currentKey.substring(0, currentKey.lastIndexOf(".")),
+          key: keygen.currentKey,
         );
 }
 
 int _setObjectValueAndReturnRemainder({
-  required String key,
+  required ArrayDecodingKeyGenerator keygen,
   required int index,
   required Map<String, JsonNode> output,
   required List<String> characters,
@@ -276,11 +531,10 @@ int _setObjectValueAndReturnRemainder({
         .split("},")
         .map((str) => str.endsWith("}") ? str : "$str}");
 
-    var currentKey = key;
+    var currentKey = keygen.currentKey;
     for (final strObject in stringObjects) {
-      final value = strObject.jsonDecode;
-      output[currentKey] = value;
-      currentKey = currentKey.incrementWidth;
+      output[currentKey] = JsonObject(strObject.jsonDecode.data, currentKey);
+      currentKey = keygen.incrementWidth;
     }
 
     return characters.length;
@@ -293,10 +547,7 @@ int _setObjectValueAndReturnRemainder({
     );
 
     final sublist = counter.contentBetweenBrackets;
-
-    final value = sublist.join().jsonDecode;
-
-    output[key] = value;
+    output[keygen.currentKey] = JsonObject(sublist.join().jsonDecode.data, keygen.currentKey);
     return counter.endIndex;
   }
 }
@@ -307,7 +558,7 @@ class ListValueSeparatorToken extends _Token {
   ListValueSeparatorToken({
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required String currentValue,
     required Map<String, JsonNode> output,
     required int index,
@@ -317,10 +568,10 @@ class ListValueSeparatorToken extends _Token {
           size: _size(currentSize, currentDepth),
           value: _simpleValue(
             currentValue: currentValue,
-            currentKey: currentKey,
+            currentKey: keygen.currentKey,
             output: output,
           ),
-          key: currentKey.incrementWidth,
+          key: keygen.nextKey(output.keys.toList(), ListValueSeparatorToken),
         );
 
   static Map<int, int> _size(Map<int, int> currentSize, int depth) {
@@ -345,7 +596,7 @@ class ListValueToken extends _Token {
   ListValueToken({
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required String currentValue,
     required String currentCharacter,
     required int index,
@@ -354,7 +605,7 @@ class ListValueToken extends _Token {
           depth: currentDepth,
           size: currentSize,
           value: "$currentValue$currentCharacter",
-          key: currentKey,
+          key: keygen.currentKey,
         );
 }
 
@@ -363,13 +614,11 @@ String _simpleValue({
   required String currentKey,
   required Map<String, JsonNode> output,
 }) {
-  var value = currentValue;
+  final value = currentValue.trim();
 
   if (value == "") {
     return "";
   }
-
-  value = value.trim();
 
   /// String
   if (value.startsWith('"') && value.endsWith('"')) {
@@ -434,14 +683,6 @@ Map<int, int> _size(Map<int, int> currentSize, int depth) {
   return output;
 }
 
-extension on String {
-  String get incrementWidth {
-    final depthKey = substring(0, lastIndexOf("."));
-    final width = substring(lastIndexOf(".") + 1, length);
-    return "$depthKey.${int.parse(width) + 1}";
-  }
-}
-
 abstract class _Token {
   _Token({
     required this.size,
@@ -455,7 +696,7 @@ abstract class _Token {
     required List<String> characters,
     required Map<int, int> currentSize,
     required int currentDepth,
-    required String currentKey,
+    required ArrayDecodingKeyGenerator keygen,
     required String currentValue,
     required Map<String, JsonNode> output,
     required int index,
@@ -466,15 +707,16 @@ abstract class _Token {
         return ListOpeningBracketToken(
           currentDepth: currentDepth,
           currentSize: currentSize,
-          currentKey: currentKey,
+          keygen: keygen,
           currentValue: currentValue,
+          output: output,
           index: index + 1,
         );
       case "]":
         return ListClosingBracketToken(
           currentDepth: currentDepth,
           currentSize: currentSize,
-          currentKey: currentKey,
+          keygen: keygen,
           currentValue: currentValue,
           output: output,
           index: index + 1,
@@ -485,7 +727,7 @@ abstract class _Token {
           characters: characters,
           currentDepth: currentDepth,
           currentSize: currentSize,
-          currentKey: currentKey,
+          keygen: keygen,
           output: output,
           index: index + 1,
         );
@@ -493,7 +735,7 @@ abstract class _Token {
         return ListValueSeparatorToken(
           currentDepth: currentDepth,
           currentSize: currentSize,
-          currentKey: currentKey,
+          keygen: keygen,
           currentValue: currentValue,
           output: output,
           index: index + 1,
@@ -502,7 +744,7 @@ abstract class _Token {
         return ListValueToken(
           currentDepth: currentDepth,
           currentSize: currentSize,
-          currentKey: currentKey,
+          keygen: keygen,
           currentValue: currentValue,
           currentCharacter: characters[index],
           index: index + 1,
@@ -512,11 +754,46 @@ abstract class _Token {
 
   final Map<int, int> size;
 
-  final String key;
-
   final String value;
 
   final int depth;
 
   final int index;
+
+  final String key;
+}
+
+///
+class ArrayDecodingKeyGenerator {
+  ///
+  ArrayDecodingKeyGenerator([this.currentKey = ".0"]);
+
+  ///
+  String currentKey;
+
+  ///
+  String nextKey(List<String> keys, Type token) {
+    switch(token) {
+      case ListOpeningBracketToken:
+        currentKey = "$currentKey.0";
+        break;
+      case ListClosingBracketToken:
+        currentKey = currentKey.substring(0, currentKey.lastIndexOf("."));
+        break;
+      case ListValueSeparatorToken:
+        incrementWidth;
+    }
+
+    return currentKey;
+  }
+
+  ///
+  String get incrementWidth {
+    final strWidth = currentKey.substring(currentKey.lastIndexOf(".") + 1, currentKey.length);
+    final intWidth = int.parse(strWidth) + 1;
+    final prefix = currentKey.substring(0, currentKey.lastIndexOf("."));
+    return currentKey = "$prefix.$intWidth";
+
+  }
+
 }

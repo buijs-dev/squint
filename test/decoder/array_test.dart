@@ -30,7 +30,7 @@ void main() {
                   
                   "aye" ]
                   """
-        .unwrapList(
+        .decodeJsonArray(
       normalizeSpaces: true,
       maxDepth: 1,
     );
@@ -50,7 +50,7 @@ void main() {
                   "x"]      
                   ]       ]
           """
-        .unwrapList(
+        .decodeJsonArray(
       normalizeSpaces: true,
       maxDepth: 4,
     );
@@ -58,8 +58,8 @@ void main() {
     // then
     expect(unwrapped[".0.0.0.0"]!.data, "hi !");
     expect(unwrapped[".0.0.0.1"]!.data, "aye");
-    expect(unwrapped[".0.0.1.1"]!.data, "lol");
-    expect(unwrapped[".0.0.1.2"]!.data, "x");
+    expect(unwrapped[".0.0.1.0"]!.data, "lol");
+    expect(unwrapped[".0.0.1.1"]!.data, "x");
   });
 
   test("verify decoding a nested List", () {
@@ -145,6 +145,41 @@ void main() {
     expect(getReady4TheLaunch.data, 12345);
   });
 
+  test("verify roundtrip decoding and encoding based on decoded output", () {
+    // given
+    const inputLists = """[[["1", "2"], ["3"]], [[], ["4"]]]""";
+
+    // when
+    final decodedMap = inputLists.decodeJsonArray(maxDepth: 4);
+
+    // then
+    final map = {
+      ".0.0.0.0": const JsonString(key: "1", data: "1"),
+      ".0.0.0.1": const JsonString(key: "2", data: "2"),
+      ".0.0.1.0": const JsonString(key: "3", data: "3"),
+      ".0.1.1.0": const JsonString(key: "4", data: "4"),
+    };
+
+    decodedMap.forEach((key, value) {
+      expect(map[key]?.data, value.data);
+    });
+
+    // when
+    final nestedness = map.toList();
+
+    // then
+    expect(nestedness[0][0][0], "1");
+    expect(nestedness[0][0][1], "2");
+    expect(nestedness[0][1][0], "3");
+    expect(nestedness[1][1][0], "4");
+
+    // and
+    expect(
+        JsonArray(key: "nestedness", data: nestedness).stringify,
+        """"nestedness":$inputLists""",
+    );
+  });
+
   test("verify decoding a list of numbers", () {
     final json = """
           {
@@ -166,7 +201,7 @@ void main() {
     // given
     final token = ListValueToken(
       currentCharacter: "y",
-      currentKey: ".0.0",
+      keygen: ArrayDecodingKeyGenerator(".0.0"),
       currentValue: "x",
       currentSize: {0: 0},
       currentDepth: 0,
@@ -188,7 +223,7 @@ void main() {
     // given
     final output = <String, JsonNode>{};
     final token = ListValueSeparatorToken(
-      currentKey: ".0.0",
+      keygen: ArrayDecodingKeyGenerator(".0.0"),
       currentValue: '"Anakin"',
       currentSize: {0: 0},
       currentDepth: 0,
@@ -213,7 +248,7 @@ void main() {
     // given
     final output = <String, JsonNode>{};
     final token = ListClosingBracketToken(
-      currentKey: ".1.5",
+      keygen: ArrayDecodingKeyGenerator(".1.5"),
       currentValue: '"Anakin"',
       currentSize: {0: 0, 1: 0},
       currentDepth: 1,
@@ -237,11 +272,12 @@ void main() {
   test("verify ListOpeningBracketToken", () {
     // given
     final token = ListOpeningBracketToken(
-      currentKey: ".1.0.0",
+      keygen: ArrayDecodingKeyGenerator(".1.0.0"),
       currentValue: "",
       currentSize: {0: 0, 1: 0, 2: 0},
       currentDepth: 2,
       index: 0,
+      output: {},
     );
 
     // expect
@@ -251,5 +287,15 @@ void main() {
         reason: "depth is increased by 1 after opening a list");
     expect(token.key, ".1.0.0.0", reason: "final width marker is added to key");
     expect(token.value, "", reason: "value does not change");
+  });
+
+  test("verify decoding a Dart List", () {
+    // given
+    final decoded = [["a","b"],["c"]].decodeList;
+
+    // expect
+    expect(decoded[".0.0.0"]!.data, "a");
+    expect(decoded[".0.0.1"]!.data, "b");
+    expect(decoded[".0.1.0"]!.data, "c");
   });
 }

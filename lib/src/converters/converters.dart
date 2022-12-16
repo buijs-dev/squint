@@ -23,3 +23,5 @@ library decoder;
 
 export "node2abstract.dart";
 export "object2custom.dart";
+export "object2map.dart";
+export "undetermined.dart";

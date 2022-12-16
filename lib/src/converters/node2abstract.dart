@@ -21,6 +21,8 @@
 import "../ast/ast.dart";
 import "../common/common.dart";
 import "object2custom.dart";
+import "object2map.dart";
+import "undetermined.dart";
 
 /// Convert a [JsonNode] to an [AbstractType].
 extension JsonNode2AbstractType on JsonNode {
@@ -78,10 +80,30 @@ extension JsonNode2AbstractType on JsonNode {
     }
 
     if (this is JsonObject) {
+      final valueType = (this as JsonObject).valuesAllOfSameType;
+      if(valueType != null) {
+        if(valueType is StringType) {
+          return const MapType(key: StringType(), value: StringType());
+        }
+
+        if(valueType is BooleanType) {
+          return const MapType(key: StringType(), value: BooleanType());
+        }
+
+        if(valueType is IntType) {
+          return const MapType(key: StringType(), value: IntType());
+        }
+
+        if(valueType is DoubleType) {
+          return const MapType(key: StringType(), value: DoubleType());
+        }
+
+        // TODO nested List or Object?
+      }
       return (this as JsonObject).toCustomType(className: key.camelCase());
     }
 
-    return const _UnknownNullableAsDynamic();
+    return const UndeterminedAsDynamic();
   }
 }
 
@@ -127,15 +149,6 @@ extension on List<dynamic> {
           : ListType(MapType(key: keyType, value: valueType));
     }
 
-    return const ListType(_UnknownNullableAsDynamic());
+    return const ListType(UndeterminedAsDynamic());
   }
-}
-
-/// [AbstractType] to represent a null value which type is unknown.
-class _UnknownNullableAsDynamic extends AbstractType {
-  const _UnknownNullableAsDynamic() : super(className: "dynamic");
-
-  /// Set to false because dynamic nullability is implicit.
-  @override
-  bool get nullable => false;
 }

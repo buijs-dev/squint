@@ -6,7 +6,7 @@ analyzer:
     - "**/*.g.dart"
   strong-mode:
     implicit-casts: false
-    implicit-dynamic: false
+#    implicit-dynamic: false
   errors:
     # Otherwise cause the import of all_lint_rules to warn because of some rules conflicts.
     # We explicitly enabled even conflicting rules and are fixing the conflict in this file
@@ -59,7 +59,7 @@ linter:
     lines_longer_than_80_chars: false
 
     # Conflicts with disabling `implicit-dynamic`
-    avoid_annotating_with_dynamic: false
+    avoid_annotating_with_dynamic: true
 
     # conflicts with `prefer_relative_imports`
     always_use_package_imports: false
