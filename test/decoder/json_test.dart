@@ -66,31 +66,29 @@ void main() {
     final decoded = example.jsonDecode;
 
     // then
-    final greeting = decoded.string("greeting");
+    final greeting = decoded.stringNode("greeting");
     expect(greeting.data, "Welcome to Squint!");
 
     // and
-    final instructions = decoded.array<String>("instructions");
+    final instructions = decoded.arrayNode<String>("instructions");
     expect(instructions.data[0], "Type or paste JSON here");
     expect(instructions.data[1], "Or choose a sample above");
     expect(instructions.data[2], "squint will generate code in your");
     expect(instructions.data[3], "chosen language to parse the sample data");
 
     // and
-    final nestedness = decoded.array<dynamic>("nestedness");
+    final nestedness = decoded.arrayNode<dynamic>("nestedness");
     expect(nestedness.data[0][0][0][0], "hi!");
     expect(nestedness.data[0][0][0][1], "aye");
     expect(nestedness.data[0][0][1][0], "hi3!");
     expect(nestedness.data[1][0][0][0], "byebye");
 
     // and
-    final foobject = decoded.object("foobject");
-    expect(foobject.stringValue("x"), "y");
+    final foobject = decoded.objectNode("foobject");
+    expect(foobject.string("x"), "y");
   });
 
-
   test("verify decoding standard types", () {
-
     const json = """
 {
   "id": 1,
@@ -115,30 +113,30 @@ void main() {
 
     final decoded = json.jsonDecode;
 
-    final id = decoded.integer("id");
+    final id = decoded.integerNode("id");
     expect(id.key, "id");
     expect(id.data, 1);
 
-    final fakeData = decoded.boolean("fake-data");
+    final fakeData = decoded.booleanNode("fake-data");
     expect(fakeData.key, "fake-data");
     expect(fakeData.data, true);
 
-    final realData = decoded.boolean("real_data");
+    final realData = decoded.booleanNode("real_data");
     expect(realData.key, "real_data");
     expect(realData.data, false);
 
-    final greeting = decoded.string("greeting");
+    final greeting = decoded.stringNode("greeting");
     expect(greeting.key, "greeting");
     expect(greeting.data, "Welcome to Squint!");
 
-    final instructions = decoded.array<String>("instructions");
+    final instructions = decoded.arrayNode<String>("instructions");
     expect(instructions.key, "instructions");
     expect(instructions.data[0], "Type or paste JSON here");
     expect(instructions.data[1], "Or choose a sample above");
     expect(instructions.data[2], "squint will generate code in your");
     expect(instructions.data[3], "chosen language to parse the sample data");
 
-    final numbers = decoded.array<double>("numbers");
+    final numbers = decoded.arrayNode<double>("numbers");
     expect(numbers.key, "numbers");
     // If any number in a List is a floating point,
     // then they are all stored as double values.
@@ -146,19 +144,17 @@ void main() {
     expect(numbers.data[1], 4.4);
     expect(numbers.data[2], -15);
 
-    final objective = decoded.object("objective");
+    final objective = decoded.objectNode("objective");
     expect(objective.key, "objective");
-    expect(objective.boolean("indicator").data, false);
-    expect(objective.array<bool>("instructions").data[1], true);
+    expect(objective.booleanNode("indicator").data, false);
+    expect(objective.arrayNode<bool>("instructions").data[1], true);
 
-    final objectList = decoded.array<dynamic>("objectList");
+    final objectList = decoded.arrayNode<dynamic>("objectList");
     expect(objectList.key, "objectList");
     expect(objectList.data[0]["a"], 1);
-
   });
 
-  test("verify decoding and using direct value getters", (){
-
+  test("verify decoding and using direct value getters", () {
     const json = '''
          {
             "id": 1,
@@ -180,23 +176,24 @@ void main() {
           ''';
 
     final object = json.jsonDecode;
-    expect(object.integer("id").key, "id");
-    expect(object.integer("id").data, 1);
-    expect(object.integerValue("id"), 1);
-    expect(object.booleanValue("isJedi"), true);
-    expect(object.booleanValue("hasPadawan"), false);
-    expect(object.stringValue("bff"), "Leia");
-    expect(object.arrayValue<String>("jedi")[0], "Obi-Wan");
-    expect(object.arrayValue<String>("jedi")[1], "Anakin");
-    expect(object.arrayValue<String>("jedi")[2],"Luke Skywalker");
-    expect(object.arrayValue<double>("coordinates")[0], 22);
-    expect(object.arrayValue<double>("coordinates")[1], 4.4);
-    expect(object.arrayValue<double>("coordinates")[2], -15);
-    expect(object.object("objectives").booleanValue("in-mission"), false);
-    expect(object.object("objectives").arrayValue<bool>("mission-results")[0], false);
-    expect(object.object("objectives").arrayValue<bool>("mission-results")[1], true);
-    expect(object.arrayValue<dynamic>("annoyance-rate")[0]["JarJarBinks"], 9000);
-
-
+    expect(object.integerNode("id").key, "id");
+    expect(object.integerNode("id").data, 1);
+    expect(object.integer("id"), 1);
+    expect(object.boolean("isJedi"), true);
+    expect(object.boolean("hasPadawan"), false);
+    expect(object.string("bff"), "Leia");
+    expect(object.array<String>("jedi")[0], "Obi-Wan");
+    expect(object.array<String>("jedi")[1], "Anakin");
+    expect(object.array<String>("jedi")[2], "Luke Skywalker");
+    expect(object.array<double>("coordinates")[0], 22);
+    expect(object.array<double>("coordinates")[1], 4.4);
+    expect(object.array<double>("coordinates")[2], -15);
+    expect(object.objectNode("objectives").boolean("in-mission"), false);
+    expect(object.objectNode("objectives").array<bool>("mission-results")[0],
+        false);
+    expect(object.objectNode("objectives").array<bool>("mission-results")[1],
+        true);
+    expect(
+        object.array<dynamic>("annoyance-rate")[0]["JarJarBinks"], 9000);
   });
 }

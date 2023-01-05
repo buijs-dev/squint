@@ -22,32 +22,41 @@ import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
+  test(
+      "verify an exception is thrown if the child type of a List can not be determined",
+      () {
+    expect(
+        () => "List<>".toAbstractType(),
+        throwsA(predicate((e) =>
+            e is SquintException &&
+            e.cause.startsWith("Unable to determine type:") &&
+            e.cause.contains("List<>"))));
 
-  test("verify an exception is thrown if the child type of a List can not be determined", () {
-    expect(() =>  "List<>".toAbstractType(), throwsA(predicate((e) => e is SquintException
-        && e.cause.startsWith("Unable to determine type:")
-        && e.cause.contains("List<>")
-    )));
-
-    expect(() =>  "List".toAbstractType(), throwsA(predicate((e) => e is SquintException
-        && e.cause.startsWith("Unable to determine List child type:")
-        && e.cause.contains("List")
-    )));
+    expect(
+        () => "List".toAbstractType(),
+        throwsA(predicate((e) =>
+            e is SquintException &&
+            e.cause.startsWith("Unable to determine List child type:") &&
+            e.cause.contains("List"))));
   });
 
-  test("verify an exception is thrown if the key type of a Map can not be determined", () {
-    expect(() =>  "Map".toAbstractType(), throwsA(predicate((e) => e is SquintException
-        && e.cause.startsWith("Unable to determine Map key type:")
-        && e.cause.contains("'Map'")
-    )));
+  test(
+      "verify an exception is thrown if the key type of a Map can not be determined",
+      () {
+    expect(
+        () => "Map".toAbstractType(),
+        throwsA(predicate((e) =>
+            e is SquintException &&
+            e.cause.startsWith("Unable to determine Map key type:") &&
+            e.cause.contains("'Map'"))));
   });
 
   test("verify an exception is thrown if the a class name is invalid", () {
-    expect(() =>  r"""bla$""".toAbstractType(), throwsA(predicate((e) => e is SquintException
-        && e.cause.startsWith("Unable to determine type:")
-        && e.cause.contains(r"""bla$""")
-    )));
+    expect(
+        () => r"""bla$""".toAbstractType(),
+        throwsA(predicate((e) =>
+            e is SquintException &&
+            e.cause.startsWith("Unable to determine type:") &&
+            e.cause.contains(r"""bla$"""))));
   });
-
-
 }

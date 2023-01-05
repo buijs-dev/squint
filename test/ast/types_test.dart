@@ -22,12 +22,9 @@ import "package:squint/src/ast/ast.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify TypeMember toString", () {
-    expect(
-        const TypeMember(name: "aVariable", type: StringType()).toString(),
-        "TypeMember(name='aVariable',type='StandardType(name=String, nullable=false)', annotations =[])"
-    );
+    expect(const TypeMember(name: "aVariable", type: StringType()).toString(),
+        "TypeMember(name='aVariable',type='StandardType(name=String, nullable=false)', annotations =[])");
   });
 
   test("IntType", () {
@@ -135,15 +132,20 @@ void main() {
   test("MapType", () {
     expect(const MapType(key: StringType(), value: IntType()).className, "Map");
     expect(const MapType(key: StringType(), value: IntType()).nullable, false);
-    expect(const MapType(key: StringType(), value: IntType()).key, const StringType());
-    expect(const MapType(key: StringType(), value: IntType()).value, const IntType());
+    expect(const MapType(key: StringType(), value: IntType()).key,
+        const StringType());
+    expect(const MapType(key: StringType(), value: IntType()).value,
+        const IntType());
   });
 
   test("NullableMapType", () {
-    expect(const NullableMapType(key: StringType(), value: IntType()).className, "Map");
-    expect(const NullableMapType(key: StringType(), value: IntType()).nullable, true);
-    expect(const NullableMapType(key: StringType(), value: IntType()).key, const StringType());
-    expect(const NullableMapType(key: StringType(), value: IntType()).value, const IntType());
+    expect(const NullableMapType(key: StringType(), value: IntType()).className,
+        "Map");
+    expect(const NullableMapType(key: StringType(), value: IntType()).nullable,
+        true);
+    expect(const NullableMapType(key: StringType(), value: IntType()).key,
+        const StringType());
+    expect(const NullableMapType(key: StringType(), value: IntType()).value,
+        const IntType());
   });
-
 }

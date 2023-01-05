@@ -23,17 +23,16 @@ import "node2abstract.dart";
 
 /// Convert a [JsonObject] to a [JsonMap].
 extension JsonObject2JsonMap on JsonObject {
-  
   ///
   AbstractType? get valuesAllOfSameType {
     final values = data.values.map((e) => e.toAbstractType(e.key)).toSet();
-    if(values.length == 1) {
+    if (values.length == 1) {
       return values.first;
     }
     return null;
   }
 
-  /// Convert a [JsonObject] 
+  /// Convert a [JsonObject]
   /// to a [JsonMap] with [String] children.
   JsonMap<String> get toStringMap {
     final output = <String, JsonString>{};
@@ -46,7 +45,7 @@ extension JsonObject2JsonMap on JsonObject {
     return JsonMap<String>(key: key, data: output);
   }
 
-  /// Convert a [JsonObject] 
+  /// Convert a [JsonObject]
   /// to a [JsonMap] with [int] children.
   JsonMap<int> get toIntegerMap {
     final output = <String, JsonIntegerNumber>{};
@@ -58,8 +57,8 @@ extension JsonObject2JsonMap on JsonObject {
     });
     return JsonMap<int>(key: key, data: output);
   }
-  
-  /// Convert a [JsonObject] 
+
+  /// Convert a [JsonObject]
   /// to a [JsonMap] with [double] children.
   JsonMap<double> get toFloatMap {
     final output = <String, JsonFloatingNumber>{};
@@ -72,7 +71,7 @@ extension JsonObject2JsonMap on JsonObject {
     return JsonMap<double>(key: key, data: output);
   }
 
-  /// Convert a [JsonObject] 
+  /// Convert a [JsonObject]
   /// to a [JsonMap] with [bool] children.
   JsonMap<bool> get toBooleanMap {
     final output = <String, JsonBoolean>{};

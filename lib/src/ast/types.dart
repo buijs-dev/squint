@@ -102,7 +102,7 @@ class CustomType extends AbstractType {
   final bool nullable;
 
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       other is CustomType &&
       className == other.className &&
       nullable == other.nullable &&
@@ -145,12 +145,12 @@ class TypeMember {
   }
 
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       other is TypeMember &&
-          name == other.name &&
-          type == other.type &&
-          annotations.length == other.annotations.length &&
-          annotations.toString() == other.annotations.toString();
+      name == other.name &&
+      type == other.type &&
+      annotations.length == other.annotations.length &&
+      annotations.toString() == other.annotations.toString();
 
   @override
   int get hashCode => type.hashCode + type.hashCode;
@@ -177,15 +177,14 @@ class TypeAnnotation {
   final Map<String, String> data;
 
   @override
-  bool operator ==(dynamic other) =>
-    other is TypeAnnotation && name != other.name && data != other.data;
+  bool operator ==(Object other) =>
+      other is TypeAnnotation && name != other.name && data != other.data;
 
   @override
   int get hashCode => name.hashCode;
 
   @override
-  String toString() =>
-      "TypeAnnotation(name='$name',data=$data)";
+  String toString() => "TypeAnnotation(name='$name',data=$data)";
 }
 
 /// A Integer [StandardType].

@@ -22,7 +22,6 @@ import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
-
   const example = """
         {
           "greeting": "Welcome to Squint!",
@@ -46,85 +45,87 @@ void main() {
   });
 
   test("verify an exception is thrown if the request key is not found", () {
-    expect(() =>  JsonObject({}).byKey("xyz"),
+    expect(
+        () => JsonObject(data:{}).byKey("xyz"),
         throwsA(predicate((e) =>
-        e is SquintException &&
-            e.cause == "JSON key not found: 'xyz'"
-        )));
+            e is SquintException && e.cause == "JSON key not found: 'xyz'")));
   });
 
-  test("verify an exception is thrown if the request type does not match the decoded type", () {
-    expect(() =>  decoded.float("greeting"),
+  test(
+      "verify an exception is thrown if the request type does not match the decoded type",
+      () {
+    expect(
+        () => decoded.floatNode("greeting"),
         throwsA(predicate((e) =>
-        e is SquintException &&
-            e.cause == "Data is not of expected type. Expected: 'JsonFloatingNumber'. Actual: JsonString"
-        )));
+            e is SquintException &&
+            e.cause ==
+                "Data is not of expected type. Expected: 'JsonFloatingNumber'. Actual: JsonString")));
   });
 
   test("verify object getter returns an object", () {
-    expect(decoded.object("foobject").rawData<String>()["x"], "y");
+    expect(decoded.objectNode("foobject").getDataAsMap<String>()["x"], "y");
   });
 
   test("verify array getter returns an object", () {
-    expect(decoded.array<List<String?>>("nestedness").data[0][0], "a");
-    expect(decoded.array<List<String?>>("nestedness").data[0][1], null);
-    expect(decoded.array<List<String?>>("nestedness").data[1][0], "b");
+    expect(decoded.arrayNode<List<String?>>("nestedness").data[0][0], "a");
+    expect(decoded.arrayNode<List<String?>>("nestedness").data[0][1], null);
+    expect(decoded.arrayNode<List<String?>>("nestedness").data[1][0], "b");
   });
 
   test("verify String getter returns an object", () {
-    expect(decoded.string("greeting").data, "Welcome to Squint!");
+    expect(decoded.stringNode("greeting").data, "Welcome to Squint!");
   });
 
   test("verify number getter returns an object", () {
-    expect(decoded.integer("numberuno").data, 1);
+    expect(decoded.integerNode("numberuno").data, 1);
   });
 
   test("verify boolean getter returns a bool", () {
-    expect(decoded.boolean("nowaiii").data, true);
+    expect(decoded.booleanNode("nowaiii").data, true);
   });
 
   test("verify nullable String getter can return null", () {
-    expect(decoded.stringOrNull("nothing")?.data, null);
+    expect(decoded.stringNodeOrNull("nothing")?.data, null);
   });
 
   test("verify nullable number getter can return null", () {
-    expect(decoded.floatOrNull("nothing")?.data, null);
+    expect(decoded.floatNodeOrNull("nothing")?.data, null);
   });
 
   test("verify nullable array getter can return null", () {
-    expect(decoded.arrayOrNull<String>("nothing")?.data, null);
+    expect(decoded.arrayNodeOrNull<String>("nothing")?.data, null);
   });
 
   test("verify nullable object getter can return null", () {
-    expect(decoded.objectOrNull("nothing")?.data, null);
+    expect(decoded.objectNodeOrNull("nothing")?.data, null);
   });
 
   test("verify nullable boolean getter returns a bool", () {
-    expect(decoded.booleanOrNull("nowaiii")!.data, true);
+    expect(decoded.booleanNodeOrNull("nowaiii")!.data, true);
   });
 
   test("verify nullable object getter returns an object", () {
-    expect(decoded.object("foobject").rawData<String>()["x"], "y");
+    expect(decoded.objectNode("foobject").getDataAsMap<String>()["x"], "y");
   });
 
   test("verify nullable array getter returns a List", () {
-    print(decoded.arrayOrNull<List<String?>>("nestedness")!.data);
-    expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[0][0], "a");
-    expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[0][1], null);
-    expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[1][0], "b");
-    expect(decoded.arrayOrNull<List<String?>>("nestedness")!.data[2][0], "c");
+    print(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data);
+    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][0], "a");
+    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][1], null);
+    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[1][0], "b");
+    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[2][0], "c");
   });
 
   test("verify nullable String getter returns a String", () {
-    expect(decoded.stringOrNull("greeting")!.data, "Welcome to Squint!");
+    expect(decoded.stringNodeOrNull("greeting")!.data, "Welcome to Squint!");
   });
 
   test("verify nullable number getter returns a number", () {
-    expect(decoded.integerOrNull("numberuno")!.data, 1);
+    expect(decoded.integerNodeOrNull("numberuno")!.data, 1);
   });
 
   test("verify nullable boolean getter returns a bool", () {
-    expect(decoded.booleanOrNull("nowaiii")!.data, true);
+    expect(decoded.booleanNodeOrNull("nowaiii")!.data, true);
   });
 
   test("verify building a JsonObject from a Map with dynamic data", () {
@@ -139,46 +140,40 @@ void main() {
     };
 
     // when:
-    final jsonObject = JsonObject.fromMap(data);
+    final jsonObject = JsonObject.fromMap(data: data);
 
     // then:
-    expect(jsonObject.string("aString").data, "a");
-    expect(jsonObject.float("bNumber").data, 1.0);
-    expect(jsonObject.boolean("cBoolean").data, false);
+    expect(jsonObject.stringNode("aString").data, "a");
+    expect(jsonObject.floatNode("bNumber").data, 1.0);
+    expect(jsonObject.booleanNode("cBoolean").data, false);
     expect(jsonObject.byKey("dNull").data, null);
-    expect(jsonObject.array<String>("eList").data[0], "Hi!");
-    expect(jsonObject.object("fMap").rawData<double>()["x"], 12.0);
-
+    expect(jsonObject.arrayNode<String>("eList").data[0], "Hi!");
+    expect(jsonObject.objectNode("fMap").getDataAsMap<double>()["x"], 12.0);
   });
 
   test("verify building a JsonObject from a Map with JsonElements data", () {
     // given:
-    final data = {
-      "aString": const JsonString(key: "aString", data: "Hi!")
-    };
+    final data = {"aString": const JsonString(key: "aString", data: "Hi!")};
 
     // when:
-    final jsonObject = JsonObject.fromMap(data);
+    final jsonObject = JsonObject.fromMap(data: data);
 
     // then:
-    expect(jsonObject.string("aString").data, "Hi!");
-
+    expect(jsonObject.stringNode("aString").data, "Hi!");
   });
 
   test("verify an exception is thrown if the data types are not supported", () {
     // given:
-    final data = <String, dynamic>{
-      "x": _Dummy()
-    };
+    final data = <String, dynamic>{"x": _Dummy()};
 
     // expect:
-    expect(() =>  JsonObject.fromMap(data),
+    expect(
+        () => JsonObject.fromMap(data: data),
         throwsA(predicate((e) =>
-        e is SquintException &&
-            e.cause == "Unable to convert Map<String, dynamic> to Map<String,JsonNode>"
-        )));
+            e is SquintException &&
+            e.cause ==
+                "Unable to convert Map<String, dynamic> to Map<String,JsonNode>")));
   });
-
 }
 
 class _Dummy {}

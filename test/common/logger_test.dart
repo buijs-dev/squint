@@ -22,13 +22,12 @@ import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify logger without context", () {
     expect("hello!".log(), "hello!");
   });
 
   test("verify logger with context", () {
-    expect("hello!".log(context: const StringType()), "hello!\nStandardType(name=String, nullable=false)");
+    expect("hello!".log(context: const StringType()),
+        "hello!\nStandardType(name=String, nullable=false)");
   });
-
 }

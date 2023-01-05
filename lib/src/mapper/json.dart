@@ -18,27 +18,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/ast/ast.dart";
-import "package:squint/src/decoder/decoder.dart";
-import 'package:squint/src/decoder/lists.dart';
-import "package:test/test.dart";
+// ignore_for_file: unnecessary_this
 
-void main() {
-  test("verify building a nested String List", () {
-    // when
-    final object = getNestedStringList(2);
-    // then
-    expect(object is List<List<List<String>>>, true);
-  });
+import '../../squint.dart';
+import "../ast/ast.dart";
+import "../common/common.dart";
+import "../encoder/encoder.dart";
 
-  test("verify building a List Structure", () {
-    // when
-    final structure = buildListStructure<String>([
-      [0, 0, 0, 0],
-      [0, 0, 0, 1],
-      [0, 0, 0]
-    ]);
-    // then
-    expect(structure is List<List<List<List<String>>>>, true);
-  });
+///
+class JsonMapper {
+  /// Construct a new [JsonMapper] instance.
+  const JsonMapper({this.formatting = standardJsonFormatting});
+
+  ///
+  final JsonFormattingOptions formatting;
+
+  ///
+  String writeValueAsString(SquintJson object) {
+    return object.toString();
+  }
+  //
+  // T readValue<T>(String json, T type) {
+  //   final object = json.jsonDecode;
+  //
+  // }
+
+}
+
+///
+mixin SquintJson<T> {
+  ///
+  T readValue(String json);
+
+  ///
+  String writeValue(T t);
 }

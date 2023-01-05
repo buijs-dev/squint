@@ -22,7 +22,8 @@ import "../ast/json.dart";
 import "../common/exception.dart";
 
 ///
-T when<T>(dynamic value, {
+T when<T>(
+  dynamic value, {
   required T Function(JsonIntegerNumber json) caseInt,
   required T Function(JsonFloatingNumber json) caseDouble,
   required T Function(JsonString json) caseString,
@@ -30,14 +31,15 @@ T when<T>(dynamic value, {
   required T Function(JsonObject json) caseMap,
   required T Function(JsonNull json) caseNull,
   T Function()? orElse,
-}) => _JsonNodeSwitcher<T>(
-caseInt: caseInt,
-caseDouble: caseDouble,
-caseString: caseString,
-caseList: caseList,
-caseMap: caseMap,
-caseNull: caseNull,
-).when(value, orElse: orElse);
+}) =>
+    _JsonNodeSwitcher<T>(
+      caseInt: caseInt,
+      caseDouble: caseDouble,
+      caseString: caseString,
+      caseList: caseList,
+      caseMap: caseMap,
+      caseNull: caseNull,
+    ).when(value, orElse: orElse);
 
 /// Utility to build a switch statement which covers all possible
 /// JsonNode implementations.
@@ -55,35 +57,32 @@ class _JsonNodeSwitcher<T> {
   });
 
   ///
-  T when(
-      dynamic value,
-      {T Function()? orElse}) {
-
-    if(value is JsonIntegerNumber) {
+  T when(dynamic value, {T Function()? orElse}) {
+    if (value is JsonIntegerNumber) {
       return caseInt.call(value);
     }
 
-    if(value is JsonFloatingNumber) {
+    if (value is JsonFloatingNumber) {
       return caseDouble.call(value);
     }
 
-    if(value is JsonString) {
+    if (value is JsonString) {
       return caseString.call(value);
     }
 
-    if(value is JsonArray) {
+    if (value is JsonArray) {
       return caseList.call(value);
     }
 
-    if(value is JsonObject) {
+    if (value is JsonObject) {
       return caseMap.call(value);
     }
 
-    if(value is JsonNull) {
+    if (value is JsonNull) {
       return caseNull.call(value);
     }
 
-    if(orElse != null) {
+    if (orElse != null) {
       return orElse.call();
     }
 

@@ -27,7 +27,8 @@ extension JsonElementGenerator on List<TypeMember> {
   ///
   List<String> toJsonNodeSetters({String dataPrefix = ""}) =>
       map((TypeMember tm) => "    ${tm.toJsonSetter(dataPrefix: dataPrefix)},")
-          .toList()..sort((a,b) => a.trim().startsWith("Json") ? -1 : 1);
+          .toList()
+        ..sort((a, b) => a.trim().startsWith("Json") ? -1 : 1);
 
   ///
   List<String> toJsonNodeGetters({String dataPrefix = ""}) =>
@@ -67,7 +68,7 @@ extension on TypeMember {
         unwrapper =
             '${dataPrefix}array<${(this.type as ListType).child.printType}>("$jsonKey")';
       } else if (unwrapperType == "JsonObject") {
-        unwrapper = '${dataPrefix}object("$jsonKey")';
+        unwrapper = '${dataPrefix}objectNode("$jsonKey")';
       } else {
         throw SquintException("Unsupported data type: $unwrapperType");
       }
@@ -77,15 +78,15 @@ extension on TypeMember {
 
     switch (type) {
       case "String":
-        return '$name: ${dataPrefix}stringValue("$jsonKey")';
+        return '$name: ${dataPrefix}string("$jsonKey")';
       case "double":
-        return '$name: ${dataPrefix}floatValue("$jsonKey")';
+        return '$name: ${dataPrefix}float("$jsonKey")';
       case "int":
-        return '$name: ${dataPrefix}integerValue("$jsonKey")';
+        return '$name: ${dataPrefix}integer("$jsonKey")';
       case "bool":
-        return '$name: ${dataPrefix}booleanValue("$jsonKey")';
+        return '$name: ${dataPrefix}boolean("$jsonKey")';
       case "List":
-        return '$name: ${dataPrefix}arrayValue<${(this.type as ListType).child.printType}>("$jsonKey")';
+        return '$name: ${dataPrefix}array<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
         return '$name: ${dataPrefix}object("$jsonKey").rawData()';
       case "dynamic":

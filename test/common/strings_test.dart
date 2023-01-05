@@ -22,9 +22,7 @@ import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify camelcase conversion", () {
-
     // given:
     const input = "snake_cased_example";
 
@@ -33,11 +31,9 @@ void main() {
 
     // then:
     expect(output, "SnakeCasedExample");
-
   });
 
   test("verify snakecase conversion", () {
-
     // given:
     const input = "SnakeCased1Example";
 
@@ -46,11 +42,9 @@ void main() {
 
     // then:
     expect(output, "snake_cased1_example");
-
   });
 
   test("verify removePrefixIfPresent", () {
-
     // given:
     const input = "MY_PREFIXb";
 
@@ -59,7 +53,5 @@ void main() {
 
     // then:
     expect(output, "b");
-
   });
-
 }

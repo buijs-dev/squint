@@ -23,16 +23,12 @@ import "package:squint/src/common/common.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("An exception is thrown if TypeMember class is not determined", () {
-
-    expect(() =>  analyzer.analyze(pathToFile: "doesnotexist"),
+    expect(
+        () => analyzer.analyze(pathToFile: "doesnotexist"),
         throwsA(predicate((e) =>
-        e is SquintException &&
+            e is SquintException &&
             e.cause.startsWith("File does not exist:") &&
-            e.cause.endsWith("doesnotexist")
-        )));
+            e.cause.endsWith("doesnotexist"))));
   });
-
-
 }

@@ -43,7 +43,7 @@ dynamic maybeAddQuotes(dynamic value) {
   }
 
   if (value is Map) {
-    return value.map<dynamic,dynamic>((dynamic k, dynamic v){
+    return value.map<dynamic, dynamic>((dynamic k, dynamic v) {
       return MapEntry<dynamic, dynamic>(maybeAddQuotes(k), maybeAddQuotes(v));
     });
   }

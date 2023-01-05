@@ -25,8 +25,6 @@ import "package:squint/src/converters/converters.dart";
 import "package:test/test.dart";
 
 void main() {
-
-
   test("Verify Converting a JSON String to a data class", () {
     // given
     const example = """
@@ -161,15 +159,16 @@ class Objectives {
   final List<bool> missionResults;
 }
 
-JsonObject encodeObjectives(Objectives objectives) => JsonObject.elements([
+JsonObject encodeObjectives(Objectives objectives) =>
+    JsonObject.fromNodes(key: "objectives", nodes: [
       JsonBoolean(key: "in-mission", data: objectives.inMission),
       JsonArray<dynamic>(
           key: "mission-results", data: objectives.missionResults),
-    ], "objectives");
+    ]);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(
-      inMission: object.booleanValue("in-mission"),
-      missionResults: object.arrayValue<bool>("mission-results"),
+      inMission: object.boolean("in-mission"),
+      missionResults: object.array<bool>("mission-results"),
     );
 """);
   });
@@ -187,7 +186,6 @@ Objectives decodeObjectives(JsonObject object) => Objectives(
     final decoded = example.jsonDecode;
 
     // then:
-    expect(decoded.array<Map>("objectList").data[0]["a"], 1);
+    expect(decoded.arrayNode<Map>("objectList").data[0]["a"], 1);
   });
-
 }

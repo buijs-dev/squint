@@ -21,46 +21,46 @@
 ///
 List buildListStructure<T>(List<List<int>> positions, {List<T>? valueList}) {
   positions.sort((a, b) => a.length.compareTo(b.length));
-  final maxDepth = positions.last.length -1;
+  final maxDepth = positions.last.length - 1;
   final maxEntriesForEachDepth = <int>[];
-  for(var i = 0; i <= maxDepth; i++) {
+  for (var i = 0; i <= maxDepth; i++) {
     final indexes = <int>[];
-    for(final position in positions) {
-      if(position.length > i) {
+    for (final position in positions) {
+      if (position.length > i) {
         indexes.add(position[i]);
       }
     }
     indexes.sort((int a, int b) => a.compareTo(b));
     maxEntriesForEachDepth.add(indexes.last);
   }
-  maxEntriesForEachDepth.sort((a,b) => a.compareTo(b));
+  maxEntriesForEachDepth.sort((a, b) => a.compareTo(b));
   return getNestedList<T>(
-      depth: maxDepth,
-      valueList: valueList ?? <T>[],
+    depth: maxDepth,
+    valueList: valueList ?? <T>[],
   );
 }
 
 ///
 int calculateMaxListDepth(List<List<int>> positions) {
   positions.sort((a, b) => a.length.compareTo(b.length));
-  return positions.last.length -1;
+  return positions.last.length - 1;
 }
 
 ///
 int calculateMaxListWidth(List<List<int>> positions) {
   final maxDepth = calculateMaxListDepth(positions);
   final maxEntriesForEachDepth = <int>[];
-  for(var i = 0; i <= maxDepth; i++) {
+  for (var i = 0; i <= maxDepth; i++) {
     final indexes = <int>[];
-    for(final position in positions) {
-      if(position.length > i) {
+    for (final position in positions) {
+      if (position.length > i) {
         indexes.add(position[i]);
       }
     }
     indexes.sort((int a, int b) => a.compareTo(b));
     maxEntriesForEachDepth.add(indexes.first);
   }
-  maxEntriesForEachDepth.sort((a,b) => a.compareTo(b));
+  maxEntriesForEachDepth.sort((a, b) => a.compareTo(b));
   return maxEntriesForEachDepth.first;
 }
 
@@ -75,12 +75,11 @@ List getNestedList<T>({
   required int depth,
   required List<T> valueList,
 }) {
-
-  if(depth == 0) {
+  if (depth == 0) {
     return valueList;
   }
 
-  return getNestedList(depth: depth-1, valueList: _addParent(valueList));
+  return getNestedList(depth: depth - 1, valueList: _addParent(valueList));
 }
 
 /// Add another List arround the given List and keep the it strongly typed.

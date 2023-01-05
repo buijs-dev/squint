@@ -75,7 +75,7 @@ void main() {
           """
         .jsonDecode;
 
-    final arr = json.array<dynamic>("xyz");
+    final arr = json.arrayNode<dynamic>("xyz");
     expect(arr.key, "xyz");
 
     final dynamic data = arr.data;
@@ -93,7 +93,7 @@ void main() {
           """
         .jsonDecode;
 
-    final arr = json.array<String>("xyz");
+    final arr = json.arrayNode<String>("xyz");
     expect(arr.key, "xyz");
 
     final dynamic data = arr.data;
@@ -140,7 +140,8 @@ void main() {
           """
         .jsonDecode;
 
-    final getReady4TheLaunch = json.byKey("getReady4TheLaunch") as JsonIntegerNumber;
+    final getReady4TheLaunch =
+        json.byKey("getReady4TheLaunch") as JsonIntegerNumber;
     expect(getReady4TheLaunch.key, "getReady4TheLaunch");
     expect(getReady4TheLaunch.data, 12345);
   });
@@ -175,8 +176,8 @@ void main() {
 
     // and
     expect(
-        JsonArray(key: "nestedness", data: nestedness).stringify,
-        """"nestedness":$inputLists""",
+      JsonArray(key: "nestedness", data: nestedness).stringify,
+      """"nestedness":$inputLists""",
     );
   });
 
@@ -291,7 +292,10 @@ void main() {
 
   test("verify decoding a Dart List", () {
     // given
-    final decoded = [["a","b"],["c"]].decodeList;
+    final decoded = [
+      ["a", "b"],
+      ["c"]
+    ].decodeList;
 
     // expect
     expect(decoded[".0.0.0"]!.data, "a");

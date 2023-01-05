@@ -25,13 +25,12 @@ import "package:squint/src/encoder/encoder.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify encoding and formatting a JsonObject with default options", () {
     // given:
-    final object = JsonObject.elements([
+    final object = JsonObject.fromNodes(nodes: [
       const JsonString(key: "foo", data: "hello"),
       const JsonBoolean(key: "isOk", data: true),
-      const JsonArray<dynamic>(key: "random", data: [1,0,33]),
+      const JsonArray<dynamic>(key: "random", data: [1, 0, 33]),
     ]);
 
     // when:
@@ -52,19 +51,17 @@ void main() {
 
   test("verify encoding and formatting a JsonObject with custom options", () {
     // given:
-    final object = JsonObject.elements([
+    final object = JsonObject.fromNodes(nodes: [
       const JsonString(key: "foo", data: "hello"),
       const JsonBoolean(key: "isOk", data: true),
-      const JsonArray<dynamic>(key: "random", data: [1,0,33]),
+      const JsonArray<dynamic>(key: "random", data: [1, 0, 33]),
     ]);
 
     // when:
-    final json = object.stringifyWithFormatting(
-      standardJsonFormatting.copyWith(
-        indentationSize: JsonIndentationSize.doubleSpace,
-        colonPadding: 20,
-      )
-    );
+    final json = object.stringifyWithFormatting(standardJsonFormatting.copyWith(
+      indentationSize: JsonIndentationSize.doubleSpace,
+      colonPadding: 20,
+    ));
 
     // then:
     expect(json, """
@@ -78,5 +75,4 @@ void main() {
   ]
 }""");
   });
-
 }

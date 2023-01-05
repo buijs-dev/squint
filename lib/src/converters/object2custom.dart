@@ -20,6 +20,7 @@
 
 import "../ast/ast.dart";
 import "../common/common.dart";
+import "../generator/generator.dart";
 import "node2abstract.dart";
 
 /// Convert a [JsonObject] String to a [CustomType].
@@ -27,11 +28,14 @@ extension Json2CustomType on JsonObject {
   /// Convert a [JsonObject] to a [CustomType].
   CustomType toCustomType({
     required String className,
-  }) =>
-      CustomType(
-        className: className,
-        members: data.toTypeMembers,
-      ).normalizeMemberNames;
+  }) {
+    final customType = CustomType(
+      className: className,
+      members: data.toTypeMembers,
+    ).normalizeMemberNames;
+
+    return customType.withDataClassMetadata;
+  }
 }
 
 extension on CustomType {
@@ -123,6 +127,7 @@ extension on Map<String, JsonNode> {
       (key, value) => TypeMember(
         name: key,
         type: value.toAbstractType(key),
+        annotations: value.annotations,
       ),
     );
 
@@ -132,6 +137,7 @@ extension on Map<String, JsonNode> {
       return TypeMember(
         name: t.name,
         type: t.type.maybeReplaceType(custom.toSet()),
+        annotations: t.annotations,
       );
     }).toList();
   }

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 // ignore_for_file: avoid_annotating_with_dynamic
 
 import "../ast/ast.dart";
@@ -38,83 +37,78 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   /// (sub) List.
   ///
   /// Key is constructed by [JsonArrayDecoder].
-  List toList<T,R>({List<T>? valueList}) {
-
+  List toList<T, R>({List<T>? valueList}) {
     // List contains one or more null values if true.
     final isNullable = values.any((o) => o is JsonNull);
 
     // List without any null values to simplify Type determination.
     final valuesNotNull = values.where((o) => o is! JsonNull);
 
-    if(valuesNotNull.every((node) => node is JsonString)) {
+    if (valuesNotNull.every((node) => node is JsonString)) {
       return isNullable ? _toNullableStringList : _toStringList;
     }
 
-    if(valuesNotNull.every((node) => node is JsonIntegerNumber)) {
+    if (valuesNotNull.every((node) => node is JsonIntegerNumber)) {
       return isNullable ? _toNullableIntegerList : _toIntegerList;
     }
 
-    if(valuesNotNull.every((node) => node is JsonFloatingNumber)) {
+    if (valuesNotNull.every((node) => node is JsonFloatingNumber)) {
       return isNullable ? _toNullableDoubleList : _toDoubleList;
     }
 
     /// If a List contains both integers and floating point numbers,
     /// then all integers should be cast to a floating point.
-    if(valuesNotNull.every((node) => node is JsonFloatingNumber || node is JsonIntegerNumber)) {
+    if (valuesNotNull.every(
+        (node) => node is JsonFloatingNumber || node is JsonIntegerNumber)) {
       return map((key, value) => MapEntry(
-          key,
-          value is JsonIntegerNumber
-              ? JsonFloatingNumber(key: key, data: value.data.toDouble())
-              : value)).toList(valueList: isNullable ? <double?>[] : <double>[]);
+              key,
+              value is JsonIntegerNumber
+                  ? JsonFloatingNumber(key: key, data: value.data.toDouble())
+                  : value))
+          .toList(valueList: isNullable ? <double?>[] : <double>[]);
     }
 
-    if(valuesNotNull.every((node) => node is JsonBoolean)) {
+    if (valuesNotNull.every((node) => node is JsonBoolean)) {
       return isNullable ? _toNullableBooleanList : _toBooleanList;
     }
 
-    if(valuesNotNull.every((node) => node is JsonObject)) {
+    if (valuesNotNull.every((node) => node is JsonObject)) {
       return _toObjectList(valueList: valueList ?? []);
     }
 
-    if(valuesNotNull.every((node) => node is CustomJsonNode)) {
-      if(valueList == null) {
+    if (valuesNotNull.every((node) => node is CustomJsonNode)) {
+      if (valueList == null) {
         throw SquintException(
             "Unable to build a List because not Type is specified for CustomJsonNode.");
       }
       return _toCustomObjectList<T>(valueList: valueList);
     }
 
-    throw SquintException("Unable to build a List because not all children are of the same Type.");
-
+    throw SquintException(
+        "Unable to build a List because not all children are of the same Type.");
   }
 
   /// Return a (nested) List of String.
-  List get _toStringList =>
-      _toTypedList<String>(valueList: <String>[]);
+  List get _toStringList => _toTypedList<String>(valueList: <String>[]);
 
   /// Return a (nested) List of String.
   List get _toNullableStringList =>
       _toTypedList<String?>(valueList: <String?>[]);
 
   /// Return a (nested) List of bool.
-  List get _toBooleanList =>
-      _toTypedList<bool>(valueList: <bool>[]);
+  List get _toBooleanList => _toTypedList<bool>(valueList: <bool>[]);
 
   /// Return a (nested) List of bool.
-  List get _toNullableBooleanList =>
-      _toTypedList<bool?>(valueList: <bool?>[]);
+  List get _toNullableBooleanList => _toTypedList<bool?>(valueList: <bool?>[]);
 
   /// Return a (nested) List of int.
-  List get _toIntegerList =>
-      _toTypedList<int>(valueList: <int>[]);
+  List get _toIntegerList => _toTypedList<int>(valueList: <int>[]);
 
   /// Return a (nested) List of int.
-  List get _toNullableIntegerList =>
-      _toTypedList<int?>(valueList: <int?>[]);
+  List get _toNullableIntegerList => _toTypedList<int?>(valueList: <int?>[]);
 
   /// Return a (nested) List of double.
-  List get _toDoubleList =>
-      _toTypedList<double>(valueList: <double>[]);
+  List get _toDoubleList => _toTypedList<double>(valueList: <double>[]);
 
   /// Return a (nested) List of double.
   List get _toNullableDoubleList =>
@@ -128,7 +122,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
 
     for (final key in keys) {
       final node = this[key];
-      if(node != null) {
+      if (node != null) {
         _prefill<T>(
           value: node.data as T,
           // Remove first index because you always start
@@ -142,7 +136,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
 
     for (final key in keys) {
       final node = this[key];
-      if(node != null) {
+      if (node != null) {
         insertAt<T>(
           value: node.data as T,
           // Remove first index because you always start
@@ -160,16 +154,13 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   List _toObjectList({
     required List valueList,
   }) {
+    final sizing = keys.map((key) => key.position).toList();
 
-    final sizing =
-      keys.map((key) => key.position).toList();
-
-    final structure =
-      buildListStructure(sizing, valueList: valueList);
+    final structure = buildListStructure(sizing, valueList: valueList);
 
     for (final key in keys) {
       final node = this[key];
-      if(node != null) {
+      if (node != null) {
         _prefill(
           value: node.data,
           // Remove first index because you always start
@@ -184,9 +175,9 @@ extension RepeatedBuilder on Map<String, JsonNode> {
     for (final key in keys) {
       final node = this[key] as JsonObject?;
 
-      var value = <String,dynamic>{};
+      var value = <String, dynamic>{};
 
-      if(node != null) {
+      if (node != null) {
         if (value.values.any((val) => val is JsonNode)) {
           value = value.map<String, dynamic>((key, value) {
             return MapEntry<String, dynamic>(key, value.data);
@@ -195,23 +186,23 @@ extension RepeatedBuilder on Map<String, JsonNode> {
 
         final valueType = node.valuesAllOfSameType;
 
-        if(valueType != null) {
+        if (valueType != null) {
           switch (valueType.className) {
             case "String":
-              value = node.toStringMap.rawData;
+              value = node.toStringMap.dataTyped;
               break;
             case "double":
-              value = node.toFloatMap.rawData;
+              value = node.toFloatMap.dataTyped;
               break;
             case "int":
-              value = node.toIntegerMap.rawData;
+              value = node.toIntegerMap.dataTyped;
               break;
             case "bool":
-              value = node.toBooleanMap.rawData;
+              value = node.toBooleanMap.dataTyped;
               break;
           }
         } else {
-          value = node.rawData();
+          value = node.getDataAsMap();
         }
 
         // Remove final number because width does not matter here.
@@ -222,7 +213,6 @@ extension RepeatedBuilder on Map<String, JsonNode> {
           structure: structure,
         );
       }
-
     }
     return structure;
   }
@@ -230,16 +220,13 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   List _toCustomObjectList<T>({
     required List<T> valueList,
   }) {
+    final sizing = keys.map((key) => key.position).toList();
 
-    final sizing =
-      keys.map((key) => key.position).toList();
-
-    final structure =
-      buildListStructure<T>(sizing, valueList: valueList);
+    final structure = buildListStructure<T>(sizing, valueList: valueList);
 
     for (final key in keys) {
       final node = this[key];
-      if(node != null) {
+      if (node != null) {
         _prefill<T>(
           value: node.data as T,
           // Remove first index because you always start
@@ -254,7 +241,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
     for (final key in keys) {
       final node = this[key] as CustomJsonNode?;
 
-      if(node != null) {
+      if (node != null) {
         insertAt<T>(
           value: node.data as T,
           position: key.position..removeAt(0),
@@ -275,7 +262,6 @@ void insertAt<T>({
   required List<T> valueList,
   required List structure,
 }) {
-
   var temp = structure;
 
   position.asMap().forEach((index, number) {
@@ -291,13 +277,12 @@ void _prefill<T>({
   required List<T> valueList,
   required List structure,
 }) {
-
   final valueListRuntimeType = valueList.runtimeType.toString();
 
   var temp = structure;
 
   position.asMap().forEach((index, number) {
-    while(number >= temp.length) {
+    while (number >= temp.length) {
       // If true then list to be added contains T,
       // so we need to add <T>[].
       // if not then we can not specify the Type as T,
@@ -306,34 +291,28 @@ void _prefill<T>({
         temp.add(List.of(valueList));
       } else {
         final tempListRuntimeType = temp.runtimeType.toString();
-        final tempListDepth = "List"
-            .allMatches(tempListRuntimeType)
-            .length;
-        final valueListDepth = "List"
-            .allMatches(valueListRuntimeType)
-            .length;
+        final tempListDepth = "List".allMatches(tempListRuntimeType).length;
+        final valueListDepth = "List".allMatches(valueListRuntimeType).length;
         final depth = tempListDepth - valueListDepth;
         if (depth > 0) {
-          temp.add(getNestedList<T>(depth: depth-1, valueList: List.of(valueList)));
+          temp.add(getNestedList<T>(
+              depth: depth - 1, valueList: List.of(valueList)));
         } else {
           throw SquintException(
-              "valueList won't ever be a child of tempList because it's depth is deeper: $depth"
-          );
+              "valueList won't ever be a child of tempList because it's depth is deeper: $depth");
         }
       }
     }
     temp = temp[number] as List;
   });
-
 }
 
 extension on String {
-  List<int> get position =>
-      substring(0, lastIndexOf("."))
-          .split(".")
-          .where((o) => o != "")
-          .map(int.parse)
-          .toList();
+  List<int> get position => substring(0, lastIndexOf("."))
+      .split(".")
+      .where((o) => o != "")
+      .map(int.parse)
+      .toList();
 }
 
 /// Decode a JSON Array String.
@@ -384,7 +363,8 @@ extension JsonArrayDecoder on String {
     var i = 0;
 
     while (i < input.length) {
-      if(previousToken is ListOpeningBracketToken && currentToken is ListClosingBracketToken) {
+      if (previousToken is ListOpeningBracketToken &&
+          currentToken is ListClosingBracketToken) {
         output[keygen.currentKey] = _PlaceHolder(key: keygen.currentKey);
       }
       previousToken = currentToken;
@@ -410,7 +390,7 @@ extension JsonArrayDecoder on String {
 }
 
 class _PlaceHolder extends JsonNode {
-  _PlaceHolder({required super.key}): super(data: "");
+  _PlaceHolder({required super.key}) : super(data: "");
 }
 
 /// Decode a Dart List.
@@ -432,18 +412,17 @@ extension ListDecoder on List {
   Map<String, JsonNode> get decodeList {
     var depth = 1;
     var nextChild = runtimeType.toString();
-    while(nextChild.startsWith("List<")) {
-      nextChild = nextChild
-          .removePrefixIfPresent("List<")
-          .removePostfixIfPresent(">");
-      depth +=1;
+    while (nextChild.startsWith("List<")) {
+      nextChild =
+          nextChild.removePrefixIfPresent("List<").removePostfixIfPresent(">");
+      depth += 1;
     }
 
-    return JsonArray(key: "foo", data: this).stringify
+    return JsonArray(key: "foo", data: this)
+        .stringify
         .replaceFirstMapped(RegExp('(^"[^"]+?":)'), (match) => "")
         .decodeJsonArray(maxDepth: depth);
   }
-
 }
 
 ///
@@ -457,15 +436,13 @@ class ListOpeningBracketToken extends _Token {
     required Map<String, JsonNode> output,
     required int index,
   }) : super(
-            index: index,
-            depth: currentDepth + 1,
-            size: currentSize,
-            value: currentValue,
-            key: keygen.nextKey(output.keys.toList(), ListOpeningBracketToken),
-  );
-
+          index: index,
+          depth: currentDepth + 1,
+          size: currentSize,
+          value: currentValue,
+          key: keygen.nextKey(output.keys.toList(), ListOpeningBracketToken),
+        );
 }
-
 
 ///
 class ListClosingBracketToken extends _Token {
@@ -482,12 +459,12 @@ class ListClosingBracketToken extends _Token {
           depth: currentDepth - 1,
           size: _size(currentSize, currentDepth),
           value: _simpleValue(
-              currentValue: currentValue,
-              currentKey: keygen.currentKey,
-              output: output,
+            currentValue: currentValue,
+            currentKey: keygen.currentKey,
+            output: output,
           ),
-    key: keygen.nextKey(output.keys.toList(), ListClosingBracketToken),
-  );
+          key: keygen.nextKey(output.keys.toList(), ListClosingBracketToken),
+        );
 }
 
 ///
@@ -533,7 +510,7 @@ int _setObjectValueAndReturnRemainder({
 
     var currentKey = keygen.currentKey;
     for (final strObject in stringObjects) {
-      output[currentKey] = JsonObject(strObject.jsonDecode.data, currentKey);
+      output[currentKey] = JsonObject(data: strObject.jsonDecode.data, key: currentKey);
       currentKey = keygen.incrementWidth;
     }
 
@@ -547,7 +524,8 @@ int _setObjectValueAndReturnRemainder({
     );
 
     final sublist = counter.contentBetweenBrackets;
-    output[keygen.currentKey] = JsonObject(sublist.join().jsonDecode.data, keygen.currentKey);
+    output[keygen.currentKey] =
+        JsonObject(data: sublist.join().jsonDecode.data, key: keygen.currentKey);
     return counter.endIndex;
   }
 }
@@ -773,7 +751,7 @@ class ArrayDecodingKeyGenerator {
 
   ///
   String nextKey(List<String> keys, Type token) {
-    switch(token) {
+    switch (token) {
       case ListOpeningBracketToken:
         currentKey = "$currentKey.0";
         break;
@@ -789,11 +767,10 @@ class ArrayDecodingKeyGenerator {
 
   ///
   String get incrementWidth {
-    final strWidth = currentKey.substring(currentKey.lastIndexOf(".") + 1, currentKey.length);
+    final strWidth = currentKey.substring(
+        currentKey.lastIndexOf(".") + 1, currentKey.length);
     final intWidth = int.parse(strWidth) + 1;
     final prefix = currentKey.substring(0, currentKey.lastIndexOf("."));
     return currentKey = "$prefix.$intWidth";
-
   }
-
 }

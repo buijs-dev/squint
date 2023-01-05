@@ -22,9 +22,8 @@ import "package:squint/squint.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify exception toString", () {
-    expect(SquintException("BOOM!").toString(), "SquintException with cause: 'BOOM!'");
+    expect(SquintException("BOOM!").toString(),
+        "SquintException with cause: 'BOOM!'");
   });
-
 }

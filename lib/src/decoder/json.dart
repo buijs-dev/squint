@@ -23,13 +23,17 @@
 import "../ast/ast.dart";
 import "../common/common.dart";
 
-/// Decoded a JSON String to a [JsonObject].
+/// Decode a JSON String as [JsonObject].
+JsonObject toJsonObject(String json) =>
+  json.jsonDecode;
+
+/// Decoded a JSON String as [JsonObject].
 extension JsonDecoder on String {
-  /// Decode a JSON String to [JsonNode]
+  /// Decode a JSON String as [JsonNode]
   JsonObject get jsonDecode {
     var chars = substring(
-        indexOf("{") + 1,
-        lastIndexOf("}"),
+      indexOf("{") + 1,
+      lastIndexOf("}"),
     ).split("").normalizeSpaces;
 
     final data = <String, JsonNode>{};
@@ -52,9 +56,8 @@ extension JsonDecoder on String {
       }
     }
 
-    return JsonObject(data);
+    return JsonObject(data: data);
   }
-
 }
 
 ///
@@ -145,7 +148,7 @@ class ProcessingValue extends JsonProcessingStep {
           );
 
           final sublist = counter.contentBetweenBrackets;
-          this.value = JsonObject(sublist.join().jsonDecode.data, key);
+          this.value = JsonObject(data: sublist.join().jsonDecode.data, key: key);
           this.chars = chars.sublist(counter.endIndex, chars.length);
           return;
         default:

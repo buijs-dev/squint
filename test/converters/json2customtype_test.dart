@@ -24,7 +24,6 @@ import "package:squint/src/decoder/decoder.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("Verify Converting a JSON String to a CustomType", () {
     // given
     const example = """
@@ -98,7 +97,8 @@ void main() {
     // and member 'indicator' of type Boolean
     expect(podo.members[6].name, "objective");
     expect(podo.members[6].type.className, "Objective");
-    expect((podo.members[6].type as CustomType).members[0].type, const BooleanType());
+    expect((podo.members[6].type as CustomType).members[0].type,
+        const BooleanType());
 
     // JSON element 'objectList' is a ListType
     // with childType Map<String,int>
@@ -113,5 +113,4 @@ void main() {
     // 6th member is of type Objective, the same custom type as 7th child type
     expect((podo.members[8].type as ListType).child, podo.members[6].type);
   });
-
 }

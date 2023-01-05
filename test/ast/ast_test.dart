@@ -22,13 +22,18 @@ import "package:squint/src/ast/ast.dart";
 import "package:test/test.dart";
 
 void main() {
-
   test("verify equals and hashcode from StandardType", () {
     // given:
     expect(const StringType() == const StringType(), true);
-    expect(const NullableIntType().hashCode == const NullableIntType().hashCode, true);
-    expect(const NullableListType(StringType()).hashCode == const ListType(StringType()).hashCode, false);
-    expect(const NullableListType(StringType()).hashCode == const StringType().hashCode, false);
+    expect(const NullableIntType().hashCode == const NullableIntType().hashCode,
+        true);
+    expect(
+        const NullableListType(StringType()).hashCode ==
+            const ListType(StringType()).hashCode,
+        false);
+    expect(
+        const NullableListType(StringType()).hashCode ==
+            const StringType().hashCode,
+        false);
   });
-
 }

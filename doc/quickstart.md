@@ -65,6 +65,13 @@ Decoding is done by using the jsonDecode extension method on a String variable.
 final JsonObject object = json.jsonDecode;
 ```
 
+Or alternatively use toJsonObject instead of the jsonDecode extension.
+
+```dart
+// Variable 'json' is our actual JSON String.
+final JsonObject object = toJsonObject(json);
+```
+
 The result is a JsonObject containing all data. 
 > A JsonObject is a wrapper around the JSON
 elements. Each key-value pair is stored in a JsonElement. See [AST](ast.md) for more 
@@ -72,44 +79,44 @@ information about JsonElements and JsonElementTypes.
 
 There are 2 ways to interact with decoded data:
 - Get raw values directly
-- Get typed JsonElements and access data from there
+- Get typed JsonNodes and access data from there
 
 Let's take the long way first. To access data we need to specify the data-type and key.
 
 ```dart
     // Getter integer will return a JsonIntegerNumber
-    assert(object.integer("id").key == "id");
-    assert(object.integer("id").data == 1);
+    assert(object.integerNode("id").key == "id");
+    assert(object.integerNode("id").data == 1);
 ```
 
-In this example we retrieve the JsonElement for tag key **id**. We know it's an integer value, so we 
+In this example we retrieve the JsonNode for tag key **id**. We know it's an integer value, so we 
 use the **integer** getter. If tried to retrieve a boolean value using this integer getter, then Squint
-would throw an exception and fail. We can see the JsonElement, which is a JsonIntegerNumber subclass, 
+would throw an exception and fail. We can see the JsonNode, which is a JsonIntegerNumber subclass, 
 contains both the key and value data.
 
 For easier access it's also possible to get the value immediately.
 
 ```dart
-  assert(object.integerValue("id") == 1);
+  assert(object.integer("id") == 1);
 ```
 
 There's a getter for boolean values.
 
 ```dart
-  assert(object.booleanValue("isJedi") == true);
-  assert(object.booleanValue("hasPadawan") == false);
+  assert(object.boolean("isJedi") == true);
+  assert(object.boolean("hasPadawan") == false);
 ```
 
 There's a getter for String values.
 
 ```dart
-  assert(object.stringValue("bff") == "Leia");
+  assert(object.string("bff") == "Leia");
 ```
 
 If a value is nullable then it can be accessed safely by appending the correct getter with **orNull**.
 
 ```dart
-  assert(object.stringValueOrNull("foo") == null);
+  assert(object.stringOrNull("foo") == null);
 ```
 
 But requesting data by key that does not exist will always result in a SquintException being thrown.
@@ -117,7 +124,7 @@ But requesting data by key that does not exist will always result in a SquintExc
 ```dart
   // This will throw a SquintException 
   // because our JSON does not contain this key.
-  object.stringValueOrNull("does-not-exist") == null;
+  object.stringOrNull("does-not-exist") == null;
 ```
 
 > Requesting data by key that does not exist will always result in a SquintException being thrown.
@@ -128,31 +135,31 @@ The top level List is implied so does not have to be included.
 
 ```dart
 // IDE will report: Unnecessary type check; the result is always 'true'.
-assert(object.arrayValue<String>("jedi") is List<String>);
+assert(object.array<String>("jedi") is List<String>);
 
-assert(object.arrayValue<String>("jedi")[0] == "Obi-Wan");
-assert(object.arrayValue<String>("jedi")[1] == "Anakin");
-assert(object.arrayValue<String>("jedi")[2] == "Luke Skywalker");
+assert(object.array<String>("jedi")[0] == "Obi-Wan");
+assert(object.array<String>("jedi")[1] == "Anakin");
+assert(object.array<String>("jedi")[2] == "Luke Skywalker");
 
 // Notice how all values are casted to double
 // even though they're not all floating point numbers.
-assert(object.arrayValue<double>("coordinates")[0] == 22);
-assert(object.arrayValue<double>("coordinates")[1] == 4.4);
-assert(object.arrayValue<double>("coordinates")[2] == -15);
+assert(object.array<double>("coordinates")[0] == 22);
+assert(object.array<double>("coordinates")[1] == 4.4);
+assert(object.array<double>("coordinates")[2] == -15);
 ```
 
-Finally, we can access JSON Objects with the object getter.
+Finally, we can access JSON Objects with the objectNode getter.
 
 ```dart
-    assert(object.object("objectives").booleanValue("in-mission") == false);
-    assert(object.object("objectives").arrayValue<bool>("mission-results")[0] == false);
-    assert(object.object("objectives").arrayValue<bool>("mission-results")[1] == true);
+    assert(object.objectNode("objectives").boolean("in-mission") == false);
+    assert(object.objectNode("objectives").array<bool>("mission-results")[0] == false);
+    assert(object.objectNode("objectives").array<bool>("mission-results")[1] == true);
 ```
 
 Objects nested inside a List are also no problem.
 
 ```dart
-assert(object.arrayValue<dynamic>("annoyance-rate")[0]["JarJarBinks"] == 9000);
+assert(object.array<Map<String,int>>("annoyance-rate")[0]["JarJarBinks"] == 9000);
 ```
 
 ## Encode JSON
@@ -210,7 +217,7 @@ based on a JSON String? Squint can do just that.
 final JsonObject object = json.jsonDecode;
 
 // Convert a JsonObject to a CustomType object (AST model).
-final CustomType customType = object.toCustomType(className: "MyExample");
+final CustomType customType = object.toCustomType(className: "Example");
 
 // Convert a CustomType to a .dart File.
 print(customType.generateDataClassFile);
@@ -253,20 +260,36 @@ class Example {
     required this.coordinates,
     required this.objectives,
     required this.annoyanceRate,
-    this.foo,
+    required this.foo,
   });
 
+  @JsonValue("id")
   final int id;
+
+  @JsonValue("isJedi")
   final bool isJedi;
+
+  @JsonValue("hasPadawan")
   final bool hasPadawan;
+
+  @JsonValue("bff")
   final String bff;
+
+  @JsonValue("jedi")
   final List<String> jedi;
+
+  @JsonValue("coordinates")
   final List<double> coordinates;
 
-  @JsonEncode(using: _encodeObjectives)
-  @JsonDecode<Objectives, JsonObject>(using: _decodeObjectives)
+  @JsonEncode(using: encodeObjectives)
+  @JsonDecode<Objectives, JsonObject>(using: decodeObjectives)
+  @JsonValue("objectives")
   final Objectives objectives;
+
+  @JsonValue("annoyance-rate")
   final List<Map<String, int>> annoyanceRate;
+
+  @JsonValue("foo")
   final dynamic foo;
 }
 
@@ -277,19 +300,23 @@ class Objectives {
     required this.missionResults,
   });
 
+  @JsonValue("in-mission")
   final bool inMission;
+
+  @JsonValue("mission-results")
   final List<bool> missionResults;
 }
 
-JsonObject _encodeObjectives(Objectives objectives) => JsonObject.elements([
-  JsonBoolean(key: "inMission", data: objectives.inMission),
-  JsonArray<dynamic>(
-      key: "missionResults", data: objectives.missionResults),
-], "objectives");
+JsonObject encodeObjectives(Objectives objectives) =>
+    JsonObject.fromNodes(nodes: [
+      JsonBoolean(key: "in-mission", data: objectives.inMission),
+      JsonArray<dynamic>(
+          key: "mission-results", data: objectives.missionResults),
+    ]);
 
-Objectives _decodeObjectives(JsonObject object) => Objectives(
-  inMission: object.booleanValue("in-mission"),
-  missionResults: object.arrayValue<bool>("mission-results"),
+Objectives decodeObjectives(JsonObject object) => Objectives(
+  inMission: object.boolean("in-mission"),
+  missionResults: object.array<bool>("mission-results"),
 );
 ```
 
@@ -299,82 +326,94 @@ the actual data type. Squint will generate a **dynamic** type field in those cas
 
 ## Generate serialization code
 
-It is possible to generate serialization methods. The data class should follow a few simple rules to do so:
-- Class is annotated with @squint.
-- There is one constructor with all fields to be (de)serialized.
-- All fields are either:
-    - of type:
-        - String
-        - int
-        - double
-        - bool
-        - List
-        - Map
-    - or annotated with both:
-        - @JsonEncode
-        - @JsonDecode
-
-For configuring JSON property names, fields can be annotated with @JsonValue.
-
-
-Let's say we have a data class in path foo/bar/my_example.dart. 
-This data class has the following content:
+To (de)serialize from/to JSON, Squint can generate extension methods.
 
 ```dart
-import 'package:squint/squint.dart';
+    // Variable 'json' is our actual JSON String.
+    final JsonObject object = json.jsonDecode;
+    
+    // Convert a JsonObject to a CustomType object (AST model).
+    final CustomType customType = object.toCustomType(className: "Example");
 
-@squint
-class MyExample {
-  const MyExample({
-    required this.id,
-    required this.isJedi,
-    required this.hasPadawan,
-    required this.bff,
-    required this.jedi,
-    required this.coordinates,
-    required this.objectives,
-    required this.annoyanceRate,
-  });
+    // Generate extenions methods.
+    // Notice the relativeImport variable which is required to import the dart file
+    // containing the dataclass to be encoded/decoded.
+    print(customType.generateJsonDecodingFile(relativeImport: "example.dart"));
 
-  final int id;
-  final bool isJedi;
-  final bool hasPadawan;
-  final String bff;
-  final List<String> jedi;
-  final List<double> coordinates;
-
-  @JsonEncode(using: _encodeObjectives)
-  @JsonDecode<Objectives, JsonObject>(using: _decodeObjectives)
-  final Objectives objectives;
-  final List<Map<String, int>> annoyanceRate;
-}
-
-@squint
-class Objectives {
-  const Objectives({
-    required this.inMission,
-    required this.missionResults,
-  });
-
-  final bool inMission;
-  final List<bool> missionResults;
-}
-
-JsonObject _encodeObjectives(Objectives objectives) => JsonObject.elements([
-  JsonBoolean(key: "inMission", data: objectives.inMission),
-  JsonArray<dynamic>(
-      key: "missionResults", data: objectives.missionResults),
-], "objectives");
-
-Objectives _decodeObjectives(JsonObject object) => Objectives(
-  inMission: object.booleanValue("in-mission"),
-  missionResults: object.arrayValue<bool>("mission-results"),
-);
 ```
 
-We can then generate
-the extension methods by running the following from command line:
+This will print the following .dart file:
 
-```shell
-flutter pub run squint:generate foo/bar/my_example.dart
+```dart
+
+// Copyright (c) 2021 - 2022 Buijs Software
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+import 'example.dart';
+import 'package:squint/squint.dart';
+
+/// Autogenerated JSON (de)serialization methods by Squint.
+extension ExampleJsonBuilder on Example {
+    JsonObject get toJsonObject => JsonObject.fromNodes(nodes: [
+        JsonIntegerNumber(key: "id", data: id),
+        JsonBoolean(key: "isJedi", data: isJedi),
+        JsonBoolean(key: "hasPadawan", data: hasPadawan),
+        JsonString(key: "bff", data: bff),
+        JsonArray<dynamic>(key: "jedi", data: jedi),
+        JsonArray<dynamic>(key: "coordinates", data: coordinates),
+        JsonArray<dynamic>(key: "annoyance-rate", data: annoyanceRate),
+        dynamicValue(key: "foo", data: foo),
+        encodeObjectives(objectives),
+    ]);
+    
+    String get toJson => toJsonObject.stringify;
+}
+
+extension ExampleJsonString2Class on String {
+    Example get toExample => jsonDecode.toExample;
+}
+
+extension ExampleJsonObject2Class on JsonObject {
+    Example get toExample => Example(
+        id: integer("id"),
+        isJedi: boolean("isJedi"),
+        hasPadawan: boolean("hasPadawan"),
+        bff: string("bff"),
+        jedi: array<String>("jedi"),
+        coordinates: array<double>("coordinates"),
+        objectives: decodeObjectives(objectNode("objectives")),
+        annoyanceRate: array<Map<String, int>>("annoyance-rate"),
+        foo: byKey("foo").data,
+    );
+}
+```
+
+Encoding and decoding is now as simple as:
+
+```dart
+    // Deserialize JSON String to an Example instance.
+    final Example example = json.toExample;
+
+    // Encode the Example instance to a JsonObject.
+    final JsonObject exampleJsonObject = example.toJsonObject;
+
+    // Serialize the Example instance to a JSON String.
+    final String exampleJson = example.toJson;
 ```

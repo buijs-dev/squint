@@ -52,20 +52,34 @@ List<AbstractType> analyze({
   ///
   /// Must be a valid .dart file containing 1 or more classes
   /// or a metadata JSON file.
-  required String pathToFile,
+  String? pathToFile,
+
+  /// Content of file to be analysed.
+  String? fileContent,
 
   /// Folder to store analysis result as JSON.
   ///
   /// For each data class a new file is created in this folder.
   String? pathToOutputFolder,
 }) {
-  final file = File(pathToFile);
 
-  if (!file.existsSync()) {
-    throw SquintException("File does not exist: $pathToFile");
+  File? file;
+
+  if (pathToFile != null)  {
+    file = File(pathToFile);
   }
 
-  final types = pathToFile.contains(metadataMarkerPrefix)
+  if(fileContent != null) {
+    file = Directory.systemTemp.resolve("squinttempfile.dart")
+      ..createSync()
+      ..writeAsStringSync(fileContent);
+  }
+
+  if (!(file?.existsSync() ?? false)) {
+    throw SquintException("File does not exist: ${file?.path ?? ''}");
+  }
+
+  final types = file!.path.contains(metadataMarkerPrefix)
       ? [file.parseMetadata]
       : file.parseDataClass;
 
@@ -96,12 +110,11 @@ extension on File {
   ///
   /// The JSON is expected to contain metadata for a single data class.
   CustomType get parseMetadata {
-
     final json = readAsStringSync().jsonDecode;
 
-    final className = json.string("className").data;
+    final className = json.stringNode("className").data;
 
-    final dynamic data = json.array<dynamic>("members").data;
+    final dynamic data = json.arrayNode<dynamic>("members").data;
 
     final members = <TypeMember>[];
 

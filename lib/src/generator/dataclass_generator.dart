@@ -25,6 +25,33 @@ import "generator.dart";
 
 /// Convert a [CustomType] to a data class.
 extension CustomType2DataClass on CustomType {
+
+  /// Add Annotation data to CustomType by generating the dataclass
+  /// using [generateDataClassFile] and the using [analyze] to collect
+  /// the annotations.
+  CustomType get withDataClassMetadata {
+    final dataclass = generateDataClassFile();
+    final types = analyze(fileContent: dataclass);
+    final customs = types.whereType<CustomType>();
+    final parent = customs.first;
+    final children = customs.toList()..removeAt(0);
+    final members = <TypeMember>[];
+    for (final member in parent.members) {
+      members.add(
+          TypeMember(
+              name: member.name,
+              annotations: member.annotations,
+              type: member.type.normalizeType(children),
+          )
+      );
+    }
+
+    return CustomType(
+      className: parent.className,
+      members: members,
+    );
+  }
+
   /// Generate data class from [CustomType].
   String generateDataClassFile({
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
@@ -136,9 +163,11 @@ extension on TypeMember {
   String get encodingMethodBody {
     return """
       JsonObject ${name.encodingMethodName}(${type.className} $name) =>
-        JsonObject.elements([
+        JsonObject.fromNodes(
+        key: "$name",
+        nodes: [
         ${(type as CustomType).members.toJsonNodeSetters(dataPrefix: "$name.").join("\n")}
-        ], "$name");
+        ]);
           \n""";
   }
 
@@ -148,10 +177,39 @@ extension on TypeMember {
         ${(type as CustomType).members.toJsonNodeGetters(dataPrefix: "object.").join("\n")}
         );
   \n""";
+
 }
 
 extension on String {
   String get decodingMethodName => "decode${camelCase()}";
 
   String get encodingMethodName => "encode${camelCase()}";
+}
+
+extension on AbstractType {
+  AbstractType normalizeType(List<CustomType> types) {
+    final maybeType = types.firstBy((type) => type.className == className);
+    if(maybeType != null) {
+      return maybeType;
+    }
+
+    if (this is ListType) {
+      final listType = this as ListType;
+      final childType = listType.child.normalizeType(types);
+      return listType.nullable
+          ? NullableListType(childType)
+          : ListType(childType);
+    }
+
+    if (this is MapType) {
+      final mapType = this as MapType;
+      final keyType = mapType.key.normalizeType(types);
+      final valueType = mapType.value.normalizeType(types);
+      return mapType.nullable
+          ? NullableMapType(key: keyType, value: valueType)
+          : MapType(key: keyType, value: valueType);
+    }
+
+    return this;
+  }
 }

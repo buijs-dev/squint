@@ -71,7 +71,7 @@ extension JsonNode2AbstractType on JsonNode {
         /// converting it to a [CustomType] is better.
         if (!allChildrenOfSameType) {
           return ListType(
-            JsonObject.fromMap(data.first as Map<String, dynamic>)
+            JsonObject.fromMap(data: data.first as Map<String, dynamic>)
                 .toCustomType(className: key.camelCase()),
           );
         }
@@ -81,20 +81,20 @@ extension JsonNode2AbstractType on JsonNode {
 
     if (this is JsonObject) {
       final valueType = (this as JsonObject).valuesAllOfSameType;
-      if(valueType != null) {
-        if(valueType is StringType) {
+      if (valueType != null) {
+        if (valueType is StringType) {
           return const MapType(key: StringType(), value: StringType());
         }
 
-        if(valueType is BooleanType) {
+        if (valueType is BooleanType) {
           return const MapType(key: StringType(), value: BooleanType());
         }
 
-        if(valueType is IntType) {
+        if (valueType is IntType) {
           return const MapType(key: StringType(), value: IntType());
         }
 
-        if(valueType is DoubleType) {
+        if (valueType is DoubleType) {
           return const MapType(key: StringType(), value: DoubleType());
         }
 

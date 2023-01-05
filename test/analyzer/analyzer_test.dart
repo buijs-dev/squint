@@ -29,11 +29,9 @@ import "package:test/test.dart";
 import "analyzer_classfile_test.dart";
 
 void main() {
-
   test("Analyze dart class, store as JSON metadata, analyze metadata", () {
     // given:
-    final output = Directory("${basePath}analyzertest")
-      ..createSync();
+    final output = Directory("${basePath}analyzertest")..createSync();
 
     // and:
     final file = File("${basePath}map_response.dart")
@@ -67,43 +65,47 @@ void main() {
       );
 
     // expect:
-    analyzer.analyze(
-        pathToFile: file.absolute.path,
-        pathToOutputFolder: output.absolute.path,
-    )._expect();
+    analyzer
+        .analyze(
+          pathToFile: file.absolute.path,
+          pathToOutputFolder: output.absolute.path,
+        )
+        ._expect();
 
     // and:
-    analyzer.analyze(
-      pathToFile: output.resolve("${metadataMarkerPrefix}simpleresponse.json").absolute.path,
-    )._expect();
-
+    analyzer
+        .analyze(
+          pathToFile: output
+              .resolve("${metadataMarkerPrefix}simpleresponse.json")
+              .absolute
+              .path,
+        )
+        ._expect();
   });
 
   test("If input file does not exist then an exception is thrown", () {
-    expect(() =>  analyzer.analyze(pathToFile: "doesnotexist"),
+    expect(
+        () => analyzer.analyze(pathToFile: "doesnotexist"),
         throwsA(predicate((e) =>
-        e is SquintException &&
+            e is SquintException &&
             e.cause.startsWith("File does not exist:") &&
-            e.cause.endsWith("doesnotexist")
-        )));
+            e.cause.endsWith("doesnotexist"))));
   });
 
   test("If output folder does not exist then an exception is thrown", () {
-    final file = File("${basePath}map_response.dart")
-      ..createSync();
+    final file = File("${basePath}map_response.dart")..createSync();
 
-    expect(() =>  analyzer.analyze(pathToFile: file.absolute.path, pathToOutputFolder: "doesnotexist"),
+    expect(
+        () => analyzer.analyze(
+            pathToFile: file.absolute.path, pathToOutputFolder: "doesnotexist"),
         throwsA(predicate((e) =>
-        e is SquintException &&
+            e is SquintException &&
             e.cause.startsWith("Folder does not exist:") &&
-            e.cause.endsWith("doesnotexist")
-        )));
+            e.cause.endsWith("doesnotexist"))));
   });
-
 }
 
 extension on List<AbstractType> {
-
   void _expect() {
     expect(length, 1, reason: "Should have found 1 type");
 
@@ -153,7 +155,7 @@ extension on List<AbstractType> {
         reason: "Fourth type key is String");
     expect(
         (customType.members[3].type as NullableMapType).value
-        is NullableDoubleType,
+            is NullableDoubleType,
         true,
         reason: "Fourth type value is a nullable double");
 
@@ -167,12 +169,12 @@ extension on List<AbstractType> {
         reason: "Fifth type value is Map");
     expect(
         ((customType.members[4].type as MapType).value as MapType).key
-        is StringType,
+            is StringType,
         true,
         reason: "Fifth sub map key type is String");
     expect(
         ((customType.members[4].type as MapType).value as MapType).value
-        is DoubleType,
+            is DoubleType,
         true,
         reason: "Fifth sub map value type is double");
 
@@ -187,14 +189,16 @@ extension on List<AbstractType> {
     expect(customType.members[6].name, "b2");
     expect(customType.members[6].type is ListType, true,
         reason: "Seventh type is List");
-    expect((customType.members[6].type as ListType).child is NullableStringType, true,
+    expect((customType.members[6].type as ListType).child is NullableStringType,
+        true,
         reason: "Seventh type child is a nullable String");
 
     // final List<String>? b3
     expect(customType.members[7].name, "b3");
     expect(customType.members[7].type is NullableListType, true,
         reason: "Eight type is a nullable List");
-    expect((customType.members[7].type as NullableListType).child is StringType, true,
+    expect((customType.members[7].type as NullableListType).child is StringType,
+        true,
         reason: "Eight type child is String");
   }
 }
