@@ -22,6 +22,8 @@ import "../ast/ast.dart";
 import "node2abstract.dart";
 
 /// Convert a [JsonObject] to a [JsonMap].
+///
+/// {@category decoder}
 extension JsonObject2JsonMap on JsonObject {
   ///
   AbstractType? get valuesAllOfSameType {
@@ -34,6 +36,8 @@ extension JsonObject2JsonMap on JsonObject {
 
   /// Convert a [JsonObject]
   /// to a [JsonMap] with [String] children.
+  ///
+  /// {@category decoder}
   JsonMap<String> get toStringMap {
     final output = <String, JsonString>{};
     data.forEach((key, node) {
@@ -47,6 +51,8 @@ extension JsonObject2JsonMap on JsonObject {
 
   /// Convert a [JsonObject]
   /// to a [JsonMap] with [int] children.
+  ///
+  /// {@category decoder}
   JsonMap<int> get toIntegerMap {
     final output = <String, JsonIntegerNumber>{};
     data.forEach((key, node) {
@@ -60,6 +66,8 @@ extension JsonObject2JsonMap on JsonObject {
 
   /// Convert a [JsonObject]
   /// to a [JsonMap] with [double] children.
+  ///
+  /// {@category decoder}
   JsonMap<double> get toFloatMap {
     final output = <String, JsonFloatingNumber>{};
     data.forEach((key, node) {
@@ -73,6 +81,8 @@ extension JsonObject2JsonMap on JsonObject {
 
   /// Convert a [JsonObject]
   /// to a [JsonMap] with [bool] children.
+  ///
+  /// {@category decoder}
   JsonMap<bool> get toBooleanMap {
     final output = <String, JsonBoolean>{};
     data.forEach((key, node) {

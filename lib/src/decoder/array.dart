@@ -24,10 +24,11 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 import "../converters/converters.dart";
 import "../decoder/decoder.dart";
-import "lists.dart";
 
 /// Utility to construct a nested List structure
 /// with strongly typed children.
+///
+/// {@category decoder}
 extension RepeatedBuilder on Map<String, JsonNode> {
   /// Create a (nested) List structure from width-depth notation.
   ///
@@ -37,6 +38,8 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   /// (sub) List.
   ///
   /// Key is constructed by [JsonArrayDecoder].
+  ///
+  /// {@category decoder}
   List toList<T, R>({List<T>? valueList}) {
     // List contains one or more null values if true.
     final isNullable = values.any((o) => o is JsonNull);
@@ -137,7 +140,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
     for (final key in keys) {
       final node = this[key];
       if (node != null) {
-        insertAt<T>(
+        _insertAt<T>(
           value: node.data as T,
           // Remove first index because you always start
           // adding inside a List (first index == parent List).
@@ -206,7 +209,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
         }
 
         // Remove final number because width does not matter here.
-        insertAt(
+        _insertAt(
           value: value,
           position: key.position..removeAt(0),
           valueList: valueList,
@@ -242,7 +245,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
       final node = this[key] as CustomJsonNode?;
 
       if (node != null) {
-        insertAt<T>(
+        _insertAt<T>(
           value: node.data as T,
           position: key.position..removeAt(0),
           valueList: valueList,
@@ -255,8 +258,7 @@ extension RepeatedBuilder on Map<String, JsonNode> {
   }
 }
 
-///
-void insertAt<T>({
+void _insertAt<T>({
   required T value,
   required List<int> position,
   required List<T> valueList,
@@ -316,6 +318,8 @@ extension on String {
 }
 
 /// Decode a JSON Array String.
+///
+/// {@category decoder}
 extension JsonArrayDecoder on String {
   /// Decode JSON String containing (sub) List(s)
   /// by saving each value and storing
@@ -394,6 +398,8 @@ class _PlaceHolder extends JsonNode {
 }
 
 /// Decode a Dart List.
+///
+/// {@category decoder}
 extension ListDecoder on List {
   /// Decode List(s) by saving each value
   /// as [JsonNode] and storing
@@ -425,9 +431,9 @@ extension ListDecoder on List {
   }
 }
 
-///
+/// Representation of an opening bracket, e.g. '['.
 class ListOpeningBracketToken extends _Token {
-  ///
+  /// Construct a new instance.
   ListOpeningBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
@@ -444,9 +450,9 @@ class ListOpeningBracketToken extends _Token {
         );
 }
 
-///
+/// Representation of a closing bracket, e.g. '['.
 class ListClosingBracketToken extends _Token {
-  ///
+  /// Construct a new instance.
   ListClosingBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
@@ -467,9 +473,9 @@ class ListClosingBracketToken extends _Token {
         );
 }
 
-///
+/// Representation of a opening squiggly bracket, e.g. '{'.
 class ObjectOpeningBracketToken extends _Token {
-  ///
+  /// Construct a new instance.
   ObjectOpeningBracketToken({
     required Map<int, int> currentSize,
     required int currentDepth,
@@ -493,46 +499,9 @@ class ObjectOpeningBracketToken extends _Token {
         );
 }
 
-int _setObjectValueAndReturnRemainder({
-  required ArrayDecodingKeyGenerator keygen,
-  required int index,
-  required Map<String, JsonNode> output,
-  required List<String> characters,
-  required bool nestedInList,
-}) {
-  if (nestedInList) {
-    final sublist = characters.sublist(1, characters.length - 1);
-
-    final stringObjects = sublist
-        .join()
-        .split("},")
-        .map((str) => str.endsWith("}") ? str : "$str}");
-
-    var currentKey = keygen.currentKey;
-    for (final strObject in stringObjects) {
-      output[currentKey] = JsonObject(data: strObject.jsonDecode.data, key: currentKey);
-      currentKey = keygen.incrementWidth;
-    }
-
-    return characters.length;
-  } else {
-    final counter = BracketCount(
-      characters: characters,
-      startIndex: index,
-      openingBracket: "{",
-      closingBracket: "}",
-    );
-
-    final sublist = counter.contentBetweenBrackets;
-    output[keygen.currentKey] =
-        JsonObject(data: sublist.join().jsonDecode.data, key: keygen.currentKey);
-    return counter.endIndex;
-  }
-}
-
-///
+/// Representation of characters who separate values inside a List, e.g. a comma: ','.
 class ListValueSeparatorToken extends _Token {
-  ///
+  /// Construct a new instance.
   ListValueSeparatorToken({
     required Map<int, int> currentSize,
     required int currentDepth,
@@ -570,7 +539,7 @@ class ListValueSeparatorToken extends _Token {
 /// ", a, ", b, c, d, ", ", e, z and " are all ListValueTokens.
 ///
 class ListValueToken extends _Token {
-  ///
+  /// Construct a new instance.
   ListValueToken({
     required Map<int, int> currentSize,
     required int currentDepth,
@@ -661,6 +630,43 @@ Map<int, int> _size(Map<int, int> currentSize, int depth) {
   return output;
 }
 
+int _setObjectValueAndReturnRemainder({
+  required ArrayDecodingKeyGenerator keygen,
+  required int index,
+  required Map<String, JsonNode> output,
+  required List<String> characters,
+  required bool nestedInList,
+}) {
+  if (nestedInList) {
+    final sublist = characters.sublist(1, characters.length - 1);
+
+    final stringObjects = sublist
+        .join()
+        .split("},")
+        .map((str) => str.endsWith("}") ? str : "$str}");
+
+    var currentKey = keygen.currentKey;
+    for (final strObject in stringObjects) {
+      output[currentKey] = JsonObject(data: strObject.jsonDecode.data, key: currentKey);
+      currentKey = keygen.incrementWidth;
+    }
+
+    return characters.length;
+  } else {
+    final counter = BracketCounter(
+      characters: characters,
+      startIndex: index,
+      openingBracket: "{",
+      closingBracket: "}",
+    );
+
+    final sublist = counter.contentBetweenBrackets;
+    output[keygen.currentKey] =
+        JsonObject(data: sublist.join().jsonDecode.data, key: keygen.currentKey);
+    return counter.endIndex;
+  }
+}
+
 abstract class _Token {
   _Token({
     required this.size,
@@ -741,15 +747,17 @@ abstract class _Token {
   final String key;
 }
 
+/// Generate a key which describes the exact position of a value inside a nested List.
 ///
+/// {@category decoder}
 class ArrayDecodingKeyGenerator {
-  ///
+  /// Construct a new generator instance with key '.0'.
   ArrayDecodingKeyGenerator([this.currentKey = ".0"]);
 
-  ///
+  /// The current key.
   String currentKey;
 
-  ///
+  /// Determine the next key value depending on the last encountered token.
   String nextKey(List<String> keys, Type token) {
     switch (token) {
       case ListOpeningBracketToken:
@@ -765,7 +773,7 @@ class ArrayDecodingKeyGenerator {
     return currentKey;
   }
 
-  ///
+  /// Determine width value, e.g. position inside a List.
   String get incrementWidth {
     final strWidth = currentKey.substring(
         currentKey.lastIndexOf(".") + 1, currentKey.length);
@@ -774,3 +782,107 @@ class ArrayDecodingKeyGenerator {
     return currentKey = "$prefix.$intWidth";
   }
 }
+
+/// Build a nested List which has all required children to set all values.
+///
+/// Doing this beforehand makes it possible to make every (sub) List strongly typed.
+/// Values can then be set without checking if a List is present/large enought etc.
+///
+/// {@category decoder}
+List buildListStructure<T>(List<List<int>> positions, {List<T>? valueList}) {
+  positions.sort((a, b) => a.length.compareTo(b.length));
+  final maxDepth = positions.last.length - 1;
+  final maxEntriesForEachDepth = <int>[];
+  for (var i = 0; i <= maxDepth; i++) {
+    final indexes = <int>[];
+    for (final position in positions) {
+      if (position.length > i) {
+        indexes.add(position[i]);
+      }
+    }
+    indexes.sort((int a, int b) => a.compareTo(b));
+    maxEntriesForEachDepth.add(indexes.last);
+  }
+  maxEntriesForEachDepth.sort((a, b) => a.compareTo(b));
+  return getNestedList<T>(
+    depth: maxDepth,
+    valueList: valueList ?? <T>[],
+  );
+}
+
+/// Get a List<T> with 0 or more parent lists.
+///
+/// Specify [depth] to added one or more parent Lists.
+///
+/// Example:
+/// [depth] 0 = List<T>
+/// [depth] 2 = List<List<List<T>>>.
+List getNestedList<T>({
+  required int depth,
+  required List<T> valueList,
+}) {
+  if (depth == 0) {
+    return valueList;
+  }
+
+  return getNestedList(depth: depth - 1, valueList: _addParent(valueList));
+}
+
+/// Add another List arround the given List and keep the it strongly typed.
+List<List<T>> _addParent<T>(List<T> list) => [list];
+
+/// Get a List<String> with 0 or more parent lists.
+///
+/// Specify [depth] to added one or more parent Lists.
+///
+/// Example:
+/// [depth] 0 = List<String>
+/// [depth] 2 = List<List<List<String>>>.
+List getNestedStringList(int depth) =>
+    getNestedList<String>(depth: depth, valueList: <String>[]);
+
+/// Get nested List with a nullable String child. See [getNestedStringList].
+List getNestedNullableStringList(int depth) =>
+    getNestedList<String?>(depth: depth, valueList: <String?>[]);
+
+/// Get a List<int> with 0 or more parent lists.
+///
+/// Specify [depth] to added one or more parent Lists.
+///
+/// Example:
+/// [depth] 0 = List<int>
+/// [depth] 2 = List<List<List<int>>>.
+List getNestedIntList(int depth) =>
+    getNestedList<int>(depth: depth, valueList: <int>[]);
+
+/// Get nested List with a nullable int child. See [getNestedIntList].
+List getNestedNullableIntList(int depth) =>
+    getNestedList<int?>(depth: depth, valueList: <int?>[]);
+
+/// Get a List<double> with 0 or more parent lists.
+///
+/// Specify [depth] to added one or more parent Lists.
+///
+/// Example:
+/// [depth] 0 = List<double>
+/// [depth] 2 = List<List<List<double>>>.
+List getNestedDoubleList(int depth) =>
+    getNestedList<double>(depth: depth, valueList: <double>[]);
+
+/// Get nested List with a nullable double child. See [getNestedDoubleList].
+List getNestedNullableDoubleList(int depth) =>
+    getNestedList<double?>(depth: depth, valueList: <double?>[]);
+
+/// Get a List<bool> with 0 or more parent lists.
+///
+/// Specify [depth] to added one or more parent Lists.
+///
+/// Example:
+/// [depth] 0 = List<bool>
+/// [depth] 2 = List<List<List<bool>>>.
+List getNestedBoolList(int depth) =>
+    getNestedList<bool>(depth: depth, valueList: <bool>[]);
+
+/// Get nested List with a nullable bool child. See [getNestedBoolList].
+List getNestedNullableBoolList(int depth) =>
+    getNestedList<bool?>(depth: depth, valueList: <bool?>[]);

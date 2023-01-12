@@ -22,15 +22,21 @@ import "../analyzer/analyzer.dart";
 import "../ast/ast.dart";
 import "../common/common.dart";
 
+/// Utilities to generate getter/setters for dataclasses and serializers.
 ///
-extension JsonElementGenerator on List<TypeMember> {
+/// {@category generator}
+extension JsonNodeGenerator on List<TypeMember> {
+  /// Generate setters.
   ///
+  /// {@category generator}
   List<String> toJsonNodeSetters({String dataPrefix = ""}) =>
       map((TypeMember tm) => "    ${tm.toJsonSetter(dataPrefix: dataPrefix)},")
           .toList()
         ..sort((a, b) => a.trim().startsWith("Json") ? -1 : 1);
 
+  /// Generate getters.
   ///
+  /// {@category generator}
   List<String> toJsonNodeGetters({String dataPrefix = ""}) =>
       map((TypeMember tm) => "    ${tm.toJsonGetter(dataPrefix: dataPrefix)},")
           .toList();

@@ -21,13 +21,19 @@
 import "../ast/ast.dart";
 
 /// All classes annotated with @squint will be processed by the squint library.
+///
+/// {@category decoder}
+/// {@category encoder}
 const squint = _Squint();
 
 class _Squint {
   const _Squint();
 }
 
-/// Set value of field with value of JSON element with [name].
+/// Set value of field with value of [JsonNode] with [name].
+///
+/// {@category decoder}
+/// {@category encoder}
 class JsonValue {
   /// Configure [JsonValue] to use this [name] tag.
   const JsonValue(this.name);
@@ -36,7 +42,10 @@ class JsonValue {
   final String name;
 }
 
-/// Encode a (non-standard) dart type to a JsonElement.
+/// Encode a (non-standard) dart type to a [JsonNode].
+///
+/// {@category decoder}
+/// {@category encoder}
 class JsonEncode<T> {
   /// Configure [JsonEncode] to encode a value [using].
   const JsonEncode({required this.using});
@@ -45,9 +54,12 @@ class JsonEncode<T> {
   final JsonNode Function(T t) using;
 }
 
-/// Decode a JsonElement to a non-standard dart type.
+/// Decode a [JsonNode] to a non-standard dart type.
+///
+/// {@category decoder}
+/// {@category encoder}
 class JsonDecode<T, R> {
-  /// Configure [JsonDecode] to decode a [JsonElement] [using].
+  /// Configure [JsonDecode] to decode a [JsonNode] [using].
   const JsonDecode({required this.using});
 
   /// Function to convert a [JsonNode] to data of type T.

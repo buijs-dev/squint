@@ -20,7 +20,9 @@
 
 import "indentation.dart";
 
+/// Options to configure JSON formatting.
 ///
+/// {@category encoder}
 class JsonFormattingOptions {
   /// Construct a [JsonFormattingOptions] instance.
   const JsonFormattingOptions({
@@ -36,14 +38,21 @@ class JsonFormattingOptions {
 }
 
 /// Default JSON formatting options.
+///
+/// {@category encoder}
 const standardJsonFormatting = JsonFormattingOptions(
   indentation: 4,
   colonPadding: 1,
 );
 
+/// Helper to customize [JsonFormattingOptions].
 ///
+/// {@category encoder}
 extension JsonFormattingOptionsBuilder on JsonFormattingOptions {
+  /// Build a new [JsonFormattingOptions] instance
+  /// by using an existing [JsonFormattingOptions] instance as base.
   ///
+  /// Can be easily combined with [standardJsonFormatting] as base.
   JsonFormattingOptions copyWith({
     JsonIndentationSize? indentationSize,
     int? indentationSizeInt,

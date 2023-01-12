@@ -21,9 +21,13 @@
 import "../common/common.dart";
 import "options.dart";
 
+/// Utilities to format a JSON String,
 ///
+/// {@category encoder}
 extension JsonFormatter on String {
   /// Get JSON String formatted.
+  ///
+  /// {@category encoder}
   String formatJson([
     JsonFormattingOptions options = standardJsonFormatting,
   ]) {

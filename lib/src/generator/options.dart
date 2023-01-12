@@ -19,6 +19,8 @@
 // SOFTWARE.
 
 /// Options to configure code generation.
+///
+/// {@category generator}
 class SquintGeneratorOptions {
   /// Construct a [SquintGeneratorOptions] instance.
   const SquintGeneratorOptions({
@@ -34,6 +36,8 @@ class SquintGeneratorOptions {
   /// any of these annotations.
   ///
   /// When enabled then annotations will be added where applicable.
+  ///
+  /// {@category generator}
   final bool includeJsonAnnotations;
 
   /// Is ignored when [includeJsonAnnotations] is set to false.
@@ -76,6 +80,7 @@ class SquintGeneratorOptions {
   /// TypeMember name and JSON node key are different so the @JsonValue is added.
   /// To disable adding annotations entirely set [includeJsonAnnotations] to false.
   ///
+  /// {@category generator}
   final bool alwaysAddJsonValue;
 
   /// Add a blank line between data class fields.
@@ -95,10 +100,14 @@ class SquintGeneratorOptions {
   ///
   /// }
   /// ```
+  ///
+  /// {@category generator}
   final bool blankLineBetweenFields;
 }
 
 /// Default code generation options.
+///
+/// {@category generator}
 const standardSquintGeneratorOptions = SquintGeneratorOptions(
   includeJsonAnnotations: true,
   alwaysAddJsonValue: true,
@@ -106,6 +115,8 @@ const standardSquintGeneratorOptions = SquintGeneratorOptions(
 );
 
 /// Generate data class without annotations.
+///
+/// {@category generator}
 const noAnnotationsGeneratorOptions = SquintGeneratorOptions(
   includeJsonAnnotations: false,
   alwaysAddJsonValue: false,
@@ -114,8 +125,12 @@ const noAnnotationsGeneratorOptions = SquintGeneratorOptions(
 
 /// Builder to customize [SquintGeneratorOptions]
 /// without building an instance from scratch.
+///
+/// {@category generator}
 extension SquintGeneratorOptionsBuilder on SquintGeneratorOptions {
   /// Copy the [standardSquintGeneratorOptions] with custom overrides.
+  ///
+  /// {@category generator}
   SquintGeneratorOptions copyWith({
     bool? includeJsonAnnotations,
     bool? alwaysAddJsonValue,

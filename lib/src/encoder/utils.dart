@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ignore_for_file: avoid_annotating_with_dynamic
+
 import "../ast/ast.dart";
 
 /// Return a quoted String value for JSON if the current value is a String.

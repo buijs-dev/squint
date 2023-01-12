@@ -49,8 +49,8 @@ extension JsonNode2AbstractType on JsonNode {
       final data = arr.data as List<dynamic>;
       if (data.isNotEmpty && data.first is Map) {
         final type = (data.first as Map).values.first.runtimeType;
-        final allChildrenOfSameType = data.every((dynamic child) {
-          return (child as Map).values.every((dynamic value) {
+        final allChildrenOfSameType = data.every((child) {
+          return (child as Map).values.every((value) {
             return value.runtimeType == type;
           });
         });
@@ -97,8 +97,6 @@ extension JsonNode2AbstractType on JsonNode {
         if (valueType is DoubleType) {
           return const MapType(key: StringType(), value: DoubleType());
         }
-
-        // TODO nested List or Object?
       }
       return (this as JsonObject).toCustomType(className: key.camelCase());
     }
@@ -110,34 +108,34 @@ extension JsonNode2AbstractType on JsonNode {
 /// Convert a [List] to a [StandardType].
 extension on List<dynamic> {
   ListType get toListType {
-    final noNullValues = where((dynamic e) => e != null);
+    final noNullValues = where((e) => e != null);
     final hasNullValues = noNullValues.length != length;
 
-    if (noNullValues.every((dynamic element) => element is String)) {
+    if (noNullValues.every((element) => element is String)) {
       return hasNullValues
           ? const ListType(NullableStringType())
           : const ListType(StringType());
     }
 
-    if (noNullValues.every((dynamic element) => element is bool)) {
+    if (noNullValues.every((element) => element is bool)) {
       return hasNullValues
           ? const ListType(NullableBooleanType())
           : const ListType(BooleanType());
     }
 
-    if (noNullValues.every((dynamic element) => element is double)) {
+    if (noNullValues.every((element) => element is double)) {
       return hasNullValues
           ? const ListType(NullableDoubleType())
           : const ListType(DoubleType());
     }
 
-    if (noNullValues.every((dynamic element) => element is int)) {
+    if (noNullValues.every((element) => element is int)) {
       return hasNullValues
           ? const ListType(NullableIntType())
           : const ListType(IntType());
     }
 
-    if (noNullValues.every((dynamic element) => element is Map)) {
+    if (noNullValues.every((element) => element is Map)) {
       final keyType =
           (noNullValues.first as Map).keys.toList().toListType.child;
 

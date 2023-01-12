@@ -302,4 +302,22 @@ void main() {
     expect(decoded[".0.0.1"]!.data, "b");
     expect(decoded[".0.1.0"]!.data, "c");
   });
+
+  test("verify building a nested String List", () {
+    // when
+    final object = getNestedStringList(2);
+    // then
+    expect(object is List<List<List<String>>>, true);
+  });
+
+  test("verify building a List Structure", () {
+    // when
+    final structure = buildListStructure<String>([
+      [0, 0, 0, 0],
+      [0, 0, 0, 1],
+      [0, 0, 0]
+    ]);
+    // then
+    expect(structure is List<List<List<List<String>>>>, true);
+  });
 }

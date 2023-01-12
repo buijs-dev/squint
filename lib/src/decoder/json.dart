@@ -24,12 +24,18 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 
 /// Decode a JSON String as [JsonObject].
+///
+/// {@category decoder}
 JsonObject toJsonObject(String json) =>
   json.jsonDecode;
 
 /// Decoded a JSON String as [JsonObject].
+///
+/// {@category decoder}
 extension JsonDecoder on String {
-  /// Decode a JSON String as [JsonNode]
+  /// Decode a JSON String as [JsonNode].
+  ///
+  /// {@category decoder}
   JsonObject get jsonDecode {
     var chars = substring(
       indexOf("{") + 1,
@@ -39,7 +45,7 @@ extension JsonDecoder on String {
     final data = <String, JsonNode>{};
 
     while (chars.isNotEmpty) {
-      final pkey = ProcessingKey(chars);
+      final pkey = _ProcessingKey(chars);
       final key = pkey.key;
       chars = pkey.chars;
 
@@ -47,7 +53,7 @@ extension JsonDecoder on String {
         continue;
       }
 
-      final pval = ProcessingValue(key, chars);
+      final pval = _ProcessingValue(key, chars);
       final value = pval.value;
       chars = pval.chars;
 
@@ -60,16 +66,12 @@ extension JsonDecoder on String {
   }
 }
 
-///
-abstract class JsonProcessingStep {
-  ///
-  const JsonProcessingStep();
+abstract class _JsonProcessingStep {
+  const _JsonProcessingStep();
 }
 
-///
-class ProcessingKey extends JsonProcessingStep {
-  ///
-  ProcessingKey(List<String> chars) {
+class _ProcessingKey extends _JsonProcessingStep {
+  _ProcessingKey(List<String> chars) {
     final startIndex = chars.indexOf('"');
 
     if (startIndex == -1) {
@@ -88,17 +90,13 @@ class ProcessingKey extends JsonProcessingStep {
     this.chars = subList.sublist(endIndex + 1, subList.length);
   }
 
-  ///
   String? key;
 
-  ///
   List<String> chars = [];
 }
 
-///
-class ProcessingValue extends JsonProcessingStep {
-  ///
-  ProcessingValue(String key, List<String> chars) {
+class _ProcessingValue extends _JsonProcessingStep {
+  _ProcessingValue(String key, List<String> chars) {
     var index = chars.indexOf(":");
 
     var processing = index != -1;
@@ -123,7 +121,7 @@ class ProcessingValue extends JsonProcessingStep {
           return;
         case "[":
           processing = false;
-          final counter = BracketCount(
+          final counter = BracketCounter(
             characters: chars,
             startIndex: index,
             openingBracket: "[",
@@ -140,7 +138,7 @@ class ProcessingValue extends JsonProcessingStep {
         case "{":
           processing = false;
 
-          final counter = BracketCount(
+          final counter = BracketCounter(
             characters: chars,
             startIndex: index,
             openingBracket: "{",
@@ -213,10 +211,8 @@ class ProcessingValue extends JsonProcessingStep {
     }
   }
 
-  ///
   JsonNode? value;
 
-  ///
   List<String> chars = [];
 }
 
@@ -239,10 +235,15 @@ JsonNode? _maybeNumber({
   return null;
 }
 
+/// Utility to count brackets and determine which content is inside the same bracket pairs.
 ///
-class BracketCount {
-  ///
-  BracketCount({
+/// This is used to split a JSON String into smaller chunks,
+/// which makes it easier to determine List sizes, total depth etc.
+///
+/// {@category decoder}
+class BracketCounter {
+  /// Construct a new instance.
+  BracketCounter({
     required this.characters,
     required this.startIndex,
     required this.openingBracket,

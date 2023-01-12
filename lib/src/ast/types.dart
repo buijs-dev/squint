@@ -72,7 +72,7 @@ abstract class StandardType extends AbstractType {
   }) : super(className: className);
 
   @override
-  bool operator ==(dynamic other) =>
+  bool operator ==(Object other) =>
       other is StandardType &&
       className == other.className &&
       nullable == other.nullable;

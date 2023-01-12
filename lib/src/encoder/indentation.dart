@@ -24,6 +24,8 @@
 /// - tab: '    ' e.g. 4 x spaces
 /// - space: ' '
 /// - doubleSpace: '  ' e.g. 2 x space
+///
+/// {@category encoder}
 enum JsonIndentationSize {
   /// Indentation of 4 spaces.
   ///

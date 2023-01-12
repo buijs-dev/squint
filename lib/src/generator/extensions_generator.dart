@@ -23,8 +23,12 @@ import "../common/common.dart";
 import "shared.dart";
 
 /// Generate JSON (de)serialization methods for a dart class (CustomType).
+///
+/// {@category generator}
 extension JsonConversionExtensionsGenerator on CustomType {
   /// Generate deserialization method.
+  ///
+  /// {@category generator}
   String generateJsonDecodingFile({
     required String relativeImport,
   }) =>

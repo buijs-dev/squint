@@ -24,11 +24,15 @@ import "../common/common.dart";
 import "generator.dart";
 
 /// Convert a [CustomType] to a data class.
+///
+/// {@category generator}
 extension CustomType2DataClass on CustomType {
 
   /// Add Annotation data to CustomType by generating the dataclass
   /// using [generateDataClassFile] and the using [analyze] to collect
   /// the annotations.
+  ///
+  /// {@category generator}
   CustomType get withDataClassMetadata {
     final dataclass = generateDataClassFile();
     final types = analyze(fileContent: dataclass);
@@ -53,6 +57,8 @@ extension CustomType2DataClass on CustomType {
   }
 
   /// Generate data class from [CustomType].
+  ///
+  /// {@category generator}
   String generateDataClassFile({
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
   }) {
@@ -98,6 +104,8 @@ extension CustomType2DataClass on CustomType {
   }
 
   /// Generate data class from [CustomType].
+  ///
+  /// {@category generator}
   String generateDataClassBody(SquintGeneratorOptions options) {
     // Sort members so required fields are serialized first and nullables last.
     final sortedMembers = members..sort((a, b) => !a.type.nullable ? -1 : 1);
