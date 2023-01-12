@@ -1,19 +1,19 @@
 dartdoc:
   categories:
     "analyzer":
-      markdown: docs/analyzer.md
+      markdown: doc/analyzer.md
       name: Analyser
     "ast":
-      markdown: docs/ast.md
+      markdown: doc/ast.md
       name: AST
     "decoder":
-      markdown: docs/decoder.md
+      markdown: doc/decoder.md
       name: Decoder
     "encoder":
-      markdown: docs/encoder.md
+      markdown: doc/encoder.md
       name: Encoder
     "generator":
-      markdown: docs/generator.md
+      markdown: doc/generator.md
       name: Generator
   categoryOrder: [
     "analyzer",
