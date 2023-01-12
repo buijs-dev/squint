@@ -38,7 +38,6 @@ List<AbstractType> runAnalyzerTask(List<String> args) {
 extension ArgumentSplitter on List<String> {
   /// Return Map containing [AnalyzerArgs] and their value (if any).
   Map<AnalyzerArgs, dynamic> get analyzerArguments {
-
     final arguments = <AnalyzerArgs, dynamic>{
       // Optional argument so set to false as default.
       AnalyzerArgs.overwrite: false,
@@ -47,18 +46,16 @@ extension ArgumentSplitter on List<String> {
     var index = 0;
 
     for (final value in this) {
-      index +=1;
-      if(value.startsWith("--")) {
-        if(length < index) {
+      index += 1;
+      if (value.startsWith("--")) {
+        if (length < index) {
           _logAnalyzerExamples();
           throw SquintException("No value given for parameter: '$value'");
         }
 
-        final lowercased = value
-            .substring(2, value.length)
-            .toLowerCase();
+        final lowercased = value.substring(2, value.length).toLowerCase();
 
-        switch(lowercased) {
+        switch (lowercased) {
           case "input":
             arguments[AnalyzerArgs.input] = this[index];
             break;
@@ -80,13 +77,13 @@ extension ArgumentSplitter on List<String> {
 
   bool _boolOrThrow(int index) {
     final boolOrNull = this[index].asBoolOrNull;
-    if(boolOrNull == null) {
+    if (boolOrNull == null) {
       _logAnalyzerExamples();
-      throw SquintException("Expected a bool value but found: '${this[index]}'");
+      throw SquintException(
+          "Expected a bool value but found: '${this[index]}'");
     }
     return boolOrNull;
   }
-
 }
 
 /// Arguments for the analyzer command-line task.
@@ -107,8 +104,8 @@ void _logAnalyzerExamples() {
   "Specify output folder with --output.".log();
   "".log();
   "Example command: ".log(
-      context: "flutter pub run squint:analyze --input foo/bar.dart --output foo/output",
+    context:
+        "flutter pub run squint:analyze --input foo/bar.dart --output foo/output",
   );
   "".log();
 }
-

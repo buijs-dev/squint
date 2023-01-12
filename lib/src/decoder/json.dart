@@ -26,8 +26,7 @@ import "../common/common.dart";
 /// Decode a JSON String as [JsonObject].
 ///
 /// {@category decoder}
-JsonObject toJsonObject(String json) =>
-  json.jsonDecode;
+JsonObject toJsonObject(String json) => json.jsonDecode;
 
 /// Decoded a JSON String as [JsonObject].
 ///
@@ -146,7 +145,8 @@ class _ProcessingValue extends _JsonProcessingStep {
           );
 
           final sublist = counter.contentBetweenBrackets;
-          this.value = JsonObject(data: sublist.join().jsonDecode.data, key: key);
+          this.value =
+              JsonObject(data: sublist.join().jsonDecode.data, key: key);
           this.chars = chars.sublist(counter.endIndex, chars.length);
           return;
         default:

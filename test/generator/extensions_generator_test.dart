@@ -51,11 +51,12 @@ void main() {
     expect(jsonObject.arrayNode<double>("random").data[0], 0);
     expect(jsonObject.arrayNode<double>("random").data[1], 3);
     expect(jsonObject.arrayNode<double>("random").data[2], 2);
-    expect(jsonObject.arrayNode<List<String>>("multiples").data[0][0], "hooray!");
+    expect(
+        jsonObject.arrayNode<List<String>>("multiples").data[0][0], "hooray!");
 
     assert(jsonObject.floatNode("id").key == "id");
     assert(jsonObject.floatNode("id").data == 1);
-    
+
     // when:
     final jsonString = object.toJson;
 
@@ -443,7 +444,8 @@ class Objectives {
   final List<bool> missionResults;
 }
 
-JsonObject encodeObjectives(Objectives objectives) => JsonObject.fromNodes(nodes: [
+JsonObject encodeObjectives(Objectives objectives) =>
+    JsonObject.fromNodes(nodes: [
       JsonBoolean(
         key: "in-mission",
         data: objectives.inMission,

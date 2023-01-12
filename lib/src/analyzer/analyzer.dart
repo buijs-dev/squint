@@ -65,14 +65,13 @@ List<AbstractType> analyze({
   /// Allow overwriting existing output files or not.
   bool overwrite = true,
 }) {
-
   File? file;
 
-  if (pathToFile != null)  {
+  if (pathToFile != null) {
     file = File(pathToFile);
   }
 
-  if(fileContent != null) {
+  if (fileContent != null) {
     file = Directory.systemTemp.resolve("squinttempfile.dart")
       ..createSync()
       ..writeAsStringSync(fileContent);
@@ -146,9 +145,10 @@ extension on List<AbstractType> {
   void saveAsJson(String pathToOutputFolder, {required bool overwrite}) {
     final output = Directory(pathToOutputFolder);
     whereType<CustomType>().forEach((type) {
-      final file = output.resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json");
+      final file = output
+          .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json");
 
-      if(file.existsSync() && !overwrite) {
+      if (file.existsSync() && !overwrite) {
         "Unable to store analysis result.".log();
         "File already exists: ${file.absolute.path}.".log();
         "To allow overwriting files use --overwrite true.".log();

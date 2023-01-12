@@ -57,7 +57,6 @@ void main() {
     "foo" : null
 }""";
 
-
   /// Decoding JSON examples.
   ///
   ///
@@ -120,9 +119,11 @@ void main() {
     // Variable 'json' is our actual JSON String.
     final object = toJsonObject(json);
 
-    expect(() => object.stringOrNull("does-not-exist"),
+    expect(
+        () => object.stringOrNull("does-not-exist"),
         throwsA(predicate((e) =>
-        e is SquintException && e.cause == "JSON key not found: 'does-not-exist'")));
+            e is SquintException &&
+            e.cause == "JSON key not found: 'does-not-exist'")));
   });
 
   test("verify accessing a List value", () {
@@ -148,15 +149,18 @@ void main() {
     final object = toJsonObject(json);
 
     expect(object.objectNode("objectives").boolean("in-mission"), false);
-    expect(object.objectNode("objectives").array<bool>("mission-results")[0], false);
-    expect(object.objectNode("objectives").array<bool>("mission-results")[1], true);
+    expect(object.objectNode("objectives").array<bool>("mission-results")[0],
+        false);
+    expect(object.objectNode("objectives").array<bool>("mission-results")[1],
+        true);
   });
 
   test("verify accessing a JsonObject nested inside a List", () {
     // Variable 'json' is our actual JSON String.
     final object = toJsonObject(json);
 
-    expect(object.array<Map<String,int>>("annoyance-rate")[0]["JarJarBinks"], 9000);
+    expect(object.array<Map<String, int>>("annoyance-rate")[0]["JarJarBinks"],
+        9000);
   });
 
   /// Encoding JSON examples.
@@ -189,13 +193,14 @@ void main() {
 
     // Encode JsonObject to formatted JSON String.
     // Set the indentation size to double space.
-        expect(
-            object.stringifyWithFormatting(
+    expect(
+        object.stringifyWithFormatting(
               standardJsonFormatting.copyWith(
                 indentationSize: JsonIndentationSize.doubleSpace,
               ),
-            ) != json, true
-        );
+            ) !=
+            json,
+        true);
   });
 
   /// Code generation examples.
@@ -204,7 +209,6 @@ void main() {
   /// ===========================================
 
   test("verify generating a data class from a JSON String", () {
-
     // Expected data class output:
     const expected = """
 // Copyright (c) 2021 - 2022 Buijs Software
@@ -309,11 +313,9 @@ Objectives decodeObjectives(JsonObject object) => Objectives(
 
     // Convert a CustomType to a .dart File.
     expect(customType.generateDataClassFile(), expected);
-
   });
 
   test("verify generating (de)serialization code for a data class", () {
-
     // Expected data class output:
     const expected = """
 // Copyright (c) 2021 - 2022 Buijs Software
@@ -382,8 +384,7 @@ extension ExampleJsonObject2Class on JsonObject {
     final customType = object.toCustomType(className: "Example");
 
     // Generate extenions methods.
-    expect(customType.generateJsonDecodingFile(relativeImport: "example.dart"), expected);
-
+    expect(customType.generateJsonDecodingFile(relativeImport: "example.dart"),
+        expected);
   });
-
 }

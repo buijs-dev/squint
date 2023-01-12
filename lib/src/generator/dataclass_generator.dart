@@ -27,7 +27,6 @@ import "generator.dart";
 ///
 /// {@category generator}
 extension CustomType2DataClass on CustomType {
-
   /// Add Annotation data to CustomType by generating the dataclass
   /// using [generateDataClassFile] and the using [analyze] to collect
   /// the annotations.
@@ -41,13 +40,11 @@ extension CustomType2DataClass on CustomType {
     final children = customs.toList()..removeAt(0);
     final members = <TypeMember>[];
     for (final member in parent.members) {
-      members.add(
-          TypeMember(
-              name: member.name,
-              annotations: member.annotations,
-              type: member.type.normalizeType(children),
-          )
-      );
+      members.add(TypeMember(
+        name: member.name,
+        annotations: member.annotations,
+        type: member.type.normalizeType(children),
+      ));
     }
 
     return CustomType(
@@ -185,7 +182,6 @@ extension on TypeMember {
         ${(type as CustomType).members.toJsonNodeGetters(dataPrefix: "object.").join("\n")}
         );
   \n""";
-
 }
 
 extension on String {
@@ -197,7 +193,7 @@ extension on String {
 extension on AbstractType {
   AbstractType normalizeType(List<CustomType> types) {
     final maybeType = types.firstBy((type) => type.className == className);
-    if(maybeType != null) {
+    if (maybeType != null) {
       return maybeType;
     }
 

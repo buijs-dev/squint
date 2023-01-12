@@ -32,25 +32,27 @@ import "shared.dart";
 List<AbstractType> runGenerateTask(List<String> args) {
   final arguments = args.generateArguments;
 
-  if(!arguments.containsKey(GenerateArgs.type)) {
-      "Missing argument 'type'.".log();
-      "Specify what code to be generated with --type.".log();
-      "Example to generate dataclass from JSON file: ".log(
-        context: "flutter pub run squint:generate --type dataclass --input message.json",
-      );
-      "Example to generate serializer extensions for dart class: ".log(
-        context: "flutter pub run squint:generate --type serializer --input foo.dart",
-      );
-      return [];
+  if (!arguments.containsKey(GenerateArgs.type)) {
+    "Missing argument 'type'.".log();
+    "Specify what code to be generated with --type.".log();
+    "Example to generate dataclass from JSON file: ".log(
+      context:
+          "flutter pub run squint:generate --type dataclass --input message.json",
+    );
+    "Example to generate serializer extensions for dart class: ".log(
+      context:
+          "flutter pub run squint:generate --type serializer --input foo.dart",
+    );
+    return [];
   }
 
   final toBeGenerated = arguments[GenerateArgs.type] as String;
 
-  if(toBeGenerated == "dataclass") {
+  if (toBeGenerated == "dataclass") {
     return arguments.dataclass;
   }
 
-  if(toBeGenerated == "serializer") {
+  if (toBeGenerated == "serializer") {
     return arguments.serializer;
   }
 
@@ -59,19 +61,17 @@ List<AbstractType> runGenerateTask(List<String> args) {
   "- dataclass (generate dataclass from JSON)".log();
   "- serializer (generate serializer extensions for dart class)".log();
   return [];
-
 }
 
-extension on Map<GenerateArgs,dynamic> {
+extension on Map<GenerateArgs, dynamic> {
   List<AbstractType> get dataclass {
-
     final file = inputFile;
 
-    if(file == null) {
+    if (file == null) {
       return [];
     }
 
-    if(!file.path.toLowerCase().endsWith(".json")) {
+    if (!file.path.toLowerCase().endsWith(".json")) {
       "File is not a .json file: ${file.absolute.path}".log();
       return [];
     }
@@ -81,67 +81,74 @@ extension on Map<GenerateArgs,dynamic> {
     final className = file.toClassName;
     final customType = object.toCustomType(className: className);
 
-     final dataclass = file.parent.resolve("${className.toLowerCase()}_dataclass.dart");
-     if (dataclass.existsSync()) {
-        final allowedToOverwrite = this[GenerateArgs.overwrite] as bool?;
-        if(! (allowedToOverwrite??false))  {
-          "Failed to write generated code because File already exists: ${dataclass.absolute.path}".log();
-          "Use '--overwrite true' to allow overwriting existing files".log();
-          return [];
-        }
-     }
+    final dataclass =
+        file.parent.resolve("${className.toLowerCase()}_dataclass.dart");
+    if (dataclass.existsSync()) {
+      final allowedToOverwrite = this[GenerateArgs.overwrite] as bool?;
+      if (!(allowedToOverwrite ?? false)) {
+        "Failed to write generated code because File already exists: ${dataclass.absolute.path}"
+            .log();
+        "Use '--overwrite true' to allow overwriting existing files".log();
+        return [];
+      }
+    }
 
-     dataclass.writeAsStringSync(customType.generateDataClassFile(
-       options: standardSquintGeneratorOptions.copyWith(
-         includeJsonAnnotations: this[GenerateArgs.includeJsonAnnotations] as bool,
-         alwaysAddJsonValue: this[GenerateArgs.alwaysAddJsonValue] as bool,
-         blankLineBetweenFields: this[GenerateArgs.blankLineBetweenFields] as bool
-       )
-     ));
-     return [];
+    dataclass.writeAsStringSync(customType.generateDataClassFile(
+        options: standardSquintGeneratorOptions.copyWith(
+            includeJsonAnnotations:
+                this[GenerateArgs.includeJsonAnnotations] as bool,
+            alwaysAddJsonValue: this[GenerateArgs.alwaysAddJsonValue] as bool,
+            blankLineBetweenFields:
+                this[GenerateArgs.blankLineBetweenFields] as bool)));
+    return [];
   }
 
   List<AbstractType> get serializer {
     final file = inputFile;
 
-    if(file == null) {
+    if (file == null) {
       return [];
     }
 
-    if(!file.path.toLowerCase().endsWith(".dart")) {
+    if (!file.path.toLowerCase().endsWith(".dart")) {
       "File is not a .dart file: ${file.absolute.path}".log();
       return [];
     }
 
-    final result = analyzer.analyze(pathToFile: file.absolute.path).whereType<CustomType>();
+    final result = analyzer
+        .analyze(pathToFile: file.absolute.path)
+        .whereType<CustomType>();
 
     for (final e in result) {
-          final extensions =
-            file.parent.resolve("${e.className.snakeCase}_extensions.dart");
+      final extensions =
+          file.parent.resolve("${e.className.snakeCase}_extensions.dart");
 
-          final allowedToOverwrite = this[GenerateArgs.overwrite] as bool?;
-          if(extensions.existsSync() && !(allowedToOverwrite??false))  {
-            "Failed to write generated code because File already exists: ${extensions.absolute.path}".log();
-            "Use '--overwrite true' to allow overwriting existing files".log();
-          } else {
-            extensions.writeAsString(e.generateJsonDecodingFile(
-                relativeImport: file.path.substring(
-                    file.path.lastIndexOf(Platform.pathSeparator) + 1)));
-          }
+      final allowedToOverwrite = this[GenerateArgs.overwrite] as bool?;
+      if (extensions.existsSync() && !(allowedToOverwrite ?? false)) {
+        "Failed to write generated code because File already exists: ${extensions.absolute.path}"
+            .log();
+        "Use '--overwrite true' to allow overwriting existing files".log();
+      } else {
+        extensions.writeAsString(e.generateJsonDecodingFile(
+            relativeImport: file.path
+                .substring(file.path.lastIndexOf(Platform.pathSeparator) + 1)));
       }
+    }
 
     return result.toList();
   }
 
   File? get inputFile {
-    if(!containsKey(GenerateArgs.input)) {
+    if (!containsKey(GenerateArgs.input)) {
       "Missing argument 'input'.".log();
       "Specify path to input file with --input.".log();
       "Example to generate dataclass from JSON file: ".log(
-        context: "flutter pub run squint:generate --type dataclass --input message.json",
+        context:
+            "flutter pub run squint:generate --type dataclass --input message.json",
       );
       "Example to generate serializer extensions for dart class: ".log(
-        context: "flutter pub run squint:generate --type serializer --input foo.dart",
+        context:
+            "flutter pub run squint:generate --type serializer --input foo.dart",
       );
       return null;
     }
@@ -160,30 +167,30 @@ extension on Map<GenerateArgs,dynamic> {
 extension ArgumentSplitter on List<String> {
   /// Return Map containing [GenerateArgs] and their value (if any).
   Map<GenerateArgs, dynamic> get generateArguments {
-
     final arguments = <GenerateArgs, dynamic>{
       // Optional argument so set to false as default.
       GenerateArgs.overwrite: false,
-      GenerateArgs.blankLineBetweenFields: standardSquintGeneratorOptions.blankLineBetweenFields,
-      GenerateArgs.alwaysAddJsonValue: standardSquintGeneratorOptions.alwaysAddJsonValue,
-      GenerateArgs.includeJsonAnnotations: standardSquintGeneratorOptions.includeJsonAnnotations,
+      GenerateArgs.blankLineBetweenFields:
+          standardSquintGeneratorOptions.blankLineBetweenFields,
+      GenerateArgs.alwaysAddJsonValue:
+          standardSquintGeneratorOptions.alwaysAddJsonValue,
+      GenerateArgs.includeJsonAnnotations:
+          standardSquintGeneratorOptions.includeJsonAnnotations,
     };
 
     var index = 0;
 
     for (final value in this) {
-      index +=1;
-      if(value.startsWith("--")) {
-        if(length < index) {
+      index += 1;
+      if (value.startsWith("--")) {
+        if (length < index) {
           _logGeneratorExamples();
           throw SquintException("No value given for parameter: '$value'");
         }
 
-        final lowercased = value
-            .substring(2, value.length)
-            .toLowerCase();
+        final lowercased = value.substring(2, value.length).toLowerCase();
 
-        switch(lowercased) {
+        switch (lowercased) {
           case "type":
             arguments[GenerateArgs.type] = this[index];
             break;
@@ -197,13 +204,15 @@ extension ArgumentSplitter on List<String> {
             arguments[GenerateArgs.overwrite] = _boolOrThrow(index);
             break;
           case "blanklinebetweenfields":
-            arguments[GenerateArgs.blankLineBetweenFields]  = _boolOrThrow(index);
+            arguments[GenerateArgs.blankLineBetweenFields] =
+                _boolOrThrow(index);
             break;
           case "alwaysaddjsonvalue":
             arguments[GenerateArgs.alwaysAddJsonValue] = _boolOrThrow(index);
             break;
           case "includejsonannotations":
-            arguments[GenerateArgs.includeJsonAnnotations] = _boolOrThrow(index);
+            arguments[GenerateArgs.includeJsonAnnotations] =
+                _boolOrThrow(index);
             break;
           default:
             _logGeneratorExamples();
@@ -217,18 +226,17 @@ extension ArgumentSplitter on List<String> {
 
   bool _boolOrThrow(int index) {
     final boolOrNull = this[index].asBoolOrNull;
-    if(boolOrNull == null) {
+    if (boolOrNull == null) {
       _logGeneratorExamples();
-      throw SquintException("Expected a bool value but found: '${this[index]}'");
+      throw SquintException(
+          "Expected a bool value but found: '${this[index]}'");
     }
-   return boolOrNull;
+    return boolOrNull;
   }
-
 }
 
 /// Arguments for the generate command-line task.
 enum GenerateArgs {
-
   /// What type of code to be generated.
   type,
 
@@ -261,21 +269,22 @@ extension on File {
 
 void _logGeneratorExamples() {
   "Task 'generate' requires 2 parameters.".log();
-  "Specify what to be generated with --type (possible values: dataclass or serializer).".log();
+  "Specify what to be generated with --type (possible values: dataclass or serializer)."
+      .log();
   "Specify input file with --input.".log();
   "Optional parameters are".log();
   "--output (folder to write generated code which defaults to current folder)".log(
-    context: "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --output foo/bar/gen"
-  );
+      context:
+          "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --output foo/bar/gen");
   "For dataclass only:".log();
   "--alwaysAddJsonValue (include @JsonValue annotation on all fields)".log(
-      context: "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --alwaysAddJsonValue true"
-  );
+      context:
+          "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --alwaysAddJsonValue true");
   "--includeJsonAnnotations (add annotations or not)".log(
-      context: "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --includeJsonAnnotations false"
-  );
+      context:
+          "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --includeJsonAnnotations false");
   "--blankLineBetweenFields (add blank line between dataclass fields or not)".log(
-      context: "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --blankLineBetweenFields true"
-  );
+      context:
+          "Example: flutter pub run squint:generate --type dataclass --input foo/bar/message.json --blankLineBetweenFields true");
   "".log();
 }

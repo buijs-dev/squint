@@ -193,7 +193,6 @@ void main() {
         false);
     expect(object.objectNode("objectives").array<bool>("mission-results")[1],
         true);
-    expect(
-        object.array<dynamic>("annoyance-rate")[0]["JarJarBinks"], 9000);
+    expect(object.array<dynamic>("annoyance-rate")[0]["JarJarBinks"], 9000);
   });
 }

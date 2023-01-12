@@ -27,7 +27,8 @@ Future<void> main(List<String> args) async {
   ════════════════════════════════════════════
      SQUINT (v0.0.1)                               
   ════════════════════════════════════════════
-  """.log();
+  """
+      .log();
 
   runAnalyzerTask(args);
 }

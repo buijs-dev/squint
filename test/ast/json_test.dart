@@ -46,7 +46,7 @@ void main() {
 
   test("verify an exception is thrown if the request key is not found", () {
     expect(
-        () => JsonObject(data:{}).byKey("xyz"),
+        () => JsonObject(data: {}).byKey("xyz"),
         throwsA(predicate((e) =>
             e is SquintException && e.cause == "JSON key not found: 'xyz'")));
   });
@@ -110,10 +110,14 @@ void main() {
 
   test("verify nullable array getter returns a List", () {
     print(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data);
-    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][0], "a");
-    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][1], null);
-    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[1][0], "b");
-    expect(decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[2][0], "c");
+    expect(
+        decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][0], "a");
+    expect(
+        decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][1], null);
+    expect(
+        decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[1][0], "b");
+    expect(
+        decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[2][0], "c");
   });
 
   test("verify nullable String getter returns a String", () {

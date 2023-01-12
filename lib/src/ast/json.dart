@@ -82,16 +82,19 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   factory JsonObject.fromNodes({
     required List<JsonNode> nodes,
     String key = "",
-}) => JsonObject(
-      data: {for (var node in nodes) node.key: node},
-      key: key,
-  );
+  }) =>
+      JsonObject(
+        data: {for (var node in nodes) node.key: node},
+        key: key,
+      );
 
   /// Construct a new [JsonObject] using the specified key values of each [JsonNode].
-  factory JsonObject.fromMap({
-    required Map<String, dynamic> data,
-    String key = ""
-  }) => JsonObject(data: data.map(_buildJsonNodeMap), key: key,);
+  factory JsonObject.fromMap(
+          {required Map<String, dynamic> data, String key = ""}) =>
+      JsonObject(
+        data: data.map(_buildJsonNodeMap),
+        key: key,
+      );
 
   /// Get JsonNode by [String] key.
   ///
@@ -117,7 +120,8 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   JsonString stringNode(String key) => _byKeyOfType<JsonString>(key, false)!;
 
   /// Get [JsonString] or null by [String] key.
-  JsonString? stringNodeOrNull(String key) => _byKeyOfType<JsonString>(key, true);
+  JsonString? stringNodeOrNull(String key) =>
+      _byKeyOfType<JsonString>(key, true);
 
   /// Get [double] by [String] key.
   ///
@@ -380,7 +384,8 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
-  Map<String, R>? objectOrNull<R>(String key) => objectNodeOrNull(key)?.getDataAsMap();
+  Map<String, R>? objectOrNull<R>(String key) =>
+      objectNodeOrNull(key)?.getDataAsMap();
 
   /// Get [JsonObject] by [String] key.
   ///
@@ -402,8 +407,8 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
 
   /// Return raw (unwrapped) object data as Map<String, R>
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
-  Map<String, R> getDataAsMap<R>() => data.map((key, value) =>
-      MapEntry(key, value.data as R));
+  Map<String, R> getDataAsMap<R>() =>
+      data.map((key, value) => MapEntry(key, value.data as R));
 
   R? _byKeyOfType<R>(String key, bool nullable) {
     final data = byKey(key);
@@ -500,7 +505,8 @@ MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
   }
 
   if (value is Map && value.keys.every((dynamic k) => k is String)) {
-    return MapEntry(key, JsonObject.fromMap(data: value as Map<String, dynamic>));
+    return MapEntry(
+        key, JsonObject.fromMap(data: value as Map<String, dynamic>));
   }
 
   throw SquintException(

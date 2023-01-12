@@ -647,7 +647,8 @@ int _setObjectValueAndReturnRemainder({
 
     var currentKey = keygen.currentKey;
     for (final strObject in stringObjects) {
-      output[currentKey] = JsonObject(data: strObject.jsonDecode.data, key: currentKey);
+      output[currentKey] =
+          JsonObject(data: strObject.jsonDecode.data, key: currentKey);
       currentKey = keygen.incrementWidth;
     }
 
@@ -661,8 +662,8 @@ int _setObjectValueAndReturnRemainder({
     );
 
     final sublist = counter.contentBetweenBrackets;
-    output[keygen.currentKey] =
-        JsonObject(data: sublist.join().jsonDecode.data, key: keygen.currentKey);
+    output[keygen.currentKey] = JsonObject(
+        data: sublist.join().jsonDecode.data, key: keygen.currentKey);
     return counter.endIndex;
   }
 }

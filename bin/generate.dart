@@ -17,15 +17,16 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-// ignore_for_file: avoid_print
 import "package:squint/src/cli/generate.dart";
+import "package:squint/src/common/common.dart";
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {
-  print("""
+  """
   ════════════════════════════════════════════
      SQUINT (v0.0.1)                               
   ════════════════════════════════════════════
-  """);
+  """
+      .log();
   runGenerateTask(args);
 }

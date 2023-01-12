@@ -20,16 +20,15 @@
 
 /// Utility to parse command line arguments
 extension ArgParserUtil on dynamic {
-
   /// Return bool value if current value is a bool or String bool.
   /// Return null if current value is not a bool or String bool.
   bool? get asBoolOrNull {
     final upperCaseString = "$this".trim().toUpperCase();
-    if(upperCaseString == "TRUE") {
+    if (upperCaseString == "TRUE") {
       return true;
     }
 
-    if(upperCaseString == "FALSE") {
+    if (upperCaseString == "FALSE") {
       return false;
     }
 
