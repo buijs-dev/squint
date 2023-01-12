@@ -21,6 +21,7 @@ expect(myArray.data[0][0][0][0], "Lugia");
 expect(myArray.data[0][0][0][1], "Ho-Oh");
 
 ````
+Latest documentation [0.0.1](https://buijs-dev.github.io/squint/#/).
 
 # Features
 - Deserialize JSON properly including (nested) arrays.
