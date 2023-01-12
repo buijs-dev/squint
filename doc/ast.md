@@ -4,7 +4,7 @@ A simplified abstract syntax tree for code and JSON processing.
 
 # Code
 Every datatype is an AbstractType. An AbstractType stores the actual datatype name.
-AbstractTypes are implemented by 
+AbstractTypes are implemented by:
 - StandardType
 - CustomType 
 

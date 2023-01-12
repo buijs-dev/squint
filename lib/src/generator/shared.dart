@@ -57,16 +57,16 @@ extension on TypeMember {
       String? unwrapper;
 
       if (unwrapperType == "JsonString") {
-        unwrapper = '${dataPrefix}string("$jsonKey")';
+        unwrapper = '${dataPrefix}stringNode("$jsonKey")';
       } else if (unwrapperType == "JsonFloatingNumber") {
-        unwrapper = '${dataPrefix}float("$jsonKey")';
+        unwrapper = '${dataPrefix}floatNode("$jsonKey")';
       } else if (unwrapperType == "JsonIntegerNumber") {
-        unwrapper = '${dataPrefix}integer("$jsonKey")';
+        unwrapper = '${dataPrefix}integerNode("$jsonKey")';
       } else if (unwrapperType == "JsonBoolean") {
-        unwrapper = '${dataPrefix}boolean("$jsonKey")';
+        unwrapper = '${dataPrefix}booleanNode("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
         unwrapper =
-            '${dataPrefix}array<${(this.type as ListType).child.printType}>("$jsonKey")';
+            '${dataPrefix}arrayNode<${(this.type as ListType).child.printType}>("$jsonKey")';
       } else if (unwrapperType == "JsonObject") {
         unwrapper = '${dataPrefix}objectNode("$jsonKey")';
       } else {
@@ -88,7 +88,7 @@ extension on TypeMember {
       case "List":
         return '$name: ${dataPrefix}array<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
-        return '$name: ${dataPrefix}object("$jsonKey").rawData()';
+        return '$name: ${dataPrefix}object("$jsonKey")';
       case "dynamic":
         return '$name: ${dataPrefix}byKey("$jsonKey").data';
       default:
@@ -125,7 +125,7 @@ extension on TypeMember {
       case "List":
         return 'JsonArray<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
-        return 'JsonObject.fromMap($dataPrefix$name, "$jsonKey")';
+        return 'JsonObject.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:

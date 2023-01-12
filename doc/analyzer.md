@@ -1,7 +1,7 @@
 The analyzer can read files and return metadata about (dart) classes.
 This metadata can then be read and written as JSON files. The analyzer supports:
 1. Any .dart file containing valid dart classes.
-2. Metadata file in AST JSON format (see [AST](../doc/ast.md) documentation).
+2. Metadata file in AST JSON format (see [AST](ast.md) documentation).
 
 <b>What's the point?</b></br>
 The simplified metadata only contains information about data classes, meaning
@@ -11,31 +11,101 @@ processing this data.
 Using JSON as input/output makes it easier to use the analyzer in conjunction with other
 tools in different programming languages. For example analysis could be done on Kotlin data classes 
 using a Kotlin compiler plugin which then stores the result as JSON. The Squint analyzer can then
-read this metadata JSON and generate dart code (see [generator](../doc/generator.md)).
+read this metadata JSON and generate dart code (see [Generator](generator.md)).
 
 ### Using analyzer programmatically
 
-```dart
-import "../analyzer/analyzer.dart" as analyzer;
+The analyzer returns CustomType instances which can be used to generate code or do other operations.
 
-void analyze() {
-  final metadata = analyzer.analyze(pathToFile);
+```dart
+import "package:squint/squint.dart";
+
+void main() {
+  final metadata = analyze(pathToFile: "foo/bar.dart");
 
   for(final object in metadata) {
-    print(object); // Calls toString method of CustomType
+    // Calls toString method of CustomType
+    print(object); 
   }
 }
-
 ```
+
+Analysing String content directly is also possible.
+
+```dart
+import "package:squint/squint.dart";
+
+void main() {
+  const content = """
+    class SimpleResponse {
+      SimpleResponse({
+        required this.a1,
+        this.a2,
+      });
+    
+      final int a1;
+      final String? a2;
+    }
+  """;
+  
+  final metadata = analyze(fileContent: content);
+
+  for(final object in metadata) {
+    // Calls toString method of CustomType
+    print(object);
+  }
+}
+```
+
+> Note that analyzing code will fail if the code is not valid dart. 
+> This includes errors like missing imports, brackets or other syntactical issues.
+
+The analysis result can be stored as JSON metadata by specifying an output folder. A File will be created for each CustomType.
+
+```dart
+import "package:squint/squint.dart";
+
+void main() {
+  analyze(
+    pathToFile: "foo/bar.dart",
+    pathToOutputFolder: "foo/metadata",
+  );
+  
+  // Metadata JSON is now stored in foo/metadata.
+}
+```
+
+By default, existing metadata files will not be overwritten. This can be changed by setting the overwrite parameter.
+
+```dart
+import "package:squint/squint.dart";
+
+void main() {
+  analyze(
+      pathToFile: "foo/bar.dart",
+      pathToOutputFolder: "foo",
+      overwrite: true,
+  );
+}
+```
+
+> A SquintException is thrown if overwrite parameter is not specified (or set to false) and the metadata JSON is already present.
 
 ### Using analyzer from cli
 
+To analyse a file from the command-line, one should specify an input file and an output folder using --input and --output respectively.
+
 ```shell
-flutter pub run squint:analyze foo/some_class_file.dart foo/bar/output
+flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output
 ```
 
-Analyzer reads a .dart file and returns a CustomType instance containing metadata.
+Use --overwrite parameter to allow overriding existing metadata JSON files.
 
+```shell
+flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
+```
+
+### Examples
 Given a valid dart class declaration:
 
 ```dart
@@ -56,9 +126,7 @@ Will return a CustomType instance:
 - className: SimpleResponse
 - members: [IntType a1, NullableStringType a2]
 
-Analyzer reads a JSON file and returns a CustomType instance containing metadata.
-
-Given a valid metadata file:
+Given a valid metadata JSON:
 
 ```json
  {

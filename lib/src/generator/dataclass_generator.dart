@@ -142,7 +142,7 @@ extension on TypeMember {
 
     if (type is CustomType) {
       buffer
-        ..write("\n@JsonEncode(using: ${type.className.encodingMethodName})\n")
+        ..write("@JsonEncode(using: ${type.className.encodingMethodName})\n")
         ..write(
             "@JsonDecode<${type.className}, JsonObject>(using: ${type.className.decodingMethodName})\n");
     }

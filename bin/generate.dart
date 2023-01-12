@@ -18,11 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 // ignore_for_file: avoid_print
-import "dart:io";
-
-import "package:squint/squint.dart";
-import "package:squint/src/analyzer/analyzer.dart" as analyzer;
-import "package:squint/src/generator/generator.dart" as generator;
+import "package:squint/src/cli/generate.dart";
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {
@@ -31,34 +27,5 @@ Future<void> main(List<String> args) async {
      SQUINT (v0.0.1)                               
   ════════════════════════════════════════════
   """);
-
-  if (args.length != 1) {
-    print("Invalid arguments for command 'generate'.");
-    print(
-        "Example command: 'flutter pub run squint:generate foo/some_class_file.dart'");
-    return;
-  }
-
-  final inputFile = File(args[0]);
-
-  if (!inputFile.existsSync()) {
-    print("File does not exist: ${inputFile.absolute.path}");
-    return;
-  }
-
-  analyzer
-      .analyze(pathToFile: inputFile.absolute.path)
-      .whereType<CustomType>()
-      .forEach((e) {
-    final file =
-        inputFile.parent.resolve("${e.className.snakeCase}_squint.dart");
-    if (file.existsSync()) {
-      print(
-          "Failed to write generated code because File already exists: ${file.absolute.path}");
-    } else {
-      file.writeAsString(e.generateJsonDecodingFile(
-          relativeImport: inputFile.path.substring(
-              inputFile.path.lastIndexOf(Platform.pathSeparator) + 1)));
-    }
-  });
+  runGenerateTask(args);
 }

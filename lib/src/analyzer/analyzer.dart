@@ -61,6 +61,9 @@ List<AbstractType> analyze({
   ///
   /// For each data class a new file is created in this folder.
   String? pathToOutputFolder,
+
+  /// Allow overwriting existing output files or not.
+  bool overwrite = true,
 }) {
 
   File? file;
@@ -88,7 +91,7 @@ List<AbstractType> analyze({
       throw SquintException("Folder does not exist: $pathToOutputFolder");
     }
 
-    types.saveAsJson(pathToOutputFolder);
+    types.saveAsJson(pathToOutputFolder, overwrite: overwrite);
   }
 
   return types;
@@ -140,25 +143,32 @@ extension on File {
 
 /// {@category analyzer}
 extension on List<AbstractType> {
-  void saveAsJson(String pathToOutputFolder) {
+  void saveAsJson(String pathToOutputFolder, {required bool overwrite}) {
     final output = Directory(pathToOutputFolder);
     whereType<CustomType>().forEach((type) {
-      output
-          .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json")
+      final file = output.resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json");
+
+      if(file.existsSync() && !overwrite) {
+        "Unable to store analysis result.".log();
+        "File already exists: ${file.absolute.path}.".log();
+        "To allow overwriting files use --overwrite true.".log();
+      }
+
+      file
         ..createSync()
         ..writeAsStringSync("""
-          {
-            "className": "${type.className}",
-            "members": [
-              ${type.members.map((e) => """
-                { 
-                  "name": "${e.name}",
-                  "type": "${e.type.printType}",
-                  "nullable": ${e.type.nullable}
-                }
-                """).join(",")}
-            ]
-          }""");
+{
+  "className": "${type.className}",
+  "members": [
+    ${type.members.map((e) => """
+      { 
+        "name": "${e.name}",
+        "type": "${e.type.printType}",
+        "nullable": ${e.type.nullable}
+      }
+      """).join(",")}
+  ]
+}""");
     });
   }
 }

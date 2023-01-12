@@ -26,11 +26,18 @@ If you're looking for a specific subject then skip to the feature
 you want to know more about or use the side-panel navigation for more
 in-depth documentation.
 
-- [Decode JSON](#Decode%20JSON)
-- [Encode JSON](#Encode%20JSON)
-- [Format JSON](#Format%20JSON)
-- [Generate data class from JSON](#Generate%20data%20class%20from%20JSON)
-- [Generate serialization code](Generate%20serialization%20code)
+- Core functions
+  - [Decoding](#decode-json)
+  - [Encoding](#encode-json)
+  - [Formatting](#format-json)
+
+- Code generation
+  - [Class](#generate-data-class-from-json)
+  - [Serializer](#generate-serialization-code)
+
+- Advanced functions
+  - [Analyzer](#analyzer)
+  - [Command-line](#command-line-usage)
 
 We'll use the following example JSON to examine Squint's key features:
 
@@ -220,7 +227,7 @@ final JsonObject object = json.jsonDecode;
 final CustomType customType = object.toCustomType(className: "Example");
 
 // Convert a CustomType to a .dart File.
-print(customType.generateDataClassFile);
+print(customType.generateDataClassFile());
 ```
 
 This will print the following .dart file:
@@ -417,3 +424,147 @@ Encoding and decoding is now as simple as:
     // Serialize the Example instance to a JSON String.
     final String exampleJson = example.toJson;
 ```
+
+## Analyzer
+
+The analyzer can read files and return metadata about (dart) classes.
+This metadata can then be read and written as JSON files. The analyzer supports:
+1. Any .dart file containing valid dart classes.
+2. Metadata file in AST JSON format (see [AST](ast.md) documentation).
+
+> The simplified metadata only contains information about data classes, meaning
+their field names, types and nullability. The lack of complexity greatly simplifies
+processing this data.
+
+Using JSON as input/output makes it easier to use the analyzer in conjunction with other
+tools in different programming languages. For example analysis could be done on Kotlin data classes
+using a Kotlin compiler plugin which then stores the result as JSON. The Squint analyzer can then
+read this metadata JSON and generate dart code (see [Generator](generator.md)).
+
+```dart
+import "package:squint/squint.dart";
+
+void main() {
+  final metadata = analyze(pathToFile: "foo/bar.dart");
+
+  for(final object in metadata) {
+    print(object); // Calls toString method of CustomType
+  }
+}
+
+```
+
+See [Analyzer](analyzer.md) for more information and examples.
+
+## Command-line usage
+
+Analysis and code generation is accessible through command-line.
+Tasks should be specified in lowercase:
+- analyze
+- generate
+
+Arguments are case-insensitive if possible (for example: true, TRUE, True are all valid boolean values).
+The following is an extensive list of all possible commands.
+
+### Analyzer
+
+Analyze some_class_file.dart and store the output in foo/bar/output.
+
+```shell
+flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output
+```
+
+Analyze some_class_file.dart, store the output in foo/bar/output and allow existing metadata JSON files to be overwritten.
+
+```shell
+flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
+```
+
+Analyze some_class_file.dart, store the output in foo/bar/output and do NOT allow existing metadata JSON files to be overwritten.
+
+```shell
+flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite false
+```
+
+> Specifying --overwrite false is redundant because false is the default setting.
+
+### Generate
+
+Generate a data class for a JSON File and save the output in folder foo.
+
+```shell
+flutter pub run squint:generate --type dataclass --input foo/example.json
+```
+
+Generate a data class for a JSON String and save the output in the current folder.
+
+```shell
+flutter pub run squint:generate --type dataclass --input '{
+  "id": 1,
+  "isJedi": true,
+  "hasPadawan": false,
+  "bff": "Leia",
+  "jedi": [
+    "Obi-Wan",
+    "Anakin",
+    "Luke Skywalker"
+  ],
+  "coordinates": [
+    22,
+    4.4,
+    -15
+  ],
+  "objectives": {
+    "in-mission": false,
+    "mission-results": [
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "annoyance-rate": [
+    { "JarJarBinks" : 9000 }
+  ],
+  "foo": null
+}'
+```
+
+Generate a data class for a JSON File and save the output in folder foo/bar.
+
+```shell
+flutter pub run squint:generate --type dataclass --input foo/example.json --output foo/bar
+```
+
+Generate a data class and add a blank line between each field.
+
+```shell
+flutter pub run squint:generate --type dataclass --input foo/example.json --blankLineBetweenFields true
+```
+
+> See [Generator](generator.md) for setting generator options and examples of generated code.
+
+Generate a data class and add @JsonValue annotation to each field. By default, @JsonValue will only 
+be added to fields which have a different name in the JSON String and in the data class. For example
+annoyance-rate in JSON will be generated as annoyanceRate in the data class and have @JsonValue("annoyance-rate").
+
+```shell
+flutter pub run squint:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
+```
+
+Generate a data class without any annotations.
+
+```shell
+flutter pub run squint:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
+```
+
+> Squint will normalize JSON keys to be valid dart field names. If --includeJsonAnnotations is set to false
+then the generated code might not be compatible with the JSON file.
+
+Generate (de)serializer extensions for a data class and save the output in folder foo/bar.
+
+```shell
+flutter pub run squint:generate --type serializer --input foo/example.dart --output foo/bar
+```
+
+Generate (de)serializer extensions for a data class and save the output in folder foo/bar.

@@ -18,16 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/cli/analyzer.dart";
-import "package:squint/src/common/logger.dart";
+/// Utility to parse command line arguments
+extension ArgParserUtil on dynamic {
 
-/// Run tasks for a Consumer project.
-Future<void> main(List<String> args) async {
-  """
-  ════════════════════════════════════════════
-     SQUINT (v0.0.1)                               
-  ════════════════════════════════════════════
-  """.log();
+  /// Return bool value if current value is a bool or String bool.
+  /// Return null if current value is not a bool or String bool.
+  bool? get asBoolOrNull {
+    final upperCaseString = "$this".trim().toUpperCase();
+    if(upperCaseString == "TRUE") {
+      return true;
+    }
 
-  runAnalyzerTask(args);
+    if(upperCaseString == "FALSE") {
+      return false;
+    }
+
+    return null;
+  }
 }
