@@ -1,5 +1,5 @@
-name: squint
-description: Lightweight JSON processing code generator. Safely deserialize JSON decoded Strings to Dart Types.
+name: squint_json
+description: Lightweight JSON processor and AST. Safely (de)serialize JSON decoded Strings to Dart Types.
 version: 0.0.1
 homepage: https://buijs.dev
 repository: https://github.com/buijs-dev/squint
