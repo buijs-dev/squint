@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/analyzer/analyzer.dart" as analyzer;
-import "package:squint/src/common/common.dart";
+import "package:squint_json/src/analyzer/analyzer.dart" as analyzer;
+import "package:squint_json/src/common/common.dart";
 import "package:test/test.dart";
 
 void main() {

@@ -20,9 +20,9 @@
 
 import "dart:io";
 
-import "package:squint/src/analyzer/analyzer.dart" as analyzer;
-import "package:squint/src/ast/ast.dart";
-import "package:squint/src/ast/types.dart";
+import "package:squint_json/src/analyzer/analyzer.dart" as analyzer;
+import "package:squint_json/src/ast/ast.dart";
+import "package:squint_json/src/ast/types.dart";
 import "package:test/test.dart";
 
 void main() {

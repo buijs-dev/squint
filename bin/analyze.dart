@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/src/cli/analyzer.dart";
-import "package:squint/src/common/logger.dart";
+import "package:squint_json/src/cli/analyzer.dart";
+import "package:squint_json/src/common/logger.dart";
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {

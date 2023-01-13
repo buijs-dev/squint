@@ -18,8 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint/squint.dart";
-import "package:squint/src/common/annotation.dart";
+import "package:squint_json/squint.dart";
 
 /// Example DTO as defined by the user.
 @squint

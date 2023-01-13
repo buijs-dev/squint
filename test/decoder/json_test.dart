@@ -20,7 +20,7 @@
 
 // ignore_for_file: avoid_dynamic_calls
 
-import "package:squint/squint.dart";
+import "package:squint_json/squint.dart";
 import "package:test/test.dart";
 
 void main() {

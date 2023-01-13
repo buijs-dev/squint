@@ -20,8 +20,8 @@
 
 // ignore_for_file: avoid_dynamic_calls
 
-import "package:squint/src/ast/ast.dart";
-import "package:squint/src/encoder/encoder.dart";
+import "package:squint_json/src/ast/ast.dart";
+import "package:squint_json/src/encoder/encoder.dart";
 import "package:test/test.dart";
 
 void main() {

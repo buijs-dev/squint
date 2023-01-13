@@ -17,8 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-import "package:squint/src/cli/generate.dart";
-import "package:squint/src/common/common.dart";
+import "package:squint_json/src/cli/generate.dart";
+import "package:squint_json/src/common/common.dart";
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {
