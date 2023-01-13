@@ -1,6 +1,6 @@
-Lightweight JSON processing code generator. 
+Lightweight JSON processor and AST.
 Safely deserialize JSON decoded Strings to Dart Types.
-A JSON decoding library that actually decodes nested lists. 
+A JSON decoding library that actually decodes nested lists.
 **No more dynamic mapping!**
 
 ````dart
@@ -24,5 +24,6 @@ expect(myArray.data[0][0][0][1], "Ho-Oh");
 - Generate boilerplate for JSON processing programmatically.
 - Generate boilerplate for JSON processing through cli.
 - Format JSON messages.
-- Easy to use (no build runner, /gen folders etc.)!
+- Does not require build_runner.
+- Does not require dart:mirrors.
 - Extensible: Write and reuse custom JSON data converters.

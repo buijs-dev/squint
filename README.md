@@ -3,7 +3,7 @@
 [![CodeScene Code Health](https://codescene.io/projects/32221/status-badges/code-health)](https://codescene.io/projects/32221)
 [![codecov](https://codecov.io/gh/buijs-dev/squint/branch/main/graph/badge.svg?token=yxUBpDvGFg)](https://codecov.io/gh/buijs-dev/squint)
 
-Lightweight JSON processing code generator. 
+Lightweight JSON processor and AST.
 Safely deserialize JSON decoded Strings to Dart Types.
 A JSON decoding library that actually decodes nested lists. 
 **No more dynamic mapping!**
@@ -21,7 +21,6 @@ expect(myArray.data[0][0][0][0], "Lugia");
 expect(myArray.data[0][0][0][1], "Ho-Oh");
 
 ````
-Latest documentation [0.0.1](https://buijs-dev.github.io/squint/#/).
 
 # Features
 - Deserialize JSON properly including (nested) arrays.
@@ -30,5 +29,9 @@ Latest documentation [0.0.1](https://buijs-dev.github.io/squint/#/).
 - Generate boilerplate for JSON processing programmatically.
 - Generate boilerplate for JSON processing through cli.
 - Format JSON messages.
-- Easy to use (no build runner, /gen folders etc.)!
+- Does not require build_runner.
+- Does not require dart:mirrors.
 - Extensible: Write and reuse custom JSON data converters.
+
+# Documentation
+For latest release see [0.0.1](https://buijs-dev.github.io/squint/#/).
