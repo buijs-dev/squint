@@ -20,7 +20,7 @@
 
 import "dart:io";
 
-import 'package:squint_json/squint.dart';
+import 'package:squint_json/squint_json.dart';
 import "package:squint_json/src/analyzer/analyzer.dart" as analyzer;
 import "package:squint_json/src/ast/ast.dart";
 import "package:squint_json/src/ast/types.dart";

@@ -18,7 +18,7 @@ read this metadata JSON and generate dart code (see [Generator](generator.md)).
 The analyzer returns CustomType instances which can be used to generate code or do other operations.
 
 ```dart
-import "package:squint_json/squint.dart";
+import "package:squint_json/squint_json.dart";
 
 void main() {
   final metadata = analyze(pathToFile: "foo/bar.dart");
@@ -33,7 +33,7 @@ void main() {
 Analysing String content directly is also possible.
 
 ```dart
-import "package:squint_json/squint.dart";
+import "package:squint_json/squint_json.dart";
 
 void main() {
   const content = """
@@ -63,7 +63,7 @@ void main() {
 The analysis result can be stored as JSON metadata by specifying an output folder. A File will be created for each CustomType.
 
 ```dart
-import "package:squint_json/squint.dart";
+import "package:squint_json/squint_json.dart";
 
 void main() {
   analyze(
@@ -78,7 +78,7 @@ void main() {
 By default, existing metadata files will not be overwritten. This can be changed by setting the overwrite parameter.
 
 ```dart
-import "package:squint_json/squint.dart";
+import "package:squint_json/squint_json.dart";
 
 void main() {
   analyze(
