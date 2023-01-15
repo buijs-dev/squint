@@ -1,5 +1,6 @@
 [![](https://img.shields.io/badge/Buijs-Software-blue)](https://pub.dev/publishers/buijs.dev/packages)
 [![GitHub](https://img.shields.io/github/license/buijs-dev/squint?color=black)](https://github.com/buijs-dev/squint/blob/main/LICENSE)
+[![pub](https://img.shields.io/pub/v/squint_json)](https://pub.dev/packages/squint_json)
 [![CodeScene Code Health](https://codescene.io/projects/32221/status-badges/code-health)](https://codescene.io/projects/32221)
 [![codecov](https://codecov.io/gh/buijs-dev/squint/branch/main/graph/badge.svg?token=yxUBpDvGFg)](https://codecov.io/gh/buijs-dev/squint)
 
