@@ -16,7 +16,7 @@ This will add a line like this to your package's pubspec.yaml (and run an implic
 
 ```yaml
 dependencies:
-  squint: ^0.0.1
+  squint_json: ^0.0.1
 ```
 
 ## Features
@@ -471,19 +471,19 @@ The following is an extensive list of all possible commands.
 Analyze some_class_file.dart and store the output in foo/bar/output.
 
 ```shell
-flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output
+flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output
 ```
 
 Analyze some_class_file.dart, store the output in foo/bar/output and allow existing metadata JSON files to be overwritten.
 
 ```shell
-flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
+flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
 ```
 
 Analyze some_class_file.dart, store the output in foo/bar/output and do NOT allow existing metadata JSON files to be overwritten.
 
 ```shell
-flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite false
+flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite false
 ```
 
 > Specifying --overwrite false is redundant because false is the default setting.
@@ -493,13 +493,13 @@ flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar
 Generate a data class for a JSON File and save the output in folder foo.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json
+flutter pub run squint_json:generate --type dataclass --input foo/example.json
 ```
 
 Generate a data class for a JSON String and save the output in the current folder.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input '{
+flutter pub run squint_json:generate --type dataclass --input '{
   "id": 1,
   "isJedi": true,
   "hasPadawan": false,
@@ -533,13 +533,13 @@ flutter pub run squint:generate --type dataclass --input '{
 Generate a data class for a JSON File and save the output in folder foo/bar.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --output foo/bar
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --output foo/bar
 ```
 
 Generate a data class and add a blank line between each field.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --blankLineBetweenFields true
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --blankLineBetweenFields true
 ```
 
 > See [Generator](generator.md) for setting generator options and examples of generated code.
@@ -549,13 +549,13 @@ be added to fields which have a different name in the JSON String and in the dat
 annoyance-rate in JSON will be generated as annoyanceRate in the data class and have @JsonValue("annoyance-rate").
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
 ```
 
 Generate a data class without any annotations.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
 ```
 
 > Squint will normalize JSON keys to be valid dart field names. If --includeJsonAnnotations is set to false
@@ -564,7 +564,7 @@ then the generated code might not be compatible with the JSON file.
 Generate (de)serializer extensions for a data class and save the output in folder foo/bar.
 
 ```shell
-flutter pub run squint:generate --type serializer --input foo/example.dart --output foo/bar
+flutter pub run squint_json:generate --type serializer --input foo/example.dart --output foo/bar
 ```
 
 Generate (de)serializer extensions for a data class and save the output in folder foo/bar.

@@ -42,6 +42,58 @@ extension JsonNodeGenerator on List<TypeMember> {
           .toList();
 }
 
+/// Utilities to generate getters/setters for enum classes and serializers.
+///
+/// {@category generator}
+extension JsonNodeEnumGenerator on EnumType {
+  /// Generate setters.
+  ///
+  /// {@category generator}
+  List<String> toJsonNodeSetters(String key) {
+    final output = <String>[];
+
+    var index = 0;
+    while(index < values.length) {
+      output.add(
+          """
+          case $className.${values[index]}:
+            return const JsonString(key: "$key", data: "${valuesJSON[index]}");
+          """
+      );
+      index +=1;
+    }
+
+    return output;
+  }
+
+  /// Generate getters.
+  ///
+  /// {@category generator}
+  List<String> toJsonNodeGetters(String key) {
+    final output = <String>[];
+
+    var index = 0;
+    while(index < values.length) {
+      output.add(
+          """
+          case "${valuesJSON[index]}":
+            return $className.${values[index]};
+          """
+      );
+      index +=1;
+    }
+
+    output.add(
+        """
+        default:
+          throw SquintException("Unable to map value to $className enum: \${value.data}");
+        """
+    );
+
+    return output;
+  }
+}
+
 extension on TypeMember {
   String toJsonGetter({String dataPrefix = ""}) {
     final type = this.type.className.removePrefixIfPresent("Nullable");

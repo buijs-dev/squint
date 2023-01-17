@@ -31,7 +31,7 @@ import "analyzer_classfile_test.dart";
 void main() {
   test("Analyze dart class, store as JSON metadata, analyze metadata", () {
     // given:
-    final output = Directory("${basePath}analyzertest")..createSync();
+    final output = Directory("${basePath}analyzertest76")..createSync();
 
     // and:
     final file = File("${basePath}map_response.dart")
@@ -105,15 +105,11 @@ void main() {
   });
 }
 
-extension on List<AbstractType> {
+extension on analyzer.AnalysisResult {
   void _expect() {
-    expect(length, 1, reason: "Should have found 1 type");
+    expect(parent != null, true, reason: "Should have found 1 type");
 
-    final type = first;
-    expect(type is CustomType, true,
-        reason: "An user created model is always a CustomType");
-
-    final customType = type as CustomType;
+    final customType = parent!;
     expect(customType.members.length, 8);
 
     // Map<String, double>

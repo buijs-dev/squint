@@ -39,6 +39,24 @@ import "visitor.dart";
 /// {@category analyzer}
 const metadataMarkerPrefix = "sqdb_";
 
+/// Result returned after analysing a File [analyze].
+class AnalysisResult {
+  /// Construct a new [AnalysisResult].
+  const AnalysisResult({
+    required this.parent,
+    this.childrenCustomTypes = const {},
+    this.childrenEnumTypes = const {},
+  });
+  /// Main [CustomType].
+  final CustomType? parent;
+
+  /// All [CustomType] members.
+  final Set<CustomType> childrenCustomTypes;
+
+  /// All [EnumType] members.
+  final Set<EnumType> childrenEnumTypes;
+}
+
 /// The analyzer can read files and return metadata about (dart) classes.
 ///
 /// Metadata can be read and written as JSON files.
@@ -47,7 +65,7 @@ const metadataMarkerPrefix = "sqdb_";
 /// 2. Metadata file in AST JSON format.
 ///
 /// {@category analyzer}
-List<AbstractType> analyze({
+AnalysisResult analyze({
   /// File to be analyzed.
   ///
   /// Must be a valid .dart file containing 1 or more classes
@@ -81,8 +99,8 @@ List<AbstractType> analyze({
     throw SquintException("File does not exist: ${file?.path ?? ''}");
   }
 
-  final types = file!.path.contains(metadataMarkerPrefix)
-      ? [file.parseMetadata]
+  final result = file!.path.contains(metadataMarkerPrefix)
+      ? file.parseMetadata
       : file.parseDataClass;
 
   if (pathToOutputFolder != null) {
@@ -90,61 +108,165 @@ List<AbstractType> analyze({
       throw SquintException("Folder does not exist: $pathToOutputFolder");
     }
 
-    types.saveAsJson(pathToOutputFolder, overwrite: overwrite);
+    result.saveAsJson(pathToOutputFolder, overwrite: overwrite);
   }
 
-  return types;
+  return result;
 }
 
 /// {@category analyzer}
-extension on File {
+extension FileAnalyzer on File {
   /// Use [JsonVisitor] to collect Metadata from dart class.
-  List<CustomType> get parseDataClass {
+  AnalysisResult get parseDataClass {
     final visitor = JsonVisitor();
     parseFile(
       path: absolute.path,
       featureSet: FeatureSet.latestLanguageVersion(),
     ).unit.declarations.accept(visitor);
-    return visitor.collected;
+    final types = visitor.collected;
+    return AnalysisResult(
+      parent: types.removeAt(0) as CustomType,
+      childrenCustomTypes: types.whereType<CustomType>().toSet(),
+      childrenEnumTypes: types.whereType<EnumType>().toSet(),
+    );
   }
 
   /// JSON decode current file and return [CustomType].
   ///
   /// The JSON is expected to contain metadata for a single data class.
-  CustomType get parseMetadata {
+  AnalysisResult get parseMetadata {
+    final enumTypes = <EnumType>[];
+    final customTypes = <CustomType>[];
     final json = readAsStringSync().jsonDecode;
-
     final className = json.stringNode("className").data;
 
-    final dynamic data = json.arrayNode<dynamic>("members").data;
+    if (json.hasKey("members")) {
+      final data = json.arrayOrNull<dynamic>("members");
+      if (data != null) {
+        final members = <TypeMember>[];
 
-    final members = <TypeMember>[];
+        for (final object in data) {
+          final name = object["name"] as String;
+          final type = object["type"] as String;
+          final nullable = object["nullable"] as bool;
 
-    for (final object in data) {
-      final name = object["name"] as String;
-      final type = object["type"] as String;
-      final nullable = object["nullable"] as bool;
+          final memberType = type.toAbstractType(nullable: nullable);
 
-      members.add(
-        TypeMember(
-          name: name,
-          type: type.toAbstractType(nullable: nullable),
-        ),
-      );
+          if(memberType is CustomType || memberType is EnumType) {
+            final debugFile = parent.resolve("$metadataMarkerPrefix${memberType.className.toLowerCase()}.json");
+            if(debugFile.existsSync()) {
+              final result = debugFile.parseMetadata;
+              final parentOrNull = result.parent;
+              if(parentOrNull != null) {
+                customTypes.add(parentOrNull);
+              }
+              customTypes.addAll(result.childrenCustomTypes);
+              enumTypes.addAll(result.childrenEnumTypes);
+            } else {
+              "Found ${memberType.runtimeType} but no source (Does not exist: ${debugFile.path})".log();
+            }
+          }
+
+          members.add(
+            TypeMember(
+              name: name,
+              type: memberType,
+            ),
+          );
+        }
+
+        final parentMembers = members.map((member) {
+          final className = member.type.className;
+
+          final enumTypeOrNull = enumTypes.firstBy((t) => t.className == className);
+          if(enumTypeOrNull != null) {
+            return member.copyWith(type: enumTypeOrNull);
+          }
+
+          final customTypeOrNull = customTypes.firstBy((t) => t.className == className);
+          if(customTypeOrNull != null) {
+            return member.copyWith(type: customTypeOrNull);
+          }
+
+          return member;
+        }).toList();
+
+        return AnalysisResult(
+            parent: CustomType(
+              className: className,
+              members: parentMembers,
+            ),
+          childrenCustomTypes: customTypes.toSet(),
+          childrenEnumTypes: enumTypes.toSet(),
+        );
+      }
     }
 
-    return CustomType(
-      className: className,
-      members: members,
-    );
+    if (json.hasKey("values")) {
+      final values = json.arrayOrNull<String>("values") ?? [];
+      final valuesJSON = json.hasKey("valuesJSON")
+          ? json.arrayOrNull<String>("valuesJSON") ?? <String>[]
+          : <String>[];
+
+      final enumType = EnumType(
+        className: className,
+        values: values,
+        valuesJSON: valuesJSON,
+      );
+
+      enumTypes.add(enumType);
+      return AnalysisResult(
+        parent: null,
+        childrenCustomTypes: customTypes.toSet(),
+        childrenEnumTypes: enumTypes.toSet(),
+      );
+
+    }
+
+    "Example of CustomType metadata JSON file:".log(context: """ 
+{
+    "className": "MyResponse",
+    "members": [ 
+      {
+          "name": "a1",
+          "type": "int",
+          "nullable": false
+      },
+      {
+            "name": "a2",
+            "type": "String",
+            "nullable": true
+      } 
+    ]
+  }""");
+    "Example of EnumType metadata JSON file:".log(context: """ 
+
+      {
+        "className": "MyResponse",
+        "values": [ 
+          "FOO", 
+          "BAR"
+        ],
+        "valuesJSON": [ 
+          "foo", 
+          "bar"
+        ],
+      }""");
+
+    throw SquintException("Unable to parse metadata file.");
   }
 }
 
 /// {@category analyzer}
-extension on List<AbstractType> {
+extension on AnalysisResult {
   void saveAsJson(String pathToOutputFolder, {required bool overwrite}) {
     final output = Directory(pathToOutputFolder);
-    whereType<CustomType>().forEach((type) {
+    final customTypes = <CustomType>{}
+      ..addAll(childrenCustomTypes);
+    if(parent != null) {
+      customTypes.add(parent!);
+    }
+    for (final type in customTypes) {
       final file = output
           .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json");
 
@@ -169,7 +291,27 @@ extension on List<AbstractType> {
       """).join(",")}
   ]
 }""");
-    });
+    }
+
+    for (final type in childrenEnumTypes) {
+      final file = output
+          .resolve("$metadataMarkerPrefix${type.className.toLowerCase()}.json");
+
+      if (file.existsSync() && !overwrite) {
+        "Unable to store analysis result.".log();
+        "File already exists: ${file.absolute.path}.".log();
+        "To allow overwriting files use --overwrite true.".log();
+      }
+
+      file
+        ..createSync()
+        ..writeAsStringSync("""
+{
+  "className": "${type.className}",
+  "values": ${type.values.map((e) => '''"$e"''').toList()},
+  "valuesJSON": ${type.valuesJSON.map((e) => '''"$e"''').toList()}
+}""");
+    }
   }
 }
 

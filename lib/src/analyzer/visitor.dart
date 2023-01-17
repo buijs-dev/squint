@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import "package:analyzer/dart/ast/ast.dart"
-    show ClassDeclaration, FieldDeclaration, VariableDeclarationList;
+    show ClassDeclaration, Declaration, EnumDeclaration, FieldDeclaration, VariableDeclarationList;
 import "package:analyzer/dart/ast/syntactic_entity.dart";
 import "package:analyzer/dart/ast/visitor.dart";
 
@@ -32,7 +32,7 @@ import "../decoder/decoder.dart";
 /// {@category analyzer}
 class JsonVisitor extends SimpleAstVisitor<dynamic> {
   /// List of dart data classes found.
-  final collected = <CustomType>[];
+  final collected = <AbstractType>[];
 
   @override
   dynamic visitClassDeclaration(ClassDeclaration node) {
@@ -42,22 +42,35 @@ class JsonVisitor extends SimpleAstVisitor<dynamic> {
       return null;
     }
   }
+
+  @override
+  dynamic visitEnumDeclaration(EnumDeclaration node) {
+    if (node.hasSquintAnnotation) {
+      return collected..add(node.toEnumType);
+    } else {
+      return null;
+    }
+  }
+}
+
+/// {@category analyzer}
+extension on Declaration {
+  /// Return true if squint annotation is present.
+  bool get hasSquintAnnotation => metadata.any((o) => o.name.name == "squint");
 }
 
 /// {@category analyzer}
 extension on ClassDeclaration {
-  /// Return true if squint annotation is present.
-  bool get hasSquintAnnotation => metadata.any((o) => o.name.name == "squint");
 
   CustomType get toCustomType => CustomType(
-        className: name.toString(),
-        members: members
-            .whereType<FieldDeclaration>()
-            .map((e) => e.fields)
-            .whereType<VariableDeclarationList>()
-            .map(_typeMember)
-            .toList(),
-      );
+    className: name.toString(),
+    members: members
+        .whereType<FieldDeclaration>()
+        .map((e) => e.fields)
+        .whereType<VariableDeclarationList>()
+        .map(_typeMember)
+         .toList(),
+  );
 
   TypeMember _typeMember(VariableDeclarationList variable) {
     final abstractType = variable.type?.toString().trim().toAbstractType();
@@ -72,6 +85,31 @@ extension on ClassDeclaration {
       annotations: annotations ?? [],
     );
   }
+}
+
+/// {@category analyzer}
+extension on EnumDeclaration {
+
+  EnumType get toEnumType {
+
+    final values = <String>[];
+    final valuesJSON = <String>[];
+
+    for(final constant in constants) {
+      final value = constant.name.lexeme;
+      final annotations = constant.childEntities.jsonAnnotations;
+      final jsonValueOrNull = annotations.firstBy((t) => t.name == "JsonValue");
+      values.add(value);
+      valuesJSON.add(jsonValueOrNull?.data["tag"] ?? value);
+    }
+
+    return EnumType(
+      className: name.toString(),
+      values: values,
+      valuesJSON: valuesJSON,
+    );
+  }
+
 }
 
 extension on Iterable<SyntacticEntity> {

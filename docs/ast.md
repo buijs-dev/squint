@@ -7,6 +7,7 @@ Every datatype is an AbstractType. An AbstractType stores the actual datatype na
 AbstractTypes are implemented by:
 - StandardType
 - CustomType 
+- EnumType
 
 ## StandardType
 StandardTypes are based on all types supported by the [standard message codec](https://api.flutter.dev/flutter/services/StandardMessageCodec-class.html).
@@ -65,6 +66,29 @@ class SimpleResponse {
 - members:
   - name: a1, type: IntType 
   - name: a2, type: NullableStringType
+
+## EnumType
+An enum is a user defined enumeration consisting of:
+- Class name
+- 1 or more values
+- 1 or more JSON values
+
+```dart
+@squint
+enum MyEnum {
+
+  @JsonValue("foo!")
+  foo("foo"),
+
+  @JsonValue("bar!")
+  bar("bar");
+
+  const MyEnum(this.someValue);
+
+  final String someValue;
+
+}
+```
 
 # JSON
 The JSON AST types are used to encode/decode JSON. Decoding

@@ -18,18 +18,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import "dart:io";
+
 import "../analyzer/analyzer.dart" as analyzer;
-import "../ast/ast.dart";
 import "../common/common.dart";
-import 'shared.dart';
+import "shared.dart";
 
 /// Run the analyzer task.
-List<AbstractType> runAnalyzerTask(List<String> args) {
+analyzer.AnalysisResult runAnalyzerTask(List<String> args) {
   final arguments = args.analyzerArguments;
 
   return analyzer.analyze(
     pathToFile: arguments[AnalyzerArgs.input] as String,
-    pathToOutputFolder: arguments[AnalyzerArgs.output] as String,
+    pathToOutputFolder: (arguments[AnalyzerArgs.output] ?? Directory.current.absolute.path) as String,
     overwrite: arguments[AnalyzerArgs.overwrite] as bool,
   );
 }
@@ -105,7 +106,7 @@ void _logAnalyzerExamples() {
   "".log();
   "Example command: ".log(
     context:
-        "flutter pub run squint:analyze --input foo/bar.dart --output foo/output",
+        "flutter pub run squint_json:analyze --input foo/bar.dart --output foo/output",
   );
   "".log();
 }

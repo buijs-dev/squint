@@ -25,6 +25,7 @@ import "../common/common.dart";
 /// Main type parent implemented by:
 /// - [StandardType]
 /// - [CustomType]
+/// - [EnumType]
 ///
 /// {@category ast}
 abstract class AbstractType {
@@ -117,6 +118,44 @@ class CustomType extends AbstractType {
       "CustomType(name=$className, nullable=$nullable, members=$members)";
 }
 
+/// A custom enumeration definition.
+///
+/// {@category ast}
+class EnumType extends AbstractType {
+  /// Construct a new CustomType.
+  const EnumType(
+      {required String className,
+      required this.values,
+      required this.valuesJSON})
+      : super(className: className);
+
+  /// Fields of this class.
+  final List<String> values;
+
+  /// Fields of this class.
+  final List<String> valuesJSON;
+
+  @override
+  bool operator ==(Object other) =>
+      other is EnumType &&
+      className == other.className &&
+      nullable == other.nullable &&
+      values.length == other.values.length &&
+      valuesJSON.length == other.valuesJSON.length &&
+      values.every((element) => other.values.contains(element)) &&
+      valuesJSON.every((element) => other.valuesJSON.contains(element));
+
+  @override
+  int get hashCode => className.hashCode + nullable.hashCode;
+
+  @override
+  String toString() =>
+      "EnumType(name=$className, values=$values, valuesJSON=$valuesJSON)";
+
+  @override
+  bool get nullable => false;
+}
+
 /// A class type member (field).
 ///
 /// {@category ast}
@@ -158,6 +197,23 @@ class TypeMember {
   @override
   String toString() =>
       "TypeMember(name='$name',type='$type', annotations =$annotations)";
+
+  /// Create a copy of this [TypeMember] and override with given values.
+  TypeMember copyWith({
+    /// Name of this field.
+    String? name,
+
+    /// Type of this field.
+    AbstractType? type,
+
+    /// Type annotations
+    List<TypeAnnotation>? annotations,
+  }) => TypeMember(
+    name: name ?? this.name,
+    type: type ?? this.type,
+    annotations: annotations ?? this.annotations,
+  );
+
 }
 
 /// Annotation data.

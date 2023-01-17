@@ -96,13 +96,13 @@ void main() {
 To analyse a file from the command-line, one should specify an input file and an output folder using --input and --output respectively.
 
 ```shell
-flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output
+flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output
 ```
 
 Use --overwrite parameter to allow overriding existing metadata JSON files.
 
 ```shell
-flutter pub run squint:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
+flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
 ```
 
 ### Examples
@@ -126,7 +126,7 @@ Will return a CustomType instance:
 - className: SimpleResponse
 - members: [IntType a1, NullableStringType a2]
 
-Given a valid metadata JSON:
+Given a valid CustomType metadata JSON:
 
 ```json
  {
@@ -149,3 +149,27 @@ Given a valid metadata JSON:
 Will return a CustomType instance:
 - className: MyResponse
 - members: [IntType a1, NullableStringType a2]
+
+Given a valid EnumType metadata JSON:
+
+```json
+ {
+  "className": "MyResponse",
+  "values": [ 
+    "FOO",
+    "BAR"
+  ],
+  "valuesJSON": [
+    "foo",
+    "bar"
+  ]
+}
+```
+
+Will return a CustomType instance:
+- className: MyResponse
+- values: ["FOO", "BAR"]
+- valuesJSON: ["foo", "bar"]
+
+> The valuesJSON list is optional which can be used to differentiate between
+> member names of an enum and how they should be serialized in a JSON String.

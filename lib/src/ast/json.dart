@@ -100,11 +100,14 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   ///
   /// Throws [SquintException] if key is not found.
   JsonNode byKey(String key) {
-    if (data.containsKey(key)) {
+    if (hasKey(key)) {
       return data[key]!;
     }
     throw SquintException("JSON key not found: '$key'");
   }
+
+  /// Returns true if JSON content contains key.
+  bool hasKey(String key) => data.containsKey(key);
 
   /// Get [String] by [String] key.
   ///

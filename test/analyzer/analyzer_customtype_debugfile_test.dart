@@ -142,22 +142,17 @@ extension on String {
     required StandardType second,
   }) {
     when:
-    final types = analyzer.analyze(pathToFile: this);
+    final result = analyzer.analyze(pathToFile: this);
 
     then:
-    expect(types.length, 1, reason: "Should have found 1 type");
-
-    final type = types.first;
-    expect(type is CustomType, true,
-        reason: "An user created model is always a CustomType");
-
-    final customType = type as CustomType;
-    expect(customType.members.length, 2);
-    expect(customType.members[0].name, "a1");
-    expect(customType.members[0].type.toString() == first.toString(), true,
+    final type = result.parent;
+    expect(type != null, true, reason: "Should have found 1 type");
+    expect(type!.members.length, 2);
+    expect(type.members[0].name, "a1");
+    expect(type.members[0].type.toString() == first.toString(), true,
         reason: "First type is not nullable");
-    expect(customType.members[1].name, "a2");
-    expect(customType.members[1].type.toString() == second.toString(), true,
+    expect(type.members[1].name, "a2");
+    expect(type.members[1].type.toString() == second.toString(), true,
         reason: "Second type is nullable");
 
     return true;

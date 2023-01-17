@@ -50,7 +50,7 @@ Given the following JSON in file foo/bar/example.json:
 
 Using the cli command:
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/bar/example.json
+flutter pub run squint_json:generate --type dataclass --input foo/bar/example.json
 ```
 
 Should generate the following code:
@@ -286,7 +286,7 @@ be added to fields which have a different name in the JSON String and in the dat
 annoyance-rate in JSON will be generated as annoyanceRate in the data class with annotation @JsonValue("annoyance-rate").
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
 ```
 
 ```dart
@@ -412,7 +412,7 @@ class example {
 Set includeJsonAnnotations as false, to generate a class without any annotations.
 
 ```shell
-flutter pub run squint:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
+flutter pub run squint_json:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
 ```
 
 ```dart
@@ -501,7 +501,7 @@ class TestingExample {
 
 Using the cli command:
 ```shell
-flutter pub run squint:generate --type serializer --input foo/bar/testing_example.dart
+flutter pub run squint_json:generate --type serializer --input foo/bar/testing_example.dart
 ```
 
 Should generate the following code:
@@ -597,7 +597,7 @@ int decodeId(JsonFloatingNumber id) =>
 
 Using the cli command:
 ```shell
-flutter pub run squint:generate --type serializer --input foo/bar/testing_example.dart
+flutter pub run squint_json:generate --type serializer --input foo/bar/testing_example.dart
 ```
 
 Should generate the following code:

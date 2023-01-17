@@ -119,7 +119,7 @@ void main() {
     final analysis = analyzer.analyze(pathToFile: file.absolute.path);
 
     // when
-    final dataclass = (analysis[0] as CustomType)
+    final dataclass = analysis.parent!
         .generateJsonDecodingFile(relativeImport: "")
         .trim();
 

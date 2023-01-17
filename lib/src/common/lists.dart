@@ -32,4 +32,15 @@ extension ListProcessor<T> on Iterable<T> {
 
     return maybeValue;
   }
+
+  /// Return true if iterable contains all [values].
+  bool containsAll(Iterable<T> values) {
+    for(final value in values) {
+      if(!contains(value)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 }
