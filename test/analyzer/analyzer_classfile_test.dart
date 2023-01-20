@@ -121,8 +121,10 @@ void main() {
     final result = analyzer.analyze(pathToFile: path);
 
     // then:
-    expect(result.childrenEnumTypes.isEmpty, true, reason: "There are no enums");
-    expect(result.childrenCustomTypes.isEmpty, true, reason: "There are no customtypes");
+    expect(result.childrenEnumTypes.isEmpty, true,
+        reason: "There are no enums");
+    expect(result.childrenCustomTypes.isEmpty, true,
+        reason: "There are no customtypes");
 
     final type = result.parent;
     expect(type != null, true,
@@ -141,16 +143,14 @@ void main() {
     expect(type.members[1].name, "a2");
     expect(type.members[1].type is NullableListType, true,
         reason: "Second type is a nullable List");
-    expect((type.members[1].type as NullableListType).child is StringType,
-        true,
+    expect((type.members[1].type as NullableListType).child is StringType, true,
         reason: "Second type child is String");
 
     // List<String?>
     expect(type.members[2].name, "a3");
     expect(type.members[2].type is ListType, true,
         reason: "Third type is List");
-    expect((type.members[2].type as ListType).child is NullableStringType,
-        true,
+    expect((type.members[2].type as ListType).child is NullableStringType, true,
         reason: "Third type child is a nullable String");
 
     // List<String?>?
@@ -158,8 +158,7 @@ void main() {
     expect(type.members[3].type is NullableListType, true,
         reason: "Fourth type is a nullable List");
     expect(
-        (type.members[3].type as NullableListType).child
-            is NullableStringType,
+        (type.members[3].type as NullableListType).child is NullableStringType,
         true,
         reason: "Fourth type child is a nullable String");
 
@@ -216,8 +215,7 @@ void main() {
 
     // Map<String, double>
     expect(type.members[0].name, "a1");
-    expect(type.members[0].type is MapType, true,
-        reason: "First type is Map");
+    expect(type.members[0].type is MapType, true, reason: "First type is Map");
     expect((type.members[0].type as MapType).key is StringType, true,
         reason: "First type key is String");
     expect((type.members[0].type as MapType).value is DoubleType, true,
@@ -227,47 +225,39 @@ void main() {
     expect(type.members[1].name, "a2");
     expect(type.members[1].type is NullableMapType, true,
         reason: "Second type is a nullable Map");
-    expect(
-        (type.members[1].type as NullableMapType).key is StringType, true,
+    expect((type.members[1].type as NullableMapType).key is StringType, true,
         reason: "Second type key is String");
-    expect((type.members[1].type as NullableMapType).value is DoubleType,
-        true,
+    expect((type.members[1].type as NullableMapType).value is DoubleType, true,
         reason: "Second type value is double");
 
     // Map<String, double?>
     expect(type.members[2].name, "a3");
-    expect(type.members[2].type is MapType, true,
-        reason: "Third type is Map");
+    expect(type.members[2].type is MapType, true, reason: "Third type is Map");
     expect((type.members[2].type as MapType).key is StringType, true,
         reason: "Third type key is String");
-    expect((type.members[2].type as MapType).value is NullableDoubleType,
-        true,
+    expect((type.members[2].type as MapType).value is NullableDoubleType, true,
         reason: "Third type value is a nullable double");
 
     // Map<String, double?>?
     expect(type.members[3].name, "a4");
     expect(type.members[3].type is NullableMapType, true,
         reason: "Fourth type is a nullable Map");
-    expect(
-        (type.members[3].type as NullableMapType).key is StringType, true,
+    expect((type.members[3].type as NullableMapType).key is StringType, true,
         reason: "Fourth type key is String");
     expect(
-        (type.members[3].type as NullableMapType).value
-            is NullableDoubleType,
+        (type.members[3].type as NullableMapType).value is NullableDoubleType,
         true,
         reason: "Fourth type value is a nullable double");
 
     // Map<String, Map<String, double>>
     expect(type.members[4].name, "a5");
-    expect(type.members[4].type is MapType, true,
-        reason: "Fifth type is Map");
+    expect(type.members[4].type is MapType, true, reason: "Fifth type is Map");
     expect((type.members[4].type as MapType).key is StringType, true,
         reason: "Fifth type key is String");
     expect((type.members[4].type as MapType).value is MapType, true,
         reason: "Fifth type value is Map");
     expect(
-        ((type.members[4].type as MapType).value as MapType).key
-            is StringType,
+        ((type.members[4].type as MapType).value as MapType).key is StringType,
         true,
         reason: "Fifth sub map key type is String");
     expect(
@@ -307,14 +297,17 @@ void main() {
     final result = analyzer.analyze(pathToFile: path);
 
     // then:
-    expect(result.parent != null, true , reason: "First is CustomType");
-    expect(result.parent!.className == "SimpleResponse", true , reason: "First class is named SimpleResponse");
+    expect(result.parent != null, true, reason: "First is CustomType");
+    expect(result.parent!.className == "SimpleResponse", true,
+        reason: "First class is named SimpleResponse");
     // and:
     final enumType = result.childrenEnumTypes.first;
-    expect(enumType.values[0], "hello" , reason: "First value is hello");
-    expect(enumType.values[1], "goodbye" , reason: "Second value is goodbye");
-    expect(enumType.valuesJSON[0], "hello" , reason: "First JSON value is hello");
-    expect(enumType.valuesJSON[1], "goodbye" , reason: "Second JSON value is goodbye");
+    expect(enumType.values[0], "hello", reason: "First value is hello");
+    expect(enumType.values[1], "goodbye", reason: "Second value is goodbye");
+    expect(enumType.valuesJSON[0], "hello",
+        reason: "First JSON value is hello");
+    expect(enumType.valuesJSON[1], "goodbye",
+        reason: "Second JSON value is goodbye");
   });
 
   test("Analyze class with enumerated member containing @JsonValue", () {
@@ -349,15 +342,17 @@ void main() {
     final result = analyzer.analyze(pathToFile: path);
 
     // then:
-    expect(result.parent != null, true , reason: "First is CustomType");
-    expect(result.parent!.className == "SimpleResponse", true , reason: "First class is named SimpleResponse");
+    expect(result.parent != null, true, reason: "First is CustomType");
+    expect(result.parent!.className == "SimpleResponse", true,
+        reason: "First class is named SimpleResponse");
     // and:
     final enumType = result.childrenEnumTypes.first;
-    expect(enumType.values[0], "hello" , reason: "First value is hello");
-    expect(enumType.values[1], "goodbye" , reason: "Second value is goodbye");
-    expect(enumType.valuesJSON[0], "HELLO!" , reason: "First JSON value is HELLO!");
-    expect(enumType.valuesJSON[1], "GOODBYE..." , reason: "Second JSON value is GOODBYE...");
-
+    expect(enumType.values[0], "hello", reason: "First value is hello");
+    expect(enumType.values[1], "goodbye", reason: "Second value is goodbye");
+    expect(enumType.valuesJSON[0], "HELLO!",
+        reason: "First JSON value is HELLO!");
+    expect(enumType.valuesJSON[1], "GOODBYE...",
+        reason: "Second JSON value is GOODBYE...");
   });
 }
 

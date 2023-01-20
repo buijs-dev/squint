@@ -22,6 +22,7 @@
 library encoder;
 
 export "dataclass_generator.dart";
+export "enumclass_generator.dart";
 export "extensions_generator.dart";
 export "options.dart";
 export "shared.dart";

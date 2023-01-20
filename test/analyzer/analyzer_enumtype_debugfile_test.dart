@@ -26,7 +26,7 @@ import "package:test/test.dart";
 
 void main() {
   test("Analyze Enum", () {
-    given:
+    // given:
     final basePath =
         "${Directory.systemTemp.absolute.path}${Platform.pathSeparator}";
 
@@ -47,11 +47,11 @@ void main() {
             }""",
       );
 
-    when:
+    // when:
     final result = analyzer.analyze(pathToFile: file.absolute.path);
     final types = result.childrenEnumTypes;
 
-    then:
+    // then:
     expect(types.length, 1, reason: "Should have found 1 enum");
 
     final type = types.first;

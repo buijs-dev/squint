@@ -19,7 +19,12 @@
 // SOFTWARE.
 
 import "package:analyzer/dart/ast/ast.dart"
-    show ClassDeclaration, Declaration, EnumDeclaration, FieldDeclaration, VariableDeclarationList;
+    show
+        ClassDeclaration,
+        Declaration,
+        EnumDeclaration,
+        FieldDeclaration,
+        VariableDeclarationList;
 import "package:analyzer/dart/ast/syntactic_entity.dart";
 import "package:analyzer/dart/ast/visitor.dart";
 
@@ -61,16 +66,15 @@ extension on Declaration {
 
 /// {@category analyzer}
 extension on ClassDeclaration {
-
   CustomType get toCustomType => CustomType(
-    className: name.toString(),
-    members: members
-        .whereType<FieldDeclaration>()
-        .map((e) => e.fields)
-        .whereType<VariableDeclarationList>()
-        .map(_typeMember)
-         .toList(),
-  );
+        className: name.toString(),
+        members: members
+            .whereType<FieldDeclaration>()
+            .map((e) => e.fields)
+            .whereType<VariableDeclarationList>()
+            .map(_typeMember)
+            .toList(),
+      );
 
   TypeMember _typeMember(VariableDeclarationList variable) {
     final abstractType = variable.type?.toString().trim().toAbstractType();
@@ -89,13 +93,11 @@ extension on ClassDeclaration {
 
 /// {@category analyzer}
 extension on EnumDeclaration {
-
   EnumType get toEnumType {
-
     final values = <String>[];
     final valuesJSON = <String>[];
 
-    for(final constant in constants) {
+    for (final constant in constants) {
       final value = constant.name.lexeme;
       final annotations = constant.childEntities.jsonAnnotations;
       final jsonValueOrNull = annotations.firstBy((t) => t.name == "JsonValue");
@@ -109,7 +111,6 @@ extension on EnumDeclaration {
       valuesJSON: valuesJSON,
     );
   }
-
 }
 
 extension on Iterable<SyntacticEntity> {

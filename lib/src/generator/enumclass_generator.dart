@@ -26,7 +26,6 @@ import "generator.dart";
 ///
 /// {@category generator}
 extension EnumType2EnumClass on EnumType {
-
   /// Generate data class from [EnumType].
   ///
   /// {@category generator}
@@ -66,20 +65,20 @@ extension EnumType2EnumClass on EnumType {
   ///
   /// {@category generator}
   String generateEnumClassBody(SquintGeneratorOptions options) {
-    if(values.length != valuesJSON.length) {
+    if (values.length != valuesJSON.length) {
       throw SquintException(
-          "Failed to generate enum class from MetaData because values and valuesJSON are not of equal size.",
+        "Failed to generate enum class because values and valuesJSON are not of equal size.",
       );
     }
 
     var hasJsonValues = false;
     var index = 0;
 
-    while(index < values.length) {
-      if(values[index] != valuesJSON[index]) {
+    while (index < values.length) {
+      if (values[index] != valuesJSON[index]) {
         hasJsonValues = true;
       }
-      index+=1;
+      index += 1;
     }
 
     return hasJsonValues
@@ -95,17 +94,17 @@ extension EnumType2EnumClass on EnumType {
 
     var index = 0;
 
-    while(index < values.length) {
+    while (index < values.length) {
       members.add("""@JsonValue("${valuesJSON[index]}") ${values[index]}""");
-      index+=1;
+      index += 1;
     }
 
     return _generateEnumerationClass(className: className, members: members);
   }
 
   String _generateEnumerationClass({
-  required String className,
+    required String className,
     required List<String> members,
-  }) => "enum $className {${members.join(",")}}";
-
+  }) =>
+      "@squint\nenum $className {${members.join(",")}}";
 }

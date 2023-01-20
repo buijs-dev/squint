@@ -18,11 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "dart:io";
+/// Either wrapper containing one of T or R.
+class Either<T, R> {
+  /// Construct a new instance.
+  const Either({this.ok, this.nok});
 
-/// File processing utilities.
-extension FileUtil on Directory {
-  /// Return current folder + filename.
-  File resolve(String filename) =>
-      File("${absolute.path}${Platform.pathSeparator}$filename");
+  /// Construct a new instance with value T ok,
+  factory Either.ok(T ok) => Either(ok: ok);
+
+  /// Construct a new instance with value R nok,
+  factory Either.nok(R nok) => Either(nok: nok);
+
+  /// The OK result of type T.
+  final T? ok;
+
+  /// The not-so-OK result of type R.
+  final R? nok;
+
+  /// Returns true if ok is NOT null.
+  bool get isOk => ok != null;
 }

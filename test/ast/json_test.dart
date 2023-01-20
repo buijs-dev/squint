@@ -109,7 +109,6 @@ void main() {
   });
 
   test("verify nullable array getter returns a List", () {
-
     expect(
         decoded.arrayNodeOrNull<List<String?>>("nestedness")!.data[0][0], "a");
     expect(

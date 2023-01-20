@@ -19,15 +19,12 @@
 // SOFTWARE.
 
 import "dart:core";
-import 'dart:io';
+import "dart:io";
 
 import "package:squint_json/squint_json.dart";
-import "package:squint_json/src/converters/converters.dart";
-import 'package:squint_json/src/generator/enumclass_generator.dart';
 import "package:test/test.dart";
 
 void main() {
-
   const annoyanceRate = """
       {
         "className": "AnnoyanceRate",
@@ -170,6 +167,8 @@ class Example {
   @JsonValue("objectives")
   final Objectives objectives;
 
+  @JsonEncode(using: encodeAnnoyanceRate)
+  @JsonDecode<AnnoyanceRate, JsonString>(using: decodeAnnoyanceRate)
   @JsonValue("annoyanceRate")
   final AnnoyanceRate annoyanceRate;
 
@@ -191,6 +190,7 @@ class Objectives {
   final List<bool> missionResults;
 }
 
+@squint
 enum AnnoyanceRate {
   @JsonValue("LOW")
   low,
@@ -244,15 +244,14 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 """;
 
   test("Verify Converting a JSON String to a data class", () {
-
     // setup:
     final sep = Platform.pathSeparator;
     final basePath = "${Directory.systemTemp.absolute.path}$sep";
 
     // given:
     File("$basePath${metadataMarkerPrefix}annoyancerate.json")
-          ..createSync()
-          ..writeAsStringSync(annoyanceRate);
+      ..createSync()
+      ..writeAsStringSync(annoyanceRate);
 
     final exampleFile = File("$basePath${metadataMarkerPrefix}example.json")
       ..createSync()
@@ -267,7 +266,6 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 
     final actual = result.parent!.generateDataClassFile();
 
-    expect(actual,expected);
+    expect(actual, expected);
   });
-
 }

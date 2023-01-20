@@ -53,14 +53,12 @@ extension JsonNodeEnumGenerator on EnumType {
     final output = <String>[];
 
     var index = 0;
-    while(index < values.length) {
-      output.add(
-          """
+    while (index < values.length) {
+      output.add("""
           case $className.${values[index]}:
             return const JsonString(key: "$key", data: "${valuesJSON[index]}");
-          """
-      );
-      index +=1;
+          """);
+      index += 1;
     }
 
     return output;
@@ -73,22 +71,18 @@ extension JsonNodeEnumGenerator on EnumType {
     final output = <String>[];
 
     var index = 0;
-    while(index < values.length) {
-      output.add(
-          """
+    while (index < values.length) {
+      output.add("""
           case "${valuesJSON[index]}":
             return $className.${values[index]};
-          """
-      );
-      index +=1;
+          """);
+      index += 1;
     }
 
-    output.add(
-        """
+    output.add("""
         default:
           throw SquintException("Unable to map value to $className enum: \${value.data}");
-        """
-    );
+        """);
 
     return output;
   }

@@ -23,6 +23,7 @@ library common;
 
 export "annotation.dart";
 export "despacer.dart";
+export "either.dart";
 export "exception.dart";
 export "files.dart";
 export "lists.dart";

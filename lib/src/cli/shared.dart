@@ -18,20 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// ignore_for_file: avoid_annotating_with_dynamic
 /// Utility to parse command line arguments
 extension ArgParserUtil on dynamic {
   /// Return bool value if current value is a bool or String bool.
   /// Return null if current value is not a bool or String bool.
-  bool? get asBoolOrNull {
-    final upperCaseString = "$this".trim().toUpperCase();
-    if (upperCaseString == "TRUE") {
-      return true;
-    }
+  bool? get asBoolOrNull => dynamicToBoolOrNull(this);
 
-    if (upperCaseString == "FALSE") {
-      return false;
-    }
+  /// Return the argument value without -- postfix and in lowercase.
+  String get lowercase => "$this".substring(2, "$this".length).toLowerCase();
+}
 
-    return null;
+/// Return [boolOrNot] as bool value if:
+/// - it is a bool
+/// - it is a String containing a bool (not case-sensitive)
+///
+/// Otherwise return null.
+bool? dynamicToBoolOrNull(dynamic boolOrNot) {
+  final upperCaseString = "$boolOrNot".trim().toUpperCase();
+  if (upperCaseString == "TRUE") {
+    return true;
   }
+
+  if (upperCaseString == "FALSE") {
+    return false;
+  }
+
+  return null;
 }

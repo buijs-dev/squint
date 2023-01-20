@@ -35,12 +35,11 @@ extension ListProcessor<T> on Iterable<T> {
 
   /// Return true if iterable contains all [values].
   bool containsAll(Iterable<T> values) {
-    for(final value in values) {
-      if(!contains(value)) {
+    for (final value in values) {
+      if (!contains(value)) {
         return false;
       }
     }
     return true;
   }
-
 }

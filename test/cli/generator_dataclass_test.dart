@@ -19,16 +19,13 @@
 // SOFTWARE.
 
 import "dart:core";
-import 'dart:io';
+import "dart:io";
 
 import "package:squint_json/squint_json.dart";
-import 'package:squint_json/src/cli/generate.dart';
-import "package:squint_json/src/converters/converters.dart";
-import 'package:squint_json/src/generator/enumclass_generator.dart';
+import "package:squint_json/src/cli/generate.dart";
 import "package:test/test.dart";
 
 void main() {
-
   const annoyanceRate = """
       {
         "className": "AnnoyanceRate",
@@ -171,6 +168,8 @@ class Example {
   @JsonValue("objectives")
   final Objectives objectives;
 
+  @JsonEncode(using: encodeAnnoyanceRate)
+  @JsonDecode<AnnoyanceRate, JsonString>(using: decodeAnnoyanceRate)
   @JsonValue("annoyanceRate")
   final AnnoyanceRate annoyanceRate;
 
@@ -192,6 +191,7 @@ class Objectives {
   final List<bool> missionResults;
 }
 
+@squint
 enum AnnoyanceRate {
   @JsonValue("LOW")
   low,
@@ -245,21 +245,20 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 """;
 
   test("Verify Converting a JSON String to a data class", () {
-
     // setup:
     final sep = Platform.pathSeparator;
     final basePath = "${Directory.systemTemp.absolute.path}$sep";
     final outputPath = "$basePath${sep}output";
     final expectedFile = File("$outputPath${sep}example_dataclass.dart");
 
-    if(expectedFile.existsSync()) {
+    if (expectedFile.existsSync()) {
       expectedFile.deleteSync();
     }
 
     // given:
     File("$basePath${metadataMarkerPrefix}annoyancerate.json")
-          ..createSync()
-          ..writeAsStringSync(annoyanceRate);
+      ..createSync()
+      ..writeAsStringSync(annoyanceRate);
 
     final exampleFile = File("$basePath${metadataMarkerPrefix}example.json")
       ..createSync()
@@ -271,15 +270,20 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 
     // when:
     final result = runGenerateTask([
-      "--type", "dataclass",
-      "--input", exampleFile.absolute.path,
-      "--output", outputPath,
-      "--overwrite", "true"
+      "--type",
+      "dataclass",
+      "--input",
+      exampleFile.absolute.path,
+      "--output",
+      outputPath,
+      "--overwrite",
+      "true"
     ]);
 
-    expect(result.parent != null, true, reason: "There should be a parent!");
+    expect(result.ok!.parent != null, true,
+        reason: "There should be a parent!");
     expect(expectedFile.existsSync(), true, reason: "Dataclass is generated");
-    expect(expectedFile.readAsStringSync(), expected, reason: "Dataclass content is correct");
+    expect(expectedFile.readAsStringSync(), expected,
+        reason: "Dataclass content is correct");
   });
-
 }

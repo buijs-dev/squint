@@ -208,12 +208,12 @@ class TypeMember {
 
     /// Type annotations
     List<TypeAnnotation>? annotations,
-  }) => TypeMember(
-    name: name ?? this.name,
-    type: type ?? this.type,
-    annotations: annotations ?? this.annotations,
-  );
-
+  }) =>
+      TypeMember(
+        name: name ?? this.name,
+        type: type ?? this.type,
+        annotations: annotations ?? this.annotations,
+      );
 }
 
 /// Annotation data.

@@ -119,9 +119,8 @@ void main() {
     final analysis = analyzer.analyze(pathToFile: file.absolute.path);
 
     // when
-    final dataclass = analysis.parent!
-        .generateJsonDecodingFile(relativeImport: "")
-        .trim();
+    final dataclass =
+        analysis.parent!.generateJsonDecodingFile(relativeImport: "").trim();
 
     // then
     expect(dataclass, expectedOutput);

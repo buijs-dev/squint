@@ -24,9 +24,14 @@ import "package:squint_json/src/common/common.dart";
 Future<void> main(List<String> args) async {
   """
   ════════════════════════════════════════════
-     SQUINT (v0.0.1)                               
+     SQUINT (v0.0.2)                               
   ════════════════════════════════════════════
   """
       .log();
-  runGenerateTask(args);
+  final result = runGenerateTask(args);
+  if (result.isOk) {
+    """Done!""".log();
+  } else {
+    result.nok?.forEach((message) => message.log());
+  }
 }
