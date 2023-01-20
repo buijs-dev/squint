@@ -257,15 +257,15 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 
     // given:
     File("$basePath${metadataMarkerPrefix}annoyancerate.json")
-      ..createSync()
+      ..createSync(recursive: true)
       ..writeAsStringSync(annoyanceRate);
 
     final exampleFile = File("$basePath${metadataMarkerPrefix}example.json")
-      ..createSync()
+      ..createSync(recursive: true)
       ..writeAsStringSync(example);
 
     File("$basePath${metadataMarkerPrefix}objectives.json")
-      ..createSync()
+      ..createSync(recursive: true)
       ..writeAsStringSync(objectives);
 
     // when:

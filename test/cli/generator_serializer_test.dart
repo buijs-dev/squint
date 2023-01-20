@@ -276,11 +276,12 @@ extension ObjectivesJsonObject2Class on JsonObject {
 
     // given:
     final dataclassFile = File("$outputPath${sep}random_example_dataclass.dart")
-      ..createSync()
+      ..createSync(recursive: true)
       ..writeAsStringSync(dataclass);
 
     final expectedExampleFile =
         File("$outputPath${sep}random_example_extensions.dart");
+
     final expectedObjectivesFile =
         File("$outputPath${sep}objectives_extensions.dart");
 
