@@ -1,6 +1,6 @@
 name: squint_json
 description: Lightweight JSON processor and AST. Safely (de)serialize JSON decoded Strings to Dart Types.
-version: 0.0.1
+version: 0.0.2
 homepage: https://buijs.dev
 repository: https://github.com/buijs-dev/squint
 
@@ -19,3 +19,4 @@ dev_dependencies:
   dartdoc: ^6.1.0
   lints: ^2.0.0
   test: ^1.16.0
+0
