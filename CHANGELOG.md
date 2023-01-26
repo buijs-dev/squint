@@ -1,3 +1,6 @@
+## 0.0.3
+- Downgrade path dependency to 1.8.2 to make it compatible with flutter_test.
+
 ## 0.0.2
 
 - Add hasKey method to JsonObject.
