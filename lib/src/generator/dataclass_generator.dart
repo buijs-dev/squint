@@ -128,6 +128,7 @@ extension CustomType2DataClass on CustomType {
         ..write(ct.decodingMethodBody);
     }
 
+    print(buffer.toString());
     return buffer.toString().formattedDartCode;
   }
 
@@ -169,9 +170,7 @@ extension on TypeMember {
       type.nullable ? "this.$name," : "required this.$name,";
 
   String get printFieldWithoutAnnotations =>
-      type.nullable && type.className != "dynamic"
-          ? "final ${type.printType}? $name;"
-          : "final ${type.printType} $name;";
+      "final ${type.printType} $name;";
 
   String printField({bool alwaysAddJsonValue = false}) {
     final buffer = StringBuffer();
@@ -194,12 +193,7 @@ extension on TypeMember {
       buffer.write('@JsonValue("$jsonNodeKey")\n');
     }
 
-    if (type.nullable && type.className != "dynamic") {
-      buffer.write("final ${type.printType}? $name;");
-    } else {
-      buffer.write("final ${type.printType} $name;");
-    }
-
+    buffer.write("final ${type.printType} $name;");
     return buffer.toString();
   }
 
