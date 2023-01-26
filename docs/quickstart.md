@@ -16,7 +16,7 @@ This will add a line like this to your package's pubspec.yaml (and run an implic
 
 ```yaml
 dependencies:
-  squint_json: ^0.0.3
+  squint_json: ^0.0.4
 ```
 
 ## Features
