@@ -25,7 +25,7 @@ import "package:squint_json/src/common/logger.dart";
 Future<void> main(List<String> args) async {
   """
   ════════════════════════════════════════════
-     SQUINT (v0.0.4)                               
+     SQUINT (v0.0.5)                               
   ════════════════════════════════════════════
   """
       .log();

@@ -39,12 +39,23 @@ Result _taskFailureJsonNotAnalyzed(File file) =>
 Result _taskFailureNotAJsonFile(File file) =>
     Result.nok(["File is not a .json File: ${file.absolute.path}"]);
 
-Result _taskSuccess(CustomType type) {
+Result _taskFailureUnknownType(AbstractType type) =>
+    Result.nok(["Failed to generate code for type: $type"]);
+
+Result _taskSuccessCustomType(CustomType type) {
   final members = type.members.map((e) => e.type);
   return Result.ok(analyzer.AnalysisResult(
     parent: type,
     childrenEnumTypes: members.whereType<EnumType>().toSet(),
     childrenCustomTypes: members.whereType<CustomType>().toSet(),
+  ));
+}
+
+Result _taskSuccessEnumType(EnumType type) {
+  return Result.ok(analyzer.AnalysisResult(
+    parent: null,
+    childrenEnumTypes: {type},
+    childrenCustomTypes: {},
   ));
 }
 
@@ -68,9 +79,9 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     final inputFile = inputFileOrResult.ok!;
 
     /// Get the CustomType by analyzing the input File.
-    final customType = inputFile.determineCustomTypeOrNull;
+    final customTypeOrEnumType = inputFile.determineTypeOrNull;
 
-    if (customType == null) {
+    if (customTypeOrEnumType == null) {
       return _taskFailureJsonNotAnalyzed(inputFile);
     }
 
@@ -85,10 +96,23 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     }
 
     /// Generate the data class based on the CustomType.
-    final options = _optionsWithOverrides;
-    final content = customType.generateDataClassFile(options: options);
-    outputFileOrResult.ok!.writeAsStringSync(content);
-    return _taskSuccess(customType);
+    if(customTypeOrEnumType is CustomType) {
+      final options = _optionsWithOverrides;
+      final content = customTypeOrEnumType.generateDataClassFile(options: options);
+      outputFileOrResult.ok!.writeAsStringSync(content);
+      return _taskSuccessCustomType(customTypeOrEnumType);
+    }
+
+    /// Generate the enum class based on the EnumType
+    if(customTypeOrEnumType is EnumType) {
+      final options = _optionsWithOverrides;
+      final content = customTypeOrEnumType.generateEnumClassFile(options: options);
+      outputFileOrResult.ok!.writeAsStringSync(content);
+      return _taskSuccessEnumType(customTypeOrEnumType);
+    }
+
+    return _taskFailureUnknownType(customTypeOrEnumType);
+
   }
 
   /// Return [File] input if:
@@ -129,9 +153,20 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
 extension on File {
   /// Analyse the File as JSON and return the CustomType
   /// or null if failed to.
-  CustomType? get determineCustomTypeOrNull {
+  AbstractType? get determineTypeOrNull {
     if (path.contains(analyzer.metadataMarkerPrefix)) {
-      return parseMetadata.parent;
+      final metadata = parseMetadata;
+      final parent = metadata.parent;
+      if(parent != null) {
+        return parent;
+      }
+
+      final enumerations = metadata.childrenEnumTypes;
+      if(enumerations.isNotEmpty) {
+        return enumerations.first;
+      }
+
+      return null;
     }
 
     final content = readAsStringSync().trim();

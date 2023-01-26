@@ -128,7 +128,6 @@ extension CustomType2DataClass on CustomType {
         ..write(ct.decodingMethodBody);
     }
 
-    print(buffer.toString());
     return buffer.toString().formattedDartCode;
   }
 

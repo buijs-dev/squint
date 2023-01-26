@@ -1,3 +1,6 @@
+## 0.0.5
+- Bugfix: enum classes not generated when there is no data class.
+
 ## 0.0.4
 - Bugfix: incorrect outputting of '??' instead of '?' for nullable dataclass fields.
 
