@@ -17,6 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+import "package:squint_json/src/ast/ast.dart";
 import "package:squint_json/src/cli/generate.dart";
 import "package:squint_json/src/common/common.dart";
 
@@ -30,7 +32,13 @@ Future<void> main(List<String> args) async {
       .log();
   final result = runGenerateTask(args);
   if (result.isOk) {
-    """Done!""".log();
+    <AbstractType?>{
+      result.ok?.parent,
+      ...?result.ok?.childrenEnumTypes,
+      ...?result.ok?.childrenCustomTypes
+    }.whereType<AbstractType>().forEach(
+        (type) => """Generated code for type: ${type.className}""".log());
+    """Finished code generation.""".log();
   } else {
     result.nok?.forEach((message) => message.log());
   }

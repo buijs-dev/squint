@@ -201,11 +201,10 @@ enum AnnoyanceRate {
   unbearable
 }
 
-JsonObject encodeObjectives(Objectives objectives) =>
+JsonObject encodeObjectives(Objectives object) =>
     JsonObject.fromNodes(key: "objectives", nodes: [
-      JsonBoolean(key: "inMission", data: objectives.inMission),
-      JsonArray<dynamic>(
-          key: "missionResults", data: objectives.missionResults),
+      JsonBoolean(key: "inMission", data: object.inMission),
+      JsonArray<dynamic>(key: "missionResults", data: object.missionResults),
     ]);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(
@@ -213,8 +212,8 @@ Objectives decodeObjectives(JsonObject object) => Objectives(
       missionResults: object.array<bool>("missionResults"),
     );
 
-JsonString encodeAnnoyanceRate(AnnoyanceRate annoyanceRate) {
-  switch (annoyanceRate) {
+JsonString encodeAnnoyanceRate(AnnoyanceRate object) {
+  switch (object) {
     case AnnoyanceRate.low:
       return const JsonString(key: "annoyanceRate", data: "LOW");
 
@@ -333,9 +332,10 @@ enum AnnoyanceRate {
   unbearable
 }
 """;
-    final annoyanceRateFile = File("$basePath${metadataMarkerPrefix}annoyancerate.json")
-      ..createSync(recursive: true)
-      ..writeAsStringSync(annoyanceRate);
+    final annoyanceRateFile =
+        File("$basePath${metadataMarkerPrefix}annoyancerate.json")
+          ..createSync(recursive: true)
+          ..writeAsStringSync(annoyanceRate);
 
     // when:
     final result = runGenerateTask([

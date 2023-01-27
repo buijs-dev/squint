@@ -32,19 +32,62 @@ extension JsonNode2AbstractType on JsonNode {
       return const StringType();
     }
 
+    if (this is JsonStringOrNull) {
+      return const NullableStringType();
+    }
+
     if (this is JsonBoolean) {
       return const BooleanType();
+    }
+
+    if (this is JsonBooleanOrNull) {
+      return const NullableBooleanType();
     }
 
     if (this is JsonFloatingNumber) {
       return const DoubleType();
     }
 
+    if (this is JsonFloatingNumberOrNull) {
+      return const NullableDoubleType();
+    }
+
     if (this is JsonIntegerNumber) {
       return const IntType();
     }
 
-    if (this is JsonArray) {
+    if (this is JsonIntegerNumberOrNull) {
+      return const NullableIntType();
+    }
+
+    if(this is JsonArray) {
+      return _arrayToListType;
+    }
+
+    if(this is JsonArrayOrNull) {
+      if(data != null) {
+        return JsonArray(key: key, data: data)._arrayToListType;
+      } else {
+        return [].toListType;
+      }
+    }
+
+    if (this is JsonObject) {
+      return _objectToMapType;
+    }
+
+    if (this is JsonObjectOrNull) {
+      final objectOrNull = (this as JsonObjectOrNull).asObjectOrNull;
+
+      if(objectOrNull != null) {
+        return objectOrNull._objectToMapType;
+      }
+    }
+
+    return const UndeterminedAsDynamic();
+  }
+
+  AbstractType get _arrayToListType {
       final arr = this as JsonArray;
       final data = arr.data as List<dynamic>;
       if (data.isNotEmpty && data.first is Map) {
@@ -77,32 +120,31 @@ extension JsonNode2AbstractType on JsonNode {
         }
       }
       return (arr.data as List<dynamic>).toListType;
-    }
-
-    if (this is JsonObject) {
-      final valueType = (this as JsonObject).valuesAllOfSameType;
-      if (valueType != null) {
-        if (valueType is StringType) {
-          return const MapType(key: StringType(), value: StringType());
-        }
-
-        if (valueType is BooleanType) {
-          return const MapType(key: StringType(), value: BooleanType());
-        }
-
-        if (valueType is IntType) {
-          return const MapType(key: StringType(), value: IntType());
-        }
-
-        if (valueType is DoubleType) {
-          return const MapType(key: StringType(), value: DoubleType());
-        }
-      }
-      return (this as JsonObject).toCustomType(className: key.camelCase());
-    }
-
-    return const UndeterminedAsDynamic();
   }
+
+  AbstractType get _objectToMapType {
+    final valueType = (this as JsonObject).valuesAllOfSameType;
+    if (valueType != null) {
+      if (valueType is StringType) {
+        return const MapType(key: StringType(), value: StringType());
+      }
+
+      if (valueType is BooleanType) {
+        return const MapType(key: StringType(), value: BooleanType());
+      }
+
+      if (valueType is IntType) {
+        return const MapType(key: StringType(), value: IntType());
+      }
+
+      if (valueType is DoubleType) {
+        return const MapType(key: StringType(), value: DoubleType());
+      }
+    }
+    return (this as JsonObject).toCustomType(className: key.camelCase());
+  }
+
+
 }
 
 /// Convert a [List] to a [StandardType].

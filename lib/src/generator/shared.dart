@@ -163,21 +163,27 @@ extension on TypeMember {
       return "$encodeJsonAnnotated($dataPrefix$name)";
     }
 
-    final type = this.type.className.removePrefixIfPresent("Nullable");
+    final isNullable =
+      this.type.className.startsWith("Nullable");
+
+    final type =
+      this.type.className.removePrefixIfPresent("Nullable");
+
+    final q = isNullable ? "OrNull" : "";
 
     switch (type) {
       case "String":
-        return 'JsonString(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonString$q(key: "$jsonKey", data: $dataPrefix$name)';
       case "double":
-        return 'JsonFloatingNumber(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonFloatingNumber$q(key: "$jsonKey", data: $dataPrefix$name)';
       case "int":
-        return 'JsonIntegerNumber(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonIntegerNumber$q(key: "$jsonKey", data: $dataPrefix$name)';
       case "bool":
-        return 'JsonBoolean(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonBoolean$q(key: "$jsonKey", data: $dataPrefix$name)';
       case "List":
-        return 'JsonArray<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonArray$q<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
-        return 'JsonObject.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
+        return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:

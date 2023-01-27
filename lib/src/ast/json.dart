@@ -70,6 +70,29 @@ UntypedJsonNode dynamicValue({
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
+class JsonObjectOrNull extends JsonNode<Map<String, JsonNode>?> {
+
+  /// Construct a new [JsonObjectOrNull] instance.
+  const JsonObjectOrNull({required super.key, required super.data});
+
+  /// Construct a new [JsonObjectOrNull] using the specified key values of each [JsonNode].
+  factory JsonObjectOrNull.fromMap(
+      {Map<String, dynamic>? data, String key = ""}) =>
+      JsonObjectOrNull(
+        data: data?.map(_buildJsonNodeMap),
+        key: key,
+      );
+
+  /// Get data wrapped in [JsonObject] or null if data is not present.
+  JsonObject? get asObjectOrNull =>
+      data == null ? null : JsonObject(data: data!);
+}
+
+/// JSON Object (Map) element.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
 class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Construct a new [JsonObject] instance.
   JsonObject({
@@ -544,6 +567,28 @@ class JsonString extends JsonNode<String> {
   }) : super(key: key, data: data);
 }
 
+/// A JSON element containing a String or null value.
+///
+/// Example:
+///
+/// ```
+/// {"name":"Luke Skywalker"}
+/// ```
+///
+/// key = name
+/// data = Luke Skywalker
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonStringOrNull extends JsonNode<String?> {
+  /// Construct a new [JsonStringOrNull] instance.
+  const JsonStringOrNull({
+    required String key,
+    required String? data,
+  }) : super(key: key, data: data);
+}
+
 /// A JSON element containing a double value.
 ///
 /// Example:
@@ -574,6 +619,37 @@ class JsonFloatingNumber extends JsonNode<double> {
       JsonFloatingNumber(key: key, data: double.parse(data));
 }
 
+/// A JSON element containing a double value or null.
+///
+/// Example:
+///
+/// ```
+/// {"friends":0.0}
+/// ```
+///
+/// key = friends
+/// data = 0.0
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonFloatingNumberOrNull extends JsonNode<double?> {
+  /// Construct a new [JsonFloatingNumberOrNull] instance.
+  const JsonFloatingNumberOrNull({
+    required String key,
+    required double? data,
+  }) : super(key: key, data: data);
+
+  /// Construct a new [JsonFloatingNumber] instance
+  /// by parsing the data as double value.
+  factory JsonFloatingNumberOrNull.parse({
+    required String key,
+    required String? data,
+  }) =>
+      JsonFloatingNumberOrNull(
+          key: key, data: data != null ? double.parse(data) : null);
+}
+
 /// A JSON element containing an int value.
 ///
 /// Example:
@@ -602,6 +678,37 @@ class JsonIntegerNumber extends JsonNode<int> {
     required String data,
   }) =>
       JsonIntegerNumber(key: key, data: int.parse(data));
+}
+
+/// A JSON element containing an int value or null.
+///
+/// Example:
+///
+/// ```
+/// {"friends":0}
+/// ```
+///
+/// key = friends
+/// data = 0
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonIntegerNumberOrNull extends JsonNode<int?> {
+  /// Construct a new [JsonIntegerNumberOrNull] instance.
+  const JsonIntegerNumberOrNull({
+    required String key,
+    required int? data,
+  }) : super(key: key, data: data);
+
+  /// Construct a new [JsonIntegerNumberOrNull] instance
+  /// by parsing the data as int value.
+  factory JsonIntegerNumberOrNull.parse({
+    required String key,
+    required String? data,
+  }) =>
+      JsonIntegerNumberOrNull(
+          key: key, data: data == null ? null : int.parse(data));
 }
 
 /// A JSON element containing a null value.
@@ -651,6 +758,28 @@ class JsonBoolean extends JsonNode<bool> {
   }) : super(key: key, data: data);
 }
 
+/// A JSON element containing a bool value or null.
+///
+/// Example:
+///
+/// ```
+/// {"dark-side":false}
+/// ```
+///
+/// key = dark-side
+/// data = false
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonBooleanOrNull extends JsonNode<bool?> {
+  /// Construct a new [JsonBooleanOrNull] instance.
+  const JsonBooleanOrNull({
+    required String key,
+    required bool? data,
+  }) : super(key: key, data: data);
+}
+
 /// A JSON element containing an Array value.
 ///
 /// Example:
@@ -682,6 +811,52 @@ class JsonArray<T> extends JsonNode<T> {
   }) {
     final data = content.decodeJsonArray(maxDepth: depth).toList();
     return JsonArray<dynamic>(
+      key: key,
+      data: data,
+    );
+  }
+
+  /// Convert to formatted JSON String.
+  @override
+  String get stringify => '"$key":${maybeAddQuotes(data)}';
+}
+
+/// A JSON element containing an Array value or null.
+///
+/// Example:
+///
+/// ```
+///   "padawans":["Anakin", "Obi-Wan"]
+/// ```
+///
+/// key = padawans
+/// data = ["Anakin", "Obi-Wan"]
+/// T = String
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonArrayOrNull<T> extends JsonNode<T> {
+  /// Construct a new [JsonArrayOrNull] instance.
+  const JsonArrayOrNull({
+    required String key,
+    required T data,
+  }) : super(key: key, data: data);
+
+  /// Construct a new [JsonFloatingNumber] instance
+  /// by parsing the data as List value.
+  static JsonArrayOrNull parse({
+    required String key,
+    required String? content,
+    int depth = 1,
+  }) {
+    if (content == null) {
+      return JsonArrayOrNull(key: key, data: null);
+    }
+
+    final data = content.decodeJsonArray(maxDepth: depth).toList();
+
+    return JsonArrayOrNull<dynamic>(
       key: key,
       data: data,
     );

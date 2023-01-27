@@ -159,11 +159,10 @@ class Objectives {
   final List<bool> missionResults;
 }
 
-JsonObject encodeObjectives(Objectives objectives) =>
+JsonObject encodeObjectives(Objectives object) =>
     JsonObject.fromNodes(key: "objectives", nodes: [
-      JsonBoolean(key: "in-mission", data: objectives.inMission),
-      JsonArray<dynamic>(
-          key: "mission-results", data: objectives.missionResults),
+      JsonBoolean(key: "in-mission", data: object.inMission),
+      JsonArray<dynamic>(key: "mission-results", data: object.missionResults),
     ]);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(

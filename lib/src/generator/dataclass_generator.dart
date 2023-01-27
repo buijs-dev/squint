@@ -168,8 +168,7 @@ extension on TypeMember {
   String get printConstructor =>
       type.nullable ? "this.$name," : "required this.$name,";
 
-  String get printFieldWithoutAnnotations =>
-      "final ${type.printType} $name;";
+  String get printFieldWithoutAnnotations => "final ${type.printType} $name;";
 
   String printField({bool alwaysAddJsonValue = false}) {
     final buffer = StringBuffer();
@@ -199,19 +198,19 @@ extension on TypeMember {
   String get encodingMethodBody {
     if (type is CustomType) {
       return """
-      JsonObject ${name.encodingMethodName}(${type.className} $name) =>
+      JsonObject ${type.className.encodingMethodName}(${type.className} object) =>
         JsonObject.fromNodes(
         key: "$name",
         nodes: [
-        ${(type as CustomType).members.toJsonNodeSetters(dataPrefix: "$name.").join("\n")}
+        ${(type as CustomType).members.toJsonNodeSetters(dataPrefix: "object.").join("\n")}
         ]);
 
         """;
     }
 
     return """
-    JsonString ${name.encodingMethodName}(${type.className} $name) {
-        switch($name) {
+    JsonString ${type.className.encodingMethodName}(${type.className} object) {
+        switch(object) {
           ${(type as EnumType).toJsonNodeSetters(name).join("\n")}
         }
       }
@@ -222,7 +221,7 @@ extension on TypeMember {
   String get decodingMethodBody {
     if (type is CustomType) {
       return """
-    ${type.className} ${name.decodingMethodName}(JsonObject object) =>
+    ${type.className} ${type.className.decodingMethodName}(JsonObject object) =>
        ${type.className}(
         ${(type as CustomType).members.toJsonNodeGetters(dataPrefix: "object.").join("\n")}
         );
@@ -231,9 +230,9 @@ extension on TypeMember {
     }
 
     return """
-    ${type.className} ${name.decodingMethodName}(JsonString value) {
+    ${type.className} ${type.className.decodingMethodName}(JsonString value) {
       switch(value.data) {
-          ${(type as EnumType).toJsonNodeGetters(name).join("\n")}
+          ${(type as EnumType).toJsonNodeGetters("object.").join("\n")}
       }
     }
 

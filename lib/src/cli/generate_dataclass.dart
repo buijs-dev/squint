@@ -96,23 +96,24 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     }
 
     /// Generate the data class based on the CustomType.
-    if(customTypeOrEnumType is CustomType) {
+    if (customTypeOrEnumType is CustomType) {
       final options = _optionsWithOverrides;
-      final content = customTypeOrEnumType.generateDataClassFile(options: options);
+      final content =
+          customTypeOrEnumType.generateDataClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
       return _taskSuccessCustomType(customTypeOrEnumType);
     }
 
     /// Generate the enum class based on the EnumType
-    if(customTypeOrEnumType is EnumType) {
+    if (customTypeOrEnumType is EnumType) {
       final options = _optionsWithOverrides;
-      final content = customTypeOrEnumType.generateEnumClassFile(options: options);
+      final content =
+          customTypeOrEnumType.generateEnumClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
       return _taskSuccessEnumType(customTypeOrEnumType);
     }
 
     return _taskFailureUnknownType(customTypeOrEnumType);
-
   }
 
   /// Return [File] input if:
@@ -157,12 +158,12 @@ extension on File {
     if (path.contains(analyzer.metadataMarkerPrefix)) {
       final metadata = parseMetadata;
       final parent = metadata.parent;
-      if(parent != null) {
+      if (parent != null) {
         return parent;
       }
 
       final enumerations = metadata.childrenEnumTypes;
-      if(enumerations.isNotEmpty) {
+      if (enumerations.isNotEmpty) {
         return enumerations.first;
       }
 
