@@ -216,8 +216,8 @@ extension FileAnalyzer on File {
       );
     }
 
-    "Example of CustomType metadata JSON file:".log(context: """ 
-{
+    "Example of CustomType metadata JSON file:".log(context: """
+    {
     "className": "MyResponse",
     "members": [ 
       {
@@ -232,9 +232,8 @@ extension FileAnalyzer on File {
       } 
     ]
   }""");
-    "Example of EnumType metadata JSON file:".log(context: """ 
-
-      {
+    "Example of EnumType metadata JSON file:".log(context: """
+    {
         "className": "MyResponse",
         "values": [ 
           "FOO", 
