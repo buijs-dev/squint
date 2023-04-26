@@ -181,7 +181,7 @@ const standardSquintGeneratorOptions = SquintGeneratorOptions(
   alwaysAddJsonValue: true,
   blankLineBetweenFields: true,
   generateChildClasses: true,
-    includeCustomTypeImports: false,
+  includeCustomTypeImports: false,
 );
 
 /// Generate data class without annotations.
@@ -219,7 +219,7 @@ extension SquintGeneratorOptionsBuilder on SquintGeneratorOptions {
             standardSquintGeneratorOptions.blankLineBetweenFields,
         generateChildClasses: generateChildClasses ??
             standardSquintGeneratorOptions.generateChildClasses,
-          includeCustomTypeImports: includeCustomTypeImports ??
-          standardSquintGeneratorOptions.includeCustomTypeImports,
+        includeCustomTypeImports: includeCustomTypeImports ??
+            standardSquintGeneratorOptions.includeCustomTypeImports,
       );
 }

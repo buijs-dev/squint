@@ -143,16 +143,18 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
   /// values retrieved from command-line input.
   SquintGeneratorOptions get _optionsWithOverrides =>
       standardSquintGeneratorOptions.copyWith(
-        includeJsonAnnotations:
-          (this[GenerateArgs.includeJsonAnnotations] ?? standardSquintGeneratorOptions.includeJsonAnnotations) as bool,
-        alwaysAddJsonValue:
-        (this[GenerateArgs.alwaysAddJsonValue] ?? standardSquintGeneratorOptions.alwaysAddJsonValue) as bool,
-        blankLineBetweenFields:
-        (this[GenerateArgs.blankLineBetweenFields] ?? standardSquintGeneratorOptions.blankLineBetweenFields) as bool,
-        generateChildClasses:
-        (this[GenerateArgs.generateChildClasses] ?? standardSquintGeneratorOptions.generateChildClasses) as bool,
+        includeJsonAnnotations: (this[GenerateArgs.includeJsonAnnotations] ??
+            standardSquintGeneratorOptions.includeJsonAnnotations) as bool,
+        alwaysAddJsonValue: (this[GenerateArgs.alwaysAddJsonValue] ??
+            standardSquintGeneratorOptions.alwaysAddJsonValue) as bool,
+        blankLineBetweenFields: (this[GenerateArgs.blankLineBetweenFields] ??
+            standardSquintGeneratorOptions.blankLineBetweenFields) as bool,
+        generateChildClasses: (this[GenerateArgs.generateChildClasses] ??
+            standardSquintGeneratorOptions.generateChildClasses) as bool,
         includeCustomTypeImports:
-        (this[GenerateArgs.includeCustomTypeImports] ?? standardSquintGeneratorOptions.includeCustomTypeImports) as bool,
+            (this[GenerateArgs.includeCustomTypeImports] ??
+                    standardSquintGeneratorOptions.includeCustomTypeImports)
+                as bool,
       );
 }
 

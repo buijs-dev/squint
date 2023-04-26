@@ -130,8 +130,6 @@ enum GenerateArgs {
   ///
   /// If set to false then only the parent class will be generated.
   generateChildClasses,
-
-
 }
 
 /// Helper to parse Command-line arguments for the generate Task.

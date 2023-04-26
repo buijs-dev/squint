@@ -71,13 +71,12 @@ UntypedJsonNode dynamicValue({
 /// {@category encoder}
 /// {@category decoder}
 class JsonObjectOrNull extends JsonNode<Map<String, JsonNode>?> {
-
   /// Construct a new [JsonObjectOrNull] instance.
   const JsonObjectOrNull({required super.key, required super.data});
 
   /// Construct a new [JsonObjectOrNull] using the specified key values of each [JsonNode].
   factory JsonObjectOrNull.fromMap(
-      {Map<String, dynamic>? data, String key = ""}) =>
+          {Map<String, dynamic>? data, String key = ""}) =>
       JsonObjectOrNull(
         data: data?.map(_buildJsonNodeMap),
         key: key,

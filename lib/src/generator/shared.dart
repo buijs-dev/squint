@@ -119,7 +119,8 @@ extension on TypeMember {
       } else if (unwrapperType == "JsonBoolean") {
         unwrapper = '${dataPrefix}booleanNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
-        unwrapper = '${dataPrefix}arrayNode$q<${(this.type as ListType).child.printType}>("$jsonKey")';
+        unwrapper =
+            '${dataPrefix}arrayNode$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       } else if (unwrapperType == "JsonObject") {
         unwrapper = '${dataPrefix}objectNode$q("$jsonKey")';
       } else {
