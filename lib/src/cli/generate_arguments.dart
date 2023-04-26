@@ -64,6 +64,74 @@ enum GenerateArgs {
 
   /// Configure to include annotations or not.
   includeJsonAnnotations,
+
+  /// Configure to add import statements for each TypeMember CustomType/EnumType.
+  ///
+  /// Will be overridden to false if [generateChildClasses] is set to true.
+  ///
+  /// If set to true then import statements will be added for each
+  /// CustomType and/or EnumType.
+  ///
+  /// Example:
+  ///
+  /// Given this class containing a TypeMember with data type SomethingElse:
+  ///
+  /// ```
+  /// @squint
+  /// class Something {
+  ///   const Something({
+  ///     required this.y,
+  ///   });
+  ///
+  ///   final SomethingElse y;
+  /// }
+  /// ```
+  ///
+  /// Will add an import statement if [includeCustomTypeImports] is set to true:
+  ///
+  /// ```
+  /// import 'something_else_dataclass.dart';
+  /// ```
+  ///
+  /// If set to false then only the parent class will be generated.
+  includeCustomTypeImports,
+
+  /// Configure to generate child classes or not.
+  ///
+  /// If set to true then a data class will be
+  /// generated for every CustomType child.
+  ///
+  /// Example:
+  ///
+  /// Given this class containing a TypeMember with data type SomethingElse:
+  ///
+  /// ```
+  /// @squint
+  /// class Something {
+  ///   const Something({
+  ///     required this.y,
+  ///   });
+  ///
+  ///   final SomethingElse y;
+  /// }
+  /// ```
+  ///
+  /// Will generate a data class if [generateChildClasses] is set to true:
+  ///
+  /// ```
+  /// @squint
+  /// class SomethingElse {
+  ///   const SomethingElse({
+  ///     ... code omitted for brevity
+  ///   });
+  ///
+  /// }
+  /// ```
+  ///
+  /// If set to false then only the parent class will be generated.
+  generateChildClasses,
+
+
 }
 
 /// Helper to parse Command-line arguments for the generate Task.
@@ -131,6 +199,24 @@ extension ArgumentSplitter on List<String> {
             }
 
             arguments[GenerateArgs.includeJsonAnnotations] = boolOrNot.ok;
+            break;
+          case "generatechildclasses":
+            final boolOrNot = _boolOrFail(index);
+
+            if (!boolOrNot.isOk) {
+              return Result.nok(boolOrNot.nok!);
+            }
+
+            arguments[GenerateArgs.generateChildClasses] = boolOrNot.ok;
+            break;
+          case "includecustomtypeimports":
+            final boolOrNot = _boolOrFail(index);
+
+            if (!boolOrNot.isOk) {
+              return Result.nok(boolOrNot.nok!);
+            }
+
+            arguments[GenerateArgs.includeCustomTypeImports] = boolOrNot.ok;
             break;
           default:
             return _argumentFailureUnknown(value);

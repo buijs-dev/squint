@@ -291,7 +291,7 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
     final sep = Platform.pathSeparator;
     final basePath = "${Directory.systemTemp.absolute.path}$sep";
     final outputPath = "$basePath${sep}output";
-    final expectedFile = File("$outputPath${sep}annoyancerate_dataclass.dart");
+    final expectedFile = File("$outputPath${sep}annoyance_rate_dataclass.dart");
 
     if (expectedFile.existsSync()) {
       expectedFile.deleteSync();
