@@ -20,91 +20,55 @@
 
 import "dart:io";
 
-import 'package:squint_json/squint_json.dart';
+import "package:squint_json/squint_json.dart";
 import "package:squint_json/src/analyzer/analyzer.dart" as analyzer;
-import "package:squint_json/src/ast/ast.dart";
-import "package:squint_json/src/ast/types.dart";
 import "package:test/test.dart";
 
 void main() {
   test("Analyze int", () {
-    given:
-    final file = "int".createResponse;
-
-    expect:
-    file.executeTest(first: const IntType(), second: const NullableIntType());
+    "int"
+        .createResponse
+        .executeTest(first: const IntType(), second: const NullableIntType());
   });
 
   test("Analyze double", () {
-    given:
-    final file = "double".createResponse;
-
-    expect:
-    file.executeTest(
+    "double".createResponse.executeTest(
         first: const DoubleType(), second: const NullableDoubleType());
   });
 
   test("Analyze bool", () {
-    given:
-    final file = "bool".createResponse;
-
-    expect:
-    file.executeTest(
+    "bool".createResponse.executeTest(
         first: const BooleanType(), second: const NullableBooleanType());
   });
 
   test("Analyze String", () {
-    given:
-    final file = "String".createResponse;
-
-    expect:
-    file.executeTest(
+    "String".createResponse.executeTest(
         first: const StringType(), second: const NullableStringType());
   });
 
   test("Analyze Uint8List", () {
-    given:
-    final file = "Uint8List".createResponse;
-
-    expect:
-    file.executeTest(
+    "Uint8List".createResponse.executeTest(
         first: const Uint8ListType(), second: const NullableUint8ListType());
   });
 
   test("Analyze Int32List", () {
-    given:
-    final file = "Int32List".createResponse;
-
-    expect:
-    file.executeTest(
+    "Int32List".createResponse.executeTest(
         first: const Int32ListType(), second: const NullableInt32ListType());
   });
 
   test("Analyze Int64List", () {
-    given:
-    final file = "Int64List".createResponse;
-
-    expect:
-    file.executeTest(
+    "Int64List".createResponse.executeTest(
         first: const Int64ListType(), second: const NullableInt64ListType());
   });
 
   test("Analyze Float32List", () {
-    given:
-    final file = "Float32List".createResponse;
-
-    expect:
-    file.executeTest(
+    "Float32List".createResponse.executeTest(
         first: const Float32ListType(),
         second: const NullableFloat32ListType());
   });
 
   test("Analyze Float64List", () {
-    given:
-    final file = "Float64List".createResponse;
-
-    expect:
-    file.executeTest(
+    "Float64List".createResponse.executeTest(
         first: const Float64ListType(),
         second: const NullableFloat64ListType());
   });
@@ -115,7 +79,7 @@ final basePath =
 
 extension on String {
   String get createResponse {
-    final file = File("$basePath${this}$metadataMarkerPrefix$this.dart")
+    final file = File("$basePath$this$metadataMarkerPrefix$this.dart")
       ..createSync()
       ..writeAsStringSync(
         """
@@ -141,10 +105,10 @@ extension on String {
     required StandardType first,
     required StandardType second,
   }) {
-    when:
+    // when:
     final result = analyzer.analyze(pathToFile: this);
 
-    then:
+    // then:
     final type = result.parent;
     expect(type != null, true, reason: "Should have found 1 type");
     expect(type!.members.length, 2);

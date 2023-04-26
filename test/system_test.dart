@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import "package:squint_json/squint_json.dart";
-import 'package:squint_json/src/converters/converters.dart';
+import "package:squint_json/src/converters/converters.dart";
 import "package:test/test.dart";
 
 /// When changes are made in this test then the quickstart.md should be updated as well.
