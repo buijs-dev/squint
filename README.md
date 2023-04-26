@@ -35,4 +35,4 @@ expect(myArray.data[0][0][0][1], "Ho-Oh");
 - Extensible: Write and reuse custom JSON data converters.
 
 # Documentation
-For latest release see [0.0.5](https://buijs-dev.github.io/squint/#/).
+For latest release see [0.0.6](https://buijs-dev.github.io/squint/#/).

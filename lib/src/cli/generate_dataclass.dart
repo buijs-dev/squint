@@ -87,7 +87,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
 
     /// Get a valid output File.
     final outputFileOrResult = outputFile(
-      filename: "${inputFile.toClassName.snakeCase}_dataclass.dart",
+      filename: "${customTypeOrEnumType.className.snakeCase}_dataclass.dart",
       currentFolder: Directory.current,
     );
 
@@ -143,11 +143,18 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
   /// values retrieved from command-line input.
   SquintGeneratorOptions get _optionsWithOverrides =>
       standardSquintGeneratorOptions.copyWith(
-        includeJsonAnnotations:
-            this[GenerateArgs.includeJsonAnnotations] as bool,
-        alwaysAddJsonValue: this[GenerateArgs.alwaysAddJsonValue] as bool,
-        blankLineBetweenFields:
-            this[GenerateArgs.blankLineBetweenFields] as bool,
+        includeJsonAnnotations: (this[GenerateArgs.includeJsonAnnotations] ??
+            standardSquintGeneratorOptions.includeJsonAnnotations) as bool,
+        alwaysAddJsonValue: (this[GenerateArgs.alwaysAddJsonValue] ??
+            standardSquintGeneratorOptions.alwaysAddJsonValue) as bool,
+        blankLineBetweenFields: (this[GenerateArgs.blankLineBetweenFields] ??
+            standardSquintGeneratorOptions.blankLineBetweenFields) as bool,
+        generateChildClasses: (this[GenerateArgs.generateChildClasses] ??
+            standardSquintGeneratorOptions.generateChildClasses) as bool,
+        includeCustomTypeImports:
+            (this[GenerateArgs.includeCustomTypeImports] ??
+                    standardSquintGeneratorOptions.includeCustomTypeImports)
+                as bool,
       );
 }
 

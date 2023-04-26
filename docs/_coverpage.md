@@ -2,7 +2,7 @@
 
 [//]: # (![logo]&#40;json_logo.png&#41;)
 
-# squint <small>0.0.5</small>
+# squint <small>0.0.6</small>
 
 > A JSON decoding library that actually decodes nested lists.
 

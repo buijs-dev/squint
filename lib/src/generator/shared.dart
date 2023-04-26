@@ -90,7 +90,7 @@ extension JsonNodeEnumGenerator on EnumType {
 
 extension on TypeMember {
   String toJsonGetter({String dataPrefix = ""}) {
-    final type = this.type.className.removePrefixIfPresent("Nullable");
+    final type = this.type.className;
 
     final valueJsonAnnotated = annotations
         .firstBy((element) => element.name == "JsonValue")
@@ -101,6 +101,8 @@ extension on TypeMember {
     final decodeJsonAnnotated =
         annotations.firstBy((element) => element.name == "JsonDecode");
 
+    final q = this.type.nullable ? "OrNull" : "";
+
     if (decodeJsonAnnotated != null) {
       final method = decodeJsonAnnotated.data["using"];
 
@@ -109,18 +111,18 @@ extension on TypeMember {
       String? unwrapper;
 
       if (unwrapperType == "JsonString") {
-        unwrapper = '${dataPrefix}stringNode("$jsonKey")';
+        unwrapper = '${dataPrefix}stringNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonFloatingNumber") {
-        unwrapper = '${dataPrefix}floatNode("$jsonKey")';
+        unwrapper = '${dataPrefix}floatNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonIntegerNumber") {
-        unwrapper = '${dataPrefix}integerNode("$jsonKey")';
+        unwrapper = '${dataPrefix}integerNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonBoolean") {
-        unwrapper = '${dataPrefix}booleanNode("$jsonKey")';
+        unwrapper = '${dataPrefix}booleanNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
         unwrapper =
-            '${dataPrefix}arrayNode<${(this.type as ListType).child.printType}>("$jsonKey")';
+            '${dataPrefix}arrayNode$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       } else if (unwrapperType == "JsonObject") {
-        unwrapper = '${dataPrefix}objectNode("$jsonKey")';
+        unwrapper = '${dataPrefix}objectNode$q("$jsonKey")';
       } else {
         throw SquintException("Unsupported data type: $unwrapperType");
       }
@@ -130,17 +132,17 @@ extension on TypeMember {
 
     switch (type) {
       case "String":
-        return '$name: ${dataPrefix}string("$jsonKey")';
+        return '$name: ${dataPrefix}string$q("$jsonKey")';
       case "double":
-        return '$name: ${dataPrefix}float("$jsonKey")';
+        return '$name: ${dataPrefix}float$q("$jsonKey")';
       case "int":
-        return '$name: ${dataPrefix}integer("$jsonKey")';
+        return '$name: ${dataPrefix}integer$q("$jsonKey")';
       case "bool":
-        return '$name: ${dataPrefix}boolean("$jsonKey")';
+        return '$name: ${dataPrefix}boolean$q("$jsonKey")';
       case "List":
-        return '$name: ${dataPrefix}array<${(this.type as ListType).child.printType}>("$jsonKey")';
+        return '$name: ${dataPrefix}array$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
-        return '$name: ${dataPrefix}object("$jsonKey")';
+        return '$name: ${dataPrefix}object$q("$jsonKey")';
       case "dynamic":
         return '$name: ${dataPrefix}byKey("$jsonKey").data';
       default:
@@ -163,15 +165,9 @@ extension on TypeMember {
       return "$encodeJsonAnnotated($dataPrefix$name)";
     }
 
-    final isNullable =
-      this.type.className.startsWith("Nullable");
+    final q = type.nullable ? "OrNull" : "";
 
-    final type =
-      this.type.className.removePrefixIfPresent("Nullable");
-
-    final q = isNullable ? "OrNull" : "";
-
-    switch (type) {
+    switch (type.className) {
       case "String":
         return 'JsonString$q(key: "$jsonKey", data: $dataPrefix$name)';
       case "double":
@@ -187,7 +183,7 @@ extension on TypeMember {
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:
-        throw SquintException("Unsupported data type: ${this.type.className}");
+        throw SquintException("Unsupported data type: ${type.className}");
     }
   }
 }

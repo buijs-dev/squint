@@ -60,12 +60,12 @@ extension JsonNode2AbstractType on JsonNode {
       return const NullableIntType();
     }
 
-    if(this is JsonArray) {
+    if (this is JsonArray) {
       return _arrayToListType;
     }
 
-    if(this is JsonArrayOrNull) {
-      if(data != null) {
+    if (this is JsonArrayOrNull) {
+      if (data != null) {
         return JsonArray(key: key, data: data)._arrayToListType;
       } else {
         return [].toListType;
@@ -79,7 +79,7 @@ extension JsonNode2AbstractType on JsonNode {
     if (this is JsonObjectOrNull) {
       final objectOrNull = (this as JsonObjectOrNull).asObjectOrNull;
 
-      if(objectOrNull != null) {
+      if (objectOrNull != null) {
         return objectOrNull._objectToMapType;
       }
     }
@@ -88,38 +88,38 @@ extension JsonNode2AbstractType on JsonNode {
   }
 
   AbstractType get _arrayToListType {
-      final arr = this as JsonArray;
-      final data = arr.data as List<dynamic>;
-      if (data.isNotEmpty && data.first is Map) {
-        final type = (data.first as Map).values.first.runtimeType;
-        final allChildrenOfSameType = data.every((child) {
-          return (child as Map).values.every((value) {
-            return value.runtimeType == type;
-          });
+    final arr = this as JsonArray;
+    final data = arr.data as List<dynamic>;
+    if (data.isNotEmpty && data.first is Map) {
+      final type = (data.first as Map).values.first.runtimeType;
+      final allChildrenOfSameType = data.every((child) {
+        return (child as Map).values.every((value) {
+          return value.runtimeType == type;
         });
+      });
 
-        /// If all children are of same type then an strongly typed
-        /// Map can be used and there is no need to create a JsonObject,
-        ///
-        /// Example:
-        ///
-        /// If a List contains a Map<String, dynamic> and all children
-        /// of type dynamic are of the same type, for instance String,
-        /// then this can be returned as Map<String, String>.
-        ///
-        /// If a List contains a Map<String,dynamic> and all all children
-        /// are not of the same type, for instance some are String and
-        /// others double, then this could not be cast to a Map<String,String>
-        /// or Map<String,double>. In this case building a JsonObject and
-        /// converting it to a [CustomType] is better.
-        if (!allChildrenOfSameType) {
-          return ListType(
-            JsonObject.fromMap(data: data.first as Map<String, dynamic>)
-                .toCustomType(className: key.camelCase()),
-          );
-        }
+      /// If all children are of same type then an strongly typed
+      /// Map can be used and there is no need to create a JsonObject,
+      ///
+      /// Example:
+      ///
+      /// If a List contains a Map<String, dynamic> and all children
+      /// of type dynamic are of the same type, for instance String,
+      /// then this can be returned as Map<String, String>.
+      ///
+      /// If a List contains a Map<String,dynamic> and all all children
+      /// are not of the same type, for instance some are String and
+      /// others double, then this could not be cast to a Map<String,String>
+      /// or Map<String,double>. In this case building a JsonObject and
+      /// converting it to a [CustomType] is better.
+      if (!allChildrenOfSameType) {
+        return ListType(
+          JsonObject.fromMap(data: data.first as Map<String, dynamic>)
+              .toCustomType(className: key.camelCase()),
+        );
       }
-      return (arr.data as List<dynamic>).toListType;
+    }
+    return (arr.data as List<dynamic>).toListType;
   }
 
   AbstractType get _objectToMapType {
@@ -143,8 +143,6 @@ extension JsonNode2AbstractType on JsonNode {
     }
     return (this as JsonObject).toCustomType(className: key.camelCase());
   }
-
-
 }
 
 /// Convert a [List] to a [StandardType].
