@@ -1,19 +1,3 @@
-## 0.1.3
-- Bump Flutter SDK range to ">=3.0.0 <4.0.0".
-- Bump dependencies.
-- Bugfix: incorrect import statements in generated serializer code.
-- Bugfix: correctly mark nullable ComplexType and EnumType fields when generating code based on AST metadata.
-- Bugfix: type-member information is potentially lost when generating code resulting in empty data classes.
-
-## 0.1.2
-- Add support for generating enum extensions.
-- Bugfix: Incorrect bracket count when processing Maps nested inside Lists.
-
-## 0.1.1
-- Add support for enumerated objects (Map<enum, dynamic).
-- Add none value to generated enumerations to avoid throwing exceptions.
-- Bugfix: missing imports in generated dataclass when CustomType/EnumType is nested inside a List or Map.
-
 ## 0.1.0
 - Add JsonMissing class to allow nullable JSON elements to be absent.
 
