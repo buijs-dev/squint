@@ -119,12 +119,12 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
 
   /// Get JsonNode by [String] key.
   ///
-  /// Throws [SquintException] if key is not found.
+  /// Return [JsonMissing] is key is not found.
   JsonNode byKey(String key) {
     if (hasKey(key)) {
       return data[key]!;
     }
-    throw SquintException("JSON key not found: '$key'");
+    return JsonMissing(key: key);
   }
 
   /// Returns true if JSON content contains key.
@@ -441,13 +441,23 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       return data as R;
     }
 
-    if (nullable && data is JsonNull) {
-      return null;
+    if (!nullable) {
+      if (data is JsonNull) {
+        throw SquintException(
+          "JSON key ($key) has null value which is not allowed for a non-null Type.",
+        );
+      }
+
+      if (data is JsonMissing) {
+        throw SquintException("JSON key not found: '$key'");
+      }
+
+      throw SquintException(
+        "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
+      );
     }
 
-    throw SquintException(
-      "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
-    );
+    return null;
   }
 
   JsonFormattingOptions? _formattingOptions;
@@ -733,6 +743,22 @@ class JsonNull extends JsonNode<Object?> {
   /// Convert to formatted JSON String.
   @override
   String get stringify => '"$key":null';
+}
+
+/// A JSON element containing a null value and key.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonMissing extends JsonNode<Object?> {
+  /// Construct a new [JsonMissing] instance.
+  const JsonMissing({
+    required String key,
+  }) : super(key: key, data: null);
+
+  /// Convert to formatted JSON String.
+  @override
+  String get stringify => "";
 }
 
 /// A JSON element containing a bool value.

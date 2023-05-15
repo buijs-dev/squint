@@ -1,3 +1,6 @@
+## 0.1.0
+- Add JsonMissing class to allow nullable JSON elements to be absent.
+
 ## 0.0.6
 - Add more squintGeneratorOptions.
 

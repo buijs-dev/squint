@@ -44,11 +44,8 @@ void main() {
     expect(const JsonNull(key: "xyz").stringify, '"xyz":null');
   });
 
-  test("verify an exception is thrown if the request key is not found", () {
-    expect(
-        () => JsonObject(data: {}).byKey("xyz"),
-        throwsA(predicate((e) =>
-            e is SquintException && e.cause == "JSON key not found: 'xyz'")));
+  test("verify JsonMissing is returned if the request key is not found", () {
+    expect(JsonObject(data: {}).byKey("xyz") is JsonMissing, true);
   });
 
   test(

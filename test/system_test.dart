@@ -120,7 +120,7 @@ void main() {
     final object = toJsonObject(json);
 
     expect(
-        () => object.stringOrNull("does-not-exist"),
+        () => object.string("does-not-exist"),
         throwsA(predicate((e) =>
             e is SquintException &&
             e.cause == "JSON key not found: 'does-not-exist'")));

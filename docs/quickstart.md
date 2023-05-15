@@ -16,7 +16,7 @@ This will add a line like this to your package's pubspec.yaml (and run an implic
 
 ```yaml
 dependencies:
-  squint_json: ^0.0.6
+  squint_json: ^0.1.0
 ```
 
 ## Features
@@ -126,15 +126,15 @@ If a value is nullable then it can be accessed safely by appending the correct g
   assert(object.stringOrNull("foo") == null);
 ```
 
-But requesting data by key that does not exist will always result in a SquintException being thrown.
+But requesting non-nullable data by key that does not exist will always result in a SquintException being thrown.
 
 ```dart
   // This will throw a SquintException 
   // because our JSON does not contain this key.
-  object.stringOrNull("does-not-exist") == null;
+  object.string("does-not-exist");
 ```
 
-> Requesting data by key that does not exist will always result in a SquintException being thrown.
+> Requesting non-nullable ata by key that does not exist will result in a SquintException being thrown.
 > If a value is nullable however then it can be accessed safely by appending the correct getter with **orNull**.
 
 Accessing Lists can be done with the array getter. The child type has to be specified as Type Parameter.
