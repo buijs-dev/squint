@@ -84,17 +84,21 @@ extension CustomType2DataClass on CustomType {
       |""");
 
     final unwrapped =
-        unwrapNestedTypes(members.map((e) => e.type).toList()).toSet();
+        _unwrapNestedTypes(members.map((e) => e.type).toList()).toSet();
 
     final enums = unwrapped.whereType<EnumType>().toSet();
 
     final customs = unwrapped.whereType<CustomType>().toSet();
 
     if (options.includeCustomTypeImports && !options.generateChildClasses) {
-      importStatements(Set<AbstractType>.of(unwrapped)
-            ..addAll(enums)
-            ..addAll(customs))
-          .forEach(buffer.write);
+      final types = <String>[];
+      for (final element in enums) {
+        types.add(element.className.snakeCase);
+      }
+      for (final element in customs) {
+        types.add(element.className.snakeCase);
+      }
+      types.map((e) => "import '${e}_dataclass.dart';\n").forEach(buffer.write);
     }
 
     buffer.write("""
@@ -148,6 +152,28 @@ extension CustomType2DataClass on CustomType {
     return buffer.toString().formattedDartCode;
   }
 
+  List<AbstractType> _unwrapNestedTypes(List<AbstractType> types) {
+    final output = types
+        .where((element) => element is! MapType || element is! ListType)
+        .toList();
+
+    final maps = types.whereType<MapType>();
+
+    for (final element in maps) {
+      output
+        ..addAll(_unwrapNestedTypes([element.key]))
+        ..addAll(_unwrapNestedTypes([element.value]));
+    }
+
+    final lists = types.whereType<ListType>();
+
+    for (final element in lists) {
+      output.addAll(_unwrapNestedTypes([element.child]));
+    }
+
+    return output;
+  }
+
   /// Generate data class from [CustomType].
   ///
   /// {@category generator}
@@ -178,29 +204,6 @@ extension CustomType2DataClass on CustomType {
       |
       """
         .format;
-  }
-
-  ///
-  List<AbstractType> unwrapNestedTypes(List<AbstractType> types) {
-    final output = types
-        .where((element) => element is! MapType || element is! ListType)
-        .toList();
-
-    final maps = types.whereType<MapType>();
-
-    for (final element in maps) {
-      output
-        ..addAll(unwrapNestedTypes([element.key]))
-        ..addAll(unwrapNestedTypes([element.value]));
-    }
-
-    final lists = types.whereType<ListType>();
-
-    for (final element in lists) {
-      output.addAll(unwrapNestedTypes([element.child]));
-    }
-
-    return output;
   }
 }
 
@@ -252,9 +255,6 @@ extension on TypeMember {
     JsonString ${type.className.encodingMethodName}(${type.className} object) {
         switch(object) {
           ${(type as EnumType).toJsonNodeSetters(name).join("\n")}
-          
-          default:
-            return const JsonString(key: "$name", data: "");
         }
       }
  
@@ -276,9 +276,6 @@ extension on TypeMember {
     ${type.className} ${type.className.decodingMethodName}(JsonString value) {
       switch(value.data) {
           ${(type as EnumType).toJsonNodeGetters("object.").join("\n")}
-          
-         default:
-          return ${type.className}.${(type as EnumType).noneValue};
       }
     }
 
@@ -290,4 +287,42 @@ extension on String {
   String get decodingMethodName => "decode${camelCase()}";
 
   String get encodingMethodName => "encode${camelCase()}";
+}
+
+extension on AbstractType {
+  AbstractType normalizeType(
+    Set<EnumType> enumTypes,
+    Set<CustomType> customTypes,
+  ) {
+    final customTypeOrNull =
+        customTypes.firstBy((type) => type.className == className);
+    if (customTypeOrNull != null) {
+      return customTypeOrNull;
+    }
+
+    final enumTypeOrNull =
+        enumTypes.firstBy((type) => type.className == className);
+    if (enumTypeOrNull != null) {
+      return enumTypeOrNull;
+    }
+
+    if (this is ListType) {
+      final listType = this as ListType;
+      final childType = listType.child.normalizeType(enumTypes, customTypes);
+      return listType.nullable
+          ? NullableListType(childType)
+          : ListType(childType);
+    }
+
+    if (this is MapType) {
+      final mapType = this as MapType;
+      final keyType = mapType.key.normalizeType(enumTypes, customTypes);
+      final valueType = mapType.value.normalizeType(enumTypes, customTypes);
+      return mapType.nullable
+          ? NullableMapType(key: keyType, value: valueType)
+          : MapType(key: keyType, value: valueType);
+    }
+
+    return this;
+  }
 }
