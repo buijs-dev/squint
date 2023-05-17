@@ -1,3 +1,6 @@
+## 0.1.1
+- Bugfix: missing imports in generated dataclass when CustomType/EnumType is nested inside a List or Map.
+
 ## 0.1.0
 - Add JsonMissing class to allow nullable JSON elements to be absent.
 
