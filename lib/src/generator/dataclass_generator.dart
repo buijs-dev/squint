@@ -83,8 +83,12 @@ extension CustomType2DataClass on CustomType {
       |import 'package:squint_json/squint_json.dart';
       |""");
 
-    final enums = members.map((e) => e.type).whereType<EnumType>().toSet();
-    final customs = members.map((e) => e.type).whereType<CustomType>().toSet();
+    final unwrapped =
+        _unwrapNestedTypes(members.map((e) => e.type).toList()).toSet();
+
+    final enums = unwrapped.whereType<EnumType>().toSet();
+
+    final customs = unwrapped.whereType<CustomType>().toSet();
 
     if (options.includeCustomTypeImports && !options.generateChildClasses) {
       final types = <String>[];
@@ -112,8 +116,6 @@ extension CustomType2DataClass on CustomType {
         buffer.write(et.generateEnumClassBody(options));
       }
     }
-
-    if (options.includeCustomTypeImports && !options.generateChildClasses) {}
 
     final toBeEncoded = members.where((element) {
       return element.type is CustomType || element.type is EnumType;
@@ -148,6 +150,28 @@ extension CustomType2DataClass on CustomType {
     }
 
     return buffer.toString().formattedDartCode;
+  }
+
+  List<AbstractType> _unwrapNestedTypes(List<AbstractType> types) {
+    final output = types
+        .where((element) => element is! MapType || element is! ListType)
+        .toList();
+
+    final maps = types.whereType<MapType>();
+
+    for (final element in maps) {
+      output
+        ..addAll(_unwrapNestedTypes([element.key]))
+        ..addAll(_unwrapNestedTypes([element.value]));
+    }
+
+    final lists = types.whereType<ListType>();
+
+    for (final element in lists) {
+      output.addAll(_unwrapNestedTypes([element.child]));
+    }
+
+    return output;
   }
 
   /// Generate data class from [CustomType].
