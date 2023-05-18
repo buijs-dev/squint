@@ -20,6 +20,7 @@
 
 import "package:analyzer/dart/ast/ast.dart"
     show
+        AstNode,
         ClassDeclaration,
         Declaration,
         EnumDeclaration,
@@ -39,21 +40,30 @@ class JsonVisitor extends SimpleAstVisitor<dynamic> {
   /// List of dart data classes found.
   final collected = <AbstractType>[];
 
+  /// All nodes that are analyzed by this Visitor.
+  final analyzed = <AstNode>[];
+
   @override
   dynamic visitClassDeclaration(ClassDeclaration node) {
-    if (node.hasSquintAnnotation) {
-      return collected..add(node.toCustomType);
-    } else {
-      return null;
+    if (!analyzed.contains(node)) {
+      analyzed.add(node);
+      if (node.hasSquintAnnotation) {
+        return collected..add(node.toCustomType);
+      } else {
+        return null;
+      }
     }
   }
 
   @override
   dynamic visitEnumDeclaration(EnumDeclaration node) {
-    if (node.hasSquintAnnotation) {
-      return collected..add(node.toEnumType);
-    } else {
-      return null;
+    if (!analyzed.contains(node)) {
+      analyzed.add(node);
+      if (node.hasSquintAnnotation) {
+        return collected..add(node.toEnumType);
+      } else {
+        return null;
+      }
     }
   }
 }

@@ -87,6 +87,43 @@ class JsonObjectOrNull extends JsonNode<Map<String, JsonNode>?> {
       data == null ? null : JsonObject(data: data!);
 }
 
+///
+class JsonEnumeratedObject<T> extends JsonObject {
+  ///
+  JsonEnumeratedObject({
+    required super.data,
+    required this.keyToString,
+    required this.keyToEnumValue,
+    String key = "",
+  }) : super(key: key);
+
+  /// Convert enumerated key to String value.
+  final String Function(T) keyToString;
+
+  /// Convert String key to enumerated value.
+  final T Function(String) keyToEnumValue;
+
+  /// Construct a new [JsonObject] where each key is an enumerated value.
+  static JsonObject fromEnumMap<T>(
+          {required Map<T, dynamic> data,
+
+          /// Convert enumerated key to String key.
+          required String Function(T) keyToString,
+
+          /// Convert String key to enumerated value.
+          required T Function(String) keyToEnumValue,
+
+          /// Node key.
+          String key = ""}) =>
+      JsonEnumeratedObject(
+          keyToEnumValue: keyToEnumValue,
+          keyToString: keyToString,
+          key: key,
+          data: data
+              .map((key, value) => MapEntry(keyToString.call(key), value))
+              .map(_buildJsonNodeMap));
+}
+
 /// JSON Object (Map) element.
 ///
 /// {@category ast}
@@ -117,14 +154,29 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
         key: key,
       );
 
+  /// Construct a new [JsonObject] where each key is an enumerated value.
+  static JsonObject fromEnumMap<T>(
+          {required Map<T, dynamic> data,
+
+          /// Convert enumerated key to String key.
+          required String Function(T) keyToString,
+
+          /// Node key.
+          String key = ""}) =>
+      JsonObject(
+          key: key,
+          data: data
+              .map((key, value) => MapEntry(keyToString.call(key), value))
+              .map(_buildJsonNodeMap));
+
   /// Get JsonNode by [String] key.
   ///
-  /// Throws [SquintException] if key is not found.
+  /// Return [JsonMissing] is key is not found.
   JsonNode byKey(String key) {
     if (hasKey(key)) {
       return data[key]!;
     }
-    throw SquintException("JSON key not found: '$key'");
+    return JsonMissing(key: key);
   }
 
   /// Returns true if JSON content contains key.
@@ -429,6 +481,34 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
     return JsonObject(data: object.data, key: object.key);
   }
 
+  /// Get Map<T,R> by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found
+  /// or values are not all of type [R].
+  Map<T, R> enumObject<T, R>({
+    required String key,
+    required T Function(String) keyToEnumValue,
+  }) =>
+      objectNode(key).getDataAsEnumMap(keyToEnumValue: keyToEnumValue);
+
+  /// Get Map<T,R> by [String] key.
+  ///
+  /// Throws [SquintException] if key is not found
+  /// or values are not all of type [R].
+  Map<T, R>? enumObjectOrNull<T, R>({
+    required String key,
+    required T Function(String) keyToEnumValue,
+  }) =>
+      objectNodeOrNull(key)?.getDataAsEnumMap(keyToEnumValue: keyToEnumValue);
+
+  /// Return raw (unwrapped) object data as Map<String, R>
+  /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
+  Map<T, R> getDataAsEnumMap<T, R>({
+    required T Function(String) keyToEnumValue,
+  }) =>
+      data.map(
+          (key, value) => MapEntry(keyToEnumValue.call(key), value.data as R));
+
   /// Return raw (unwrapped) object data as Map<String, R>
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, R> getDataAsMap<R>() =>
@@ -441,13 +521,23 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       return data as R;
     }
 
-    if (nullable && data is JsonNull) {
-      return null;
+    if (!nullable) {
+      if (data is JsonNull) {
+        throw SquintException(
+          "JSON key ($key) has null value which is not allowed for a non-null Type.",
+        );
+      }
+
+      if (data is JsonMissing) {
+        throw SquintException("JSON key not found: '$key'");
+      }
+
+      throw SquintException(
+        "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
+      );
     }
 
-    throw SquintException(
-      "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
-    );
+    return null;
   }
 
   JsonFormattingOptions? _formattingOptions;
@@ -733,6 +823,22 @@ class JsonNull extends JsonNode<Object?> {
   /// Convert to formatted JSON String.
   @override
   String get stringify => '"$key":null';
+}
+
+/// A JSON element containing a null value and key.
+///
+/// {@category ast}
+/// {@category encoder}
+/// {@category decoder}
+class JsonMissing extends JsonNode<Object?> {
+  /// Construct a new [JsonMissing] instance.
+  const JsonMissing({
+    required String key,
+  }) : super(key: key, data: null);
+
+  /// Convert to formatted JSON String.
+  @override
+  String get stringify => "";
 }
 
 /// A JSON element containing a bool value.

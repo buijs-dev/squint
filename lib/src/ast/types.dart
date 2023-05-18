@@ -453,6 +453,10 @@ class ListType extends StandardType {
 
   @override
   bool get nullable => false;
+
+  @override
+  String toString() =>
+      "StandardType(name=List, child=${child.toString()}, nullable=$nullable)";
 }
 
 /// A nullable List [StandardType].
@@ -484,6 +488,10 @@ class MapType extends StandardType {
 
   @override
   bool get nullable => false;
+
+  @override
+  String toString() =>
+      "StandardType(name=Map, key=${key.toString()}, value=${value.toString()}, nullable=$nullable)";
 }
 
 /// A nullable Map [MapType].

@@ -1,3 +1,11 @@
+## 0.1.1
+- Add support for enumerated objects (Map<enum, dynamic).
+- Add none value to generated enumerations to avoid throwing exceptions.
+- Bugfix: missing imports in generated dataclass when CustomType/EnumType is nested inside a List or Map.
+
+## 0.1.0
+- Add JsonMissing class to allow nullable JSON elements to be absent.
+
 ## 0.0.6
 - Add more squintGeneratorOptions.
 

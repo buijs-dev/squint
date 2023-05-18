@@ -792,8 +792,13 @@ class ArrayDecodingKeyGenerator {
 /// {@category decoder}
 List buildListStructure<T>(List<List<int>> positions, {List<T>? valueList}) {
   positions.sort((a, b) => a.length.compareTo(b.length));
+  if (positions.isEmpty) {
+    return [];
+  }
+
   final maxDepth = positions.last.length - 1;
   final maxEntriesForEachDepth = <int>[];
+
   for (var i = 0; i <= maxDepth; i++) {
     final indexes = <int>[];
     for (final position in positions) {

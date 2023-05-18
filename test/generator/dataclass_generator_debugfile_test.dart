@@ -106,7 +106,7 @@ void main() {
       }
   """;
 
-  const expected = r"""
+  const expected = """
 // Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -197,7 +197,9 @@ enum AnnoyanceRate {
   @JsonValue("HIGH")
   high,
   @JsonValue("UNBEARABLE")
-  unbearable
+  unbearable,
+  @JsonValue("")
+  none
 }
 
 JsonObject encodeObjectives(Objectives object) =>
@@ -221,6 +223,9 @@ JsonString encodeAnnoyanceRate(AnnoyanceRate object) {
 
     case AnnoyanceRate.unbearable:
       return const JsonString(key: "annoyanceRate", data: "UNBEARABLE");
+
+    default:
+      return const JsonString(key: "annoyanceRate", data: "");
   }
 }
 
@@ -236,8 +241,7 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
       return AnnoyanceRate.unbearable;
 
     default:
-      throw SquintException(
-          "Unable to map value to AnnoyanceRate enum: ${value.data}");
+      return AnnoyanceRate.none;
   }
 }
 """;
