@@ -16,7 +16,7 @@ This will add a line like this to your package's pubspec.yaml (and run an implic
 
 ```yaml
 dependencies:
-  squint_json: ^0.1.2
+  squint_json: ^0.1.1
 ```
 
 ## Features
@@ -233,7 +233,7 @@ print(customType.generateDataClassFile());
 This will print the following .dart file:
 
 ```dart
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -353,7 +353,7 @@ This will print the following .dart file:
 
 ```dart
 
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
