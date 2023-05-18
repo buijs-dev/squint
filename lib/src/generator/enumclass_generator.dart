@@ -88,7 +88,7 @@ extension EnumType2EnumClass on EnumType {
 
   String _enumWithoutAnnotations(SquintGeneratorOptions options) =>
       _generateEnumerationClass(
-          className: className, members: values..add(_noneValue));
+          className: className, members: values..add("none"));
 
   String _enumWithAnnotations(SquintGeneratorOptions options) {
     final members = <String>[];
@@ -99,12 +99,9 @@ extension EnumType2EnumClass on EnumType {
       members.add("""@JsonValue("${valuesJSON[index]}") ${values[index]}""");
       index += 1;
     }
-    members.add("""@JsonValue("") $_noneValue""");
+    members.add("""@JsonValue("") none""");
     return _generateEnumerationClass(className: className, members: members);
   }
-
-  String get _noneValue =>
-      values.every((e) => e == e.toUpperCase()) ? "NONE" : "none";
 
   String _generateEnumerationClass({
     required String className,
