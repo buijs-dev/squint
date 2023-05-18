@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_dynamic_calls
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,24 +51,14 @@ class AnalysisResult {
     this.childrenEnumTypes = const {},
   });
 
-  /// Main [CustomType] or [EnumType].
-  final AbstractType? parent;
+  /// Main [CustomType].
+  final CustomType? parent;
 
   /// All [CustomType] members.
   final Set<CustomType> childrenCustomTypes;
 
   /// All [EnumType] members.
   final Set<EnumType> childrenEnumTypes;
-
-  /// Get the parent as [CustomType].
-  CustomType get parentAsCustomTypeOrFail => parent! as CustomType;
-
-  /// Get the parent as [EnumType].
-  EnumType get parentAsEnumTypeOrFail => parent! as EnumType;
-
-  @override
-  String toString() =>
-      "AnalysisResult for parent: $parent. CustomType children: $childrenCustomTypes. EnumType children: $childrenEnumTypes";
 }
 
 /// The analyzer can read files and return metadata about (dart) classes.
@@ -114,8 +104,8 @@ AnalysisResult analyze({
   }
 
   final result = file!.path.contains(metadataMarkerPrefix)
-      ? file.parseMetadata()
-      : file.parseDataClass();
+      ? file.parseMetadata
+      : file.parseDataClass;
 
   if (pathToOutputFolder != null) {
     if (!Directory(pathToOutputFolder).existsSync()) {
@@ -131,7 +121,7 @@ AnalysisResult analyze({
 /// {@category analyzer}
 extension FileAnalyzer on File {
   /// Use [JsonVisitor] to collect Metadata from dart class.
-  AnalysisResult parseDataClass() {
+  AnalysisResult get parseDataClass {
     final visitor = JsonVisitor();
     if (!_visitFile(visitor)) {
       return const AnalysisResult(parent: null);
@@ -147,17 +137,11 @@ extension FileAnalyzer on File {
         .forEach((element) => element._visitFile(visitor));
 
     final types = visitor.collected;
-    final parentType = types.removeAt(0);
-    final result = AnalysisResult(
-        parent: parentType,
-        childrenCustomTypes: types.whereType<CustomType>().toSet(),
-        childrenEnumTypes: types.whereType<EnumType>().toSet());
-
-    if (parentType is CustomType) {
-      return result.normalizeParentTypeMembers();
-    } else {
-      return result;
-    }
+    return AnalysisResult(
+      parent: types.removeAt(0) as CustomType,
+      childrenCustomTypes: types.whereType<CustomType>().toSet(),
+      childrenEnumTypes: types.whereType<EnumType>().toSet(),
+    ).normalizeParentTypeMembers;
   }
 
   bool _visitFile(JsonVisitor visitor) {
@@ -177,7 +161,7 @@ extension FileAnalyzer on File {
   /// JSON decode current file and return [CustomType].
   ///
   /// The JSON is expected to contain metadata for a single data class.
-  AnalysisResult parseMetadata() {
+  AnalysisResult get parseMetadata {
     final enumTypes = <EnumType>[];
     final customTypes = <CustomType>[];
     final json = readAsStringSync().jsonDecode;
@@ -194,29 +178,22 @@ extension FileAnalyzer on File {
           final nullable = object["nullable"] as bool;
 
           final memberType = type.toAbstractType(nullable: nullable);
-          switch (memberType) {
-            case EnumType() || CustomType() || NonCanonicalType():
-              final debugFile = parent.resolve(
-                  "$metadataMarkerPrefix${memberType.className.toLowerCase()}.json");
-              if (debugFile.existsSync()) {
-                final result = debugFile.parseMetadata();
-                final parentOrNull = result.parent;
-                if (parentOrNull is CustomType) {
-                  customTypes.add(parentOrNull);
-                }
-                if (parentOrNull is EnumType) {
-                  enumTypes.add(parentOrNull);
-                }
-                customTypes.addAll(result.childrenCustomTypes);
-                enumTypes.addAll(result.childrenEnumTypes);
-              } else {
-                "Found ${memberType.runtimeType} but no source (Does not exist: ${debugFile.path})"
-                    .log();
+
+          if (memberType is CustomType || memberType is EnumType) {
+            final debugFile = parent.resolve(
+                "$metadataMarkerPrefix${memberType.className.toLowerCase()}.json");
+            if (debugFile.existsSync()) {
+              final result = debugFile.parseMetadata;
+              final parentOrNull = result.parent;
+              if (parentOrNull != null) {
+                customTypes.add(parentOrNull);
               }
-            case StandardType():
-              ;
-            case UndeterminedAsDynamic():
-              ;
+              customTypes.addAll(result.childrenCustomTypes);
+              enumTypes.addAll(result.childrenEnumTypes);
+            } else {
+              "Found ${memberType.runtimeType} but no source (Does not exist: ${debugFile.path})"
+                  .log();
+            }
           }
 
           members.add(
@@ -234,7 +211,7 @@ extension FileAnalyzer on File {
           ),
           childrenCustomTypes: customTypes.toSet(),
           childrenEnumTypes: enumTypes.toSet(),
-        ).normalizeParentTypeMembers();
+        ).normalizeParentTypeMembers;
       }
     }
 
@@ -274,7 +251,6 @@ extension FileAnalyzer on File {
       } 
     ]
   }""");
-
     "Example of EnumType metadata JSON file:".log(context: """
     {
         "className": "MyResponse",
@@ -297,8 +273,8 @@ extension on AnalysisResult {
   void saveAsJson(String pathToOutputFolder, {required bool overwrite}) {
     final output = Directory(pathToOutputFolder);
     final customTypes = <CustomType>{}..addAll(childrenCustomTypes);
-    if (parent is CustomType) {
-      customTypes.add(parent! as CustomType);
+    if (parent != null) {
+      customTypes.add(parent!);
     }
     for (final type in customTypes) {
       final file = output
@@ -369,12 +345,12 @@ extension AbstractTypeSerializer on AbstractType {
 }
 
 extension on AnalysisResult {
-  AnalysisResult normalizeParentTypeMembers() {
+  AnalysisResult get normalizeParentTypeMembers {
     if (parent == null) {
       return this;
     }
 
-    final parentMembers = parentAsCustomTypeOrFail.members
+    final parentMembers = parent!.members
         .map((member) => member.copyWith(
             type: member.type
                 .normalizeType(childrenEnumTypes, childrenCustomTypes)))
