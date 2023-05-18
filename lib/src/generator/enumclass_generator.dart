@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ extension EnumType2EnumClass on EnumType {
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
   }) {
     final buffer = StringBuffer()..write("""
-      |// Copyright (c) 2021 - 2025 Buijs Software
+      |// Copyright (c) 2021 - 2022 Buijs Software
       |//
       |// Permission is hereby granted, free of charge, to any person obtaining a copy
       |// of this software and associated documentation files (the "Software"), to deal
@@ -81,18 +81,14 @@ extension EnumType2EnumClass on EnumType {
       index += 1;
     }
 
-    // todo add option to squintGen to configure how to format enum fields
-    // camelcase, pascalcase
-    final copied = copyWith(values: values);
-
     return hasJsonValues
-        ? copied._enumWithAnnotations(options)
-        : copied._enumWithoutAnnotations(options);
+        ? _enumWithAnnotations(options)
+        : _enumWithoutAnnotations(options);
   }
 
   String _enumWithoutAnnotations(SquintGeneratorOptions options) =>
       _generateEnumerationClass(
-          className: className, members: values..add(_noneValue));
+          className: className, members: values..add("none"));
 
   String _enumWithAnnotations(SquintGeneratorOptions options) {
     final members = <String>[];
@@ -103,12 +99,9 @@ extension EnumType2EnumClass on EnumType {
       members.add("""@JsonValue("${valuesJSON[index]}") ${values[index]}""");
       index += 1;
     }
-    members.add("""@JsonValue("") $_noneValue""");
+    members.add("""@JsonValue("") none""");
     return _generateEnumerationClass(className: className, members: members);
   }
-
-  String get _noneValue =>
-      values.every((e) => e == e.toUpperCase()) ? "NONE" : "none";
 
   String _generateEnumerationClass({
     required String className,

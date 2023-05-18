@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2022 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ extension JsonNodeEnumGenerator on EnumType {
 
 extension on TypeMember {
   String toJsonGetter({String dataPrefix = ""}) {
-    final className = type.className;
+    final type = this.type.className;
 
     final valueJsonAnnotated = annotations
         .firstBy((element) => element.name == "JsonValue")
@@ -96,7 +96,7 @@ extension on TypeMember {
     final decodeJsonAnnotated =
         annotations.firstBy((element) => element.name == "JsonDecode");
 
-    final q = type.nullable ? "OrNull" : "";
+    final q = this.type.nullable ? "OrNull" : "";
 
     if (decodeJsonAnnotated != null) {
       final method = decodeJsonAnnotated.data["using"];
@@ -114,17 +114,8 @@ extension on TypeMember {
       } else if (unwrapperType == "JsonBoolean") {
         unwrapper = '${dataPrefix}booleanNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
-        final childType = (type as ListType).child;
-        unwrapper = "${dataPrefix}arrayNode$q<${childType.printType}>";
-        if (childType is CustomType) {
-          unwrapper +=
-              '("$jsonKey", decoder: (dynamic value) => JsonObject.fromMap(data: value as Map<String, dynamic>).to${childType.className})';
-        } else if (childType is EnumType) {
-          unwrapper +=
-              '("$jsonKey", decoder: (dynamic value) => value.to${childType.className})';
-        } else {
-          unwrapper += '("$jsonKey")';
-        }
+        unwrapper =
+            '${dataPrefix}arrayNode$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       } else if (unwrapperType == "JsonObject") {
         unwrapper = '${dataPrefix}objectNode$q("$jsonKey")';
       } else {
@@ -134,7 +125,7 @@ extension on TypeMember {
       return "$name: $method($unwrapper)";
     }
 
-    switch (className) {
+    switch (type) {
       case "String":
         return '$name: ${dataPrefix}string$q("$jsonKey")';
       case "double":
@@ -144,41 +135,20 @@ extension on TypeMember {
       case "bool":
         return '$name: ${dataPrefix}boolean$q("$jsonKey")';
       case "List":
-        final childType = (type as ListType).child;
-        final decoderOrBlank = childType.printDecoderMethod;
-        if (childType is CustomType) {
-          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey", decoder: $decoderOrBlank)';
-        } else if (childType is EnumType) {
-          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey", decoder: $decoderOrBlank)';
-        } else {
-          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey")';
-        }
+        return '$name: ${dataPrefix}array$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
         final mapType = type as MapType;
-        final mapKeyType = mapType.validKeyTypeOrThrow;
+        final mapKeyType = mapType.key;
         final mapKeyTypeString = mapKeyType.className;
-        final mapValueType = mapType.value;
-        final mapValueDecoder = mapValueType.printDecoderMethod;
-        final mapValueDecoderLine =
-            mapValueDecoder == "" ? "" : ", toTypedValue: $mapValueDecoder";
-        if (mapKeyType is StringType) {
-          return '$name: ${dataPrefix}object$q("$jsonKey" $mapValueDecoderLine)';
-        } else if (mapKeyType is EnumType) {
-          return '$name: ${dataPrefix}typedObject<$mapKeyTypeString,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String entry) => $mapKeyTypeString.values.firstWhere((value) => value == entry, orElse: () => $mapKeyTypeString.${mapKeyType.noneValue}) $mapValueDecoderLine)';
-        } else if (mapKeyType is IntType) {
-          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => int.parse(value) $mapValueDecoderLine)';
-        } else if (mapKeyType is DoubleType) {
-          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => double.parse(value) $mapValueDecoderLine)';
-        } else if (mapKeyType is BooleanType) {
-          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => value.toUpperCase() == "TRUE" $mapValueDecoderLine)';
+        if (mapKeyType is EnumType) {
+          return '$name: ${dataPrefix}enumObject<$mapKeyTypeString,${mapType.value.className}>$q(key: "$jsonKey", keyToEnumValue: (String entry) => $mapKeyTypeString.values.firstWhere((value) => value == entry, orElse: () => $mapKeyTypeString.none))';
         } else {
-          throw SquintException(
-              "Map has unsupported key Type: ${mapKeyType.className}");
+          return '$name: ${dataPrefix}object$q("$jsonKey")';
         }
       case "dynamic":
         return '$name: ${dataPrefix}byKey("$jsonKey").data';
       default:
-        throw SquintException("Unsupported data type: $className");
+        throw SquintException("Unsupported data type: $type");
     }
   }
 
@@ -212,173 +182,17 @@ extension on TypeMember {
         return 'JsonArray$q<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
         final mapType = type as MapType;
-        final mapKeyType = mapType.validKeyTypeOrThrow;
+        final mapKeyType = mapType.key;
         final mapKeyTypeString = mapKeyType.className;
-        if (mapKeyType is StringType) {
-          return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
-        } else if (mapKeyType is EnumType) {
-          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: ($mapKeyTypeString entry) => entry.name, key: "$jsonKey", data: $dataPrefix$name)';
-        } else if (mapKeyType is IntType) {
-          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (int value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
-        } else if (mapKeyType is DoubleType) {
-          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (double value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
-        } else if (mapKeyType is BooleanType) {
-          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (bool value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
+        if (mapKeyType is EnumType) {
+          return 'JsonObject$q.fromEnumMap<$mapKeyTypeString>(keyToString: ($mapKeyTypeString entry) => entry.name, key: "$jsonKey", data: $dataPrefix$name)';
         } else {
-          throw SquintException(
-              "Map has unsupported key Type: ${mapKeyType.className}");
+          return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
         }
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:
         throw SquintException("Unsupported data type: ${type.className}");
-    }
-  }
-}
-
-/// Print import statements.
-extension ImportsBuilder on CustomType {
-  /// Return import statement for all non-standard types.
-  Set<String> importStatements(Set<AbstractType> types) {
-    types
-      ..removeWhere((type) => type is StandardType)
-      ..removeWhere((type) => type.className == className);
-    return types
-        .map((e) => e.className.snakeCase)
-        .map((e) =>
-            "import '${e}_dataclass.dart';\nimport '${e}_extensions.dart';\n")
-        .toSet();
-  }
-}
-
-/// Utility to find all nested data types (if any).
-extension NestedTypeFinder on AbstractType {
-  /// Find nested [AbstractType].
-  List<AbstractType> unwrapNestedTypes() {
-    switch (this) {
-      case final StandardType standardType:
-        switch (standardType) {
-          case final ListType listType:
-            final childType = listType.child;
-            final nestedTypes = childType.unwrapNestedTypes();
-            return [listType, childType, ...nestedTypes];
-          case final MapType mapType:
-            final keyType = mapType.key;
-            final valueType = mapType.value;
-            final nestedKeyTypes = keyType.unwrapNestedTypes();
-            final nestedValueTypes = valueType.unwrapNestedTypes();
-            return [
-              mapType,
-              keyType,
-              valueType,
-              ...nestedKeyTypes,
-              ...nestedValueTypes
-            ];
-          case _:
-            return [standardType];
-        }
-      case final EnumType enumType:
-        return [enumType];
-      case final UndeterminedAsDynamic undeterminedAsDynamic:
-        return [undeterminedAsDynamic];
-      case final CustomType customType:
-        final nestedTypes = customType.members
-            .map((member) => member.type.unwrapNestedTypes())
-            .expand((type) => type)
-            .toList();
-        return [customType, ...nestedTypes];
-      case NonCanonicalType():
-        return [const UndeterminedAsDynamic()];
-    }
-  }
-}
-
-/// Return [String] enum value for empty JSON String.
-extension NoneValueBuilder on EnumType {
-  /// Return "NONE" if all enum values are uppercase or "none" if not.
-  String get noneValue =>
-      values.every((e) => e == e.toUpperCase()) ? "NONE" : "none";
-}
-
-extension on MapType {
-  AbstractType get validKeyTypeOrThrow {
-    if (key.nullable) {
-      throw SquintException("Nullable keys are not allowed for Type Map.");
-    }
-
-    if (_supportedMapKeyTypes.contains(key.runtimeType)) {
-      return key;
-    }
-
-    throw SquintException("Map has unsupported key Type: ${key.className}");
-  }
-}
-
-final _supportedMapKeyTypes = [
-  StringType,
-  IntType,
-  DoubleType,
-  BooleanType,
-  EnumType
-];
-
-/// Utility to normalize user defined Types.
-extension AbstractTypeNormalizer on AbstractType {
-  /// Normalize [AbstractType] by replacing any (nested Type)
-  /// with the instance scanned by the analyzer.
-  AbstractType normalizeType(
-    Set<EnumType> enumTypes,
-    Set<CustomType> customTypes,
-  ) {
-    final customTypeOrNull =
-        customTypes.firstBy((type) => type.className == className);
-    if (customTypeOrNull != null) {
-      if (customTypeOrNull.members.isEmpty) {
-        final thisCustomType = this as CustomType;
-        return customTypeOrNull.copyWith(
-            nullable: nullable, members: thisCustomType.members);
-      } else {
-        return customTypeOrNull.copyWith(nullable: nullable);
-      }
-    }
-
-    final enumTypeOrNull =
-        enumTypes.firstBy((type) => type.className == className);
-    if (enumTypeOrNull != null) {
-      return enumTypeOrNull.copyWith(nullable: nullable);
-    }
-
-    if (this is ListType) {
-      final listType = this as ListType;
-      final childType = listType.child.normalizeType(enumTypes, customTypes);
-      return listType.nullable
-          ? NullableListType(childType)
-          : ListType(childType);
-    }
-
-    if (this is MapType) {
-      final mapType = this as MapType;
-      final keyType = mapType.key.normalizeType(enumTypes, customTypes);
-      final valueType = mapType.value.normalizeType(enumTypes, customTypes);
-      return mapType.nullable
-          ? NullableMapType(key: keyType, value: valueType)
-          : MapType(key: keyType, value: valueType);
-    }
-
-    return this;
-  }
-}
-
-/// Output decoding method line.
-extension DecoderMethod on AbstractType {
-  /// Output decoding method line.
-  String get printDecoderMethod {
-    if (this is CustomType) {
-      return "(dynamic value) => JsonObject.fromMap(data: value as Map<String, dynamic>).to$className";
-    } else if (this is EnumType) {
-      return "(dynamic value) => value.to$className";
-    } else {
-      return "";
     }
   }
 }
