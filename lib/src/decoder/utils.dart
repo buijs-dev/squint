@@ -128,7 +128,7 @@ AbstractType? _mapType({
     throw SquintException("Unable to determine Map key type: '$strType'");
   }
 
-  // If key is not null then neither can value null.
+  // If key is not null then neither can value be null.
   // Regex always returns either key + value or neither.
   final value = mapType.group(4)!.toAbstractType();
 

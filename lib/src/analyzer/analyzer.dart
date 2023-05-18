@@ -27,6 +27,7 @@ import "package:analyzer/dart/analysis/utilities.dart";
 import "../ast/ast.dart";
 import "../common/common.dart";
 import "../decoder/decoder.dart";
+import "../generator/shared.dart";
 import "visitor.dart";
 
 /// Marker prefix used for metadata debug files.
@@ -38,6 +39,8 @@ import "visitor.dart";
 ///
 /// {@category analyzer}
 const metadataMarkerPrefix = "sqdb_";
+
+final _importRegex = RegExp(r"""import\s+?("|')(.+?)("|')\s*;""");
 
 /// Result returned after analysing a File [analyze].
 class AnalysisResult {
@@ -120,16 +123,18 @@ extension FileAnalyzer on File {
   /// Use [JsonVisitor] to collect Metadata from dart class.
   AnalysisResult get parseDataClass {
     final visitor = JsonVisitor();
-    try {
-      parseFile(
-        path: absolute.path,
-        featureSet: FeatureSet.latestLanguageVersion(),
-      ).unit.declarations.accept(visitor);
-      // ignore: avoid_catching_errors
-    } catch (error) {
-      error.toString().log();
+    if (!_visitFile(visitor)) {
       return const AnalysisResult(parent: null);
     }
+
+    _importRegex
+        .allMatches(readAsStringSync())
+        .map((e) => e.group(2))
+        .map((directive) =>
+            File("${parent.absolute.path}${Platform.pathSeparator}$directive"))
+        .where((file) => file.existsSync())
+        .toList()
+        .forEach((element) => element._visitFile(visitor));
 
     final types = visitor.collected;
     return AnalysisResult(
@@ -137,6 +142,20 @@ extension FileAnalyzer on File {
       childrenCustomTypes: types.whereType<CustomType>().toSet(),
       childrenEnumTypes: types.whereType<EnumType>().toSet(),
     ).normalizeParentTypeMembers;
+  }
+
+  bool _visitFile(JsonVisitor visitor) {
+    try {
+      parseFile(
+        path: absolute.path,
+        featureSet: FeatureSet.latestLanguageVersion(),
+      ).unit.declarations.accept(visitor);
+      return true;
+      // ignore: avoid_catching_errors
+    } catch (error) {
+      error.toString().log();
+      return false;
+    }
   }
 
   /// JSON decode current file and return [CustomType].
@@ -331,23 +350,11 @@ extension on AnalysisResult {
       return this;
     }
 
-    final parentMembers = parent!.members.map((member) {
-      final className = member.type.className;
-
-      final enumTypeOrNull =
-          childrenEnumTypes.firstBy((t) => t.className == className);
-      if (enumTypeOrNull != null) {
-        return member.copyWith(type: enumTypeOrNull);
-      }
-
-      final customTypeOrNull =
-          childrenCustomTypes.firstBy((t) => t.className == className);
-      if (customTypeOrNull != null) {
-        return member.copyWith(type: customTypeOrNull);
-      }
-
-      return member;
-    }).toList();
+    final parentMembers = parent!.members
+        .map((member) => member.copyWith(
+            type: member.type
+                .normalizeType(childrenEnumTypes, childrenCustomTypes)))
+        .toList();
 
     return AnalysisResult(
       parent: CustomType(
