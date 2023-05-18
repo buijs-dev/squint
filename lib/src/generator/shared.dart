@@ -79,11 +79,6 @@ extension JsonNodeEnumGenerator on EnumType {
       index += 1;
     }
 
-    output.add("""
-        default:
-          throw SquintException("Unable to map value to $className enum: \${value.data}");
-        """);
-
     return output;
   }
 }
@@ -142,7 +137,14 @@ extension on TypeMember {
       case "List":
         return '$name: ${dataPrefix}array$q<${(this.type as ListType).child.printType}>("$jsonKey")';
       case "Map":
-        return '$name: ${dataPrefix}object$q("$jsonKey")';
+        final mapType = type as MapType;
+        final mapKeyType = mapType.key;
+        final mapKeyTypeString = mapKeyType.className;
+        if (mapKeyType is EnumType) {
+          return '$name: ${dataPrefix}enumObject<$mapKeyTypeString,${mapType.value.className}>$q(key: "$jsonKey", keyToEnumValue: (String entry) => $mapKeyTypeString.values.firstWhere((value) => value == entry, orElse: () => $mapKeyTypeString.none))';
+        } else {
+          return '$name: ${dataPrefix}object$q("$jsonKey")';
+        }
       case "dynamic":
         return '$name: ${dataPrefix}byKey("$jsonKey").data';
       default:
@@ -179,7 +181,14 @@ extension on TypeMember {
       case "List":
         return 'JsonArray$q<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
-        return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
+        final mapType = type as MapType;
+        final mapKeyType = mapType.key;
+        final mapKeyTypeString = mapKeyType.className;
+        if (mapKeyType is EnumType) {
+          return 'JsonObject$q.fromEnumMap<$mapKeyTypeString>(keyToString: ($mapKeyTypeString entry) => entry.name, key: "$jsonKey", data: $dataPrefix$name)';
+        } else {
+          return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
+        }
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
       default:

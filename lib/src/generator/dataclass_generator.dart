@@ -98,6 +98,9 @@ extension CustomType2DataClass on CustomType {
       for (final element in customs) {
         types.add(element.className.snakeCase);
       }
+
+      // Don't want to import itself.
+      types.removeWhere((type) => type == className.snakeCase);
       types.map((e) => "import '${e}_dataclass.dart';\n").forEach(buffer.write);
     }
 
@@ -255,6 +258,9 @@ extension on TypeMember {
     JsonString ${type.className.encodingMethodName}(${type.className} object) {
         switch(object) {
           ${(type as EnumType).toJsonNodeSetters(name).join("\n")}
+          
+          default:
+            return const JsonString(key: "$name", data: "");
         }
       }
  
@@ -276,6 +282,9 @@ extension on TypeMember {
     ${type.className} ${type.className.decodingMethodName}(JsonString value) {
       switch(value.data) {
           ${(type as EnumType).toJsonNodeGetters("object.").join("\n")}
+          
+         default:
+          return ${type.className}.none;
       }
     }
 
