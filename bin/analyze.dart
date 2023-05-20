@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ import "package:squint_json/src/common/logger.dart";
 Future<void> main(List<String> args) async {
   """
   ════════════════════════════════════════════
-     SQUINT (v0.1.1)                               
+     SQUINT (v0.1.2)                               
   ════════════════════════════════════════════
   """
       .log();

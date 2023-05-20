@@ -55,7 +55,7 @@ flutter pub run squint_json:generate --type dataclass --input foo/bar/example.js
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -506,7 +506,7 @@ flutter pub run squint_json:generate --type serializer --input foo/bar/testing_e
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -602,7 +602,7 @@ flutter pub run squint_json:generate --type serializer --input foo/bar/testing_e
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

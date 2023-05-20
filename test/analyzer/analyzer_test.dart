@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -109,7 +109,7 @@ extension on analyzer.AnalysisResult {
   void _expect() {
     expect(parent != null, true, reason: "Should have found 1 type");
 
-    final customType = parent!;
+    final customType = parentAsCustomTypeOrFail;
     expect(customType.members.length, 8);
 
     // Map<String, double>

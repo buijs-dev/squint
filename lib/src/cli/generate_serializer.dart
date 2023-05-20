@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,8 +60,11 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
 
     /// Get all CustomTypes (including types of TypeMembers)
     /// which require code generation.
-    final customTypes = analysisResult.childrenCustomTypes
-      ..add(analysisResult.parent!);
+    final customTypes = analysisResult.childrenCustomTypes;
+    final parentType = analysisResult.parent!;
+    if (parentType is CustomType) {
+      customTypes.add(parentType);
+    }
 
     /// Valid all types and convert to [_CustomTypeData].
     final customTypesData = _toCustomTypeDataList(customTypes);

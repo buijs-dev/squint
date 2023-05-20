@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -109,8 +109,7 @@ extension on String {
     final result = analyzer.analyze(pathToFile: this);
 
     // then:
-    final type = result.parent;
-    expect(type != null, true, reason: "Should have found 1 type");
+    final type = result.parentAsCustomTypeOrFail;
     expect(type!.members.length, 2);
     expect(type.members[0].name, "a1");
     expect(type.members[0].type.toString() == first.toString(), true,

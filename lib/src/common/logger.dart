@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_print, avoid_annotating_with_dynamic
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

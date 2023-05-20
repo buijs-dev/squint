@@ -1,3 +1,6 @@
+## 0.1.2
+- Add support for generating enum extensions.
+
 ## 0.1.1
 - Add support for enumerated objects (Map<enum, dynamic).
 - Add none value to generated enumerations to avoid throwing exceptions.
