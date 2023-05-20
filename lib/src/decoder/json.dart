@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ extension JsonDecoder on String {
   JsonObject get jsonDecode {
     var chars = substring(
       indexOf("{") + 1,
-      lastIndexOf("}") + 1,
+      lastIndexOf("}"),
     ).split("").normalizeSpaces;
 
     final data = <String, JsonNode>{};
@@ -136,6 +136,7 @@ class _ProcessingValue extends _JsonProcessingStep {
           return;
         case "{":
           processing = false;
+
           final counter = BracketCounter(
             characters: chars,
             startIndex: index,
@@ -280,11 +281,9 @@ class BracketCounter {
   /// List of all characters between opening and closing bracket.
   ///
   /// Example:
-  /// ```dart
   /// [[1,2,3,4],[4,6,8],[1,0,1,1]], "anotherKey": []
   ///
   /// ContentBetweenBrackets == [[1,2,3,4],[4,6,8],[1,0,1,1]].
-  /// ```
   List<String> get contentBetweenBrackets {
     _totalDepth = 1;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -328,9 +328,7 @@ extension JsonArrayDecoder on String {
   /// Example:
   ///
   /// Given a JSON Array:
-  /// ```dart
   /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
-  /// ```
   ///
   /// Would result in the following Map:
   /// ".0.0.0.0" : "hello"
@@ -410,9 +408,7 @@ extension ListDecoder on List {
   /// Example:
   ///
   /// Given a List:
-  /// ```dart
   /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
-  /// ```
   ///
   /// Would result in the following Map:
   /// ".0.0.0.0" : "hello"
@@ -450,8 +446,7 @@ class ListOpeningBracketToken extends _Token {
           depth: currentDepth + 1,
           size: currentSize,
           value: currentValue,
-          key: keygen.nextKey(
-              output.keys.toList(), _ListTokenType.listOpeningBracket),
+          key: keygen.nextKey(output.keys.toList(), ListOpeningBracketToken),
         );
 }
 
@@ -474,8 +469,7 @@ class ListClosingBracketToken extends _Token {
             currentKey: keygen.currentKey,
             output: output,
           ),
-          key: keygen.nextKey(
-              output.keys.toList(), _ListTokenType.listClosingBracket),
+          key: keygen.nextKey(output.keys.toList(), ListClosingBracketToken),
         );
 }
 
@@ -524,8 +518,7 @@ class ListValueSeparatorToken extends _Token {
             currentKey: keygen.currentKey,
             output: output,
           ),
-          key: keygen.nextKey(
-              output.keys.toList(), _ListTokenType.listValueSeparator),
+          key: keygen.nextKey(output.keys.toList(), ListValueSeparatorToken),
         );
 
   static Map<int, int> _size(Map<int, int> currentSize, int depth) {
@@ -675,12 +668,6 @@ int _setObjectValueAndReturnRemainder({
   }
 }
 
-enum _ListTokenType {
-  listOpeningBracket,
-  listClosingBracket,
-  listValueSeparator,
-}
-
 abstract class _Token {
   _Token({
     required this.size,
@@ -772,15 +759,15 @@ class ArrayDecodingKeyGenerator {
   String currentKey;
 
   /// Determine the next key value depending on the last encountered token.
-  String nextKey(List<String> keys, _ListTokenType token) {
+  String nextKey(List<String> keys, Type token) {
     switch (token) {
-      case _ListTokenType.listOpeningBracket:
+      case ListOpeningBracketToken:
         currentKey = "$currentKey.0";
         break;
-      case _ListTokenType.listClosingBracket:
+      case ListClosingBracketToken:
         currentKey = currentKey.substring(0, currentKey.lastIndexOf("."));
         break;
-      case _ListTokenType.listValueSeparator:
+      case ListValueSeparatorToken:
         incrementWidth;
     }
 
@@ -829,13 +816,13 @@ List buildListStructure<T>(List<List<int>> positions, {List<T>? valueList}) {
   );
 }
 
-/// Get a List&lt;T&gt; with 0 or more parent lists.
+/// Get a List<T> with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List&lt;T&gt;
-/// [depth] 2 = List&lt;List&lt;List&lt;T&gt;&gt;&gt;.
+/// [depth] 0 = List<T>
+/// [depth] 2 = List<List<List<T>>>.
 List getNestedList<T>({
   required int depth,
   required List<T> valueList,
@@ -850,13 +837,13 @@ List getNestedList<T>({
 /// Add another List arround the given List and keep the it strongly typed.
 List<List<T>> _addParent<T>(List<T> list) => [list];
 
-/// Get a List&lt;String&gt; with 0 or more parent lists.
+/// Get a List<String> with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List&lt;String&gt;
-/// [depth] 2 = List&lt;List&lt;List&lt;String&gt;&gt;&gt;.
+/// [depth] 0 = List<String>
+/// [depth] 2 = List<List<List<String>>>.
 List getNestedStringList(int depth) =>
     getNestedList<String>(depth: depth, valueList: <String>[]);
 
@@ -864,13 +851,13 @@ List getNestedStringList(int depth) =>
 List getNestedNullableStringList(int depth) =>
     getNestedList<String?>(depth: depth, valueList: <String?>[]);
 
-/// Get a List&lt;int&gt; with 0 or more parent lists.
+/// Get a List<int> with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List&lt;int&gt;
-/// [depth] 2 = List&lt;List&lt;List&lt;int&gt;&gt;&gt;.
+/// [depth] 0 = List<int>
+/// [depth] 2 = List<List<List<int>>>.
 List getNestedIntList(int depth) =>
     getNestedList<int>(depth: depth, valueList: <int>[]);
 
@@ -878,13 +865,13 @@ List getNestedIntList(int depth) =>
 List getNestedNullableIntList(int depth) =>
     getNestedList<int?>(depth: depth, valueList: <int?>[]);
 
-/// Get a List&lt;double&gt; with 0 or more parent lists.
+/// Get a List<double> with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List&lt;double&gt;
-/// [depth] 2 = List&lt;List&lt;List&lt;double&gt;&gt;&gt;.
+/// [depth] 0 = List<double>
+/// [depth] 2 = List<List<List<double>>>.
 List getNestedDoubleList(int depth) =>
     getNestedList<double>(depth: depth, valueList: <double>[]);
 
@@ -892,13 +879,13 @@ List getNestedDoubleList(int depth) =>
 List getNestedNullableDoubleList(int depth) =>
     getNestedList<double?>(depth: depth, valueList: <double?>[]);
 
-/// Get a List&lt;bool&gt; with 0 or more parent lists.
+/// Get a List<bool> with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List&lt;bool&gt;
-/// [depth] 2 = List&lt;List&lt;List&lt;bool&gt;&gt;&gt;.
+/// [depth] 0 = List<bool>
+/// [depth] 2 = List<List<List<bool>>>.
 List getNestedBoolList(int depth) =>
     getNestedList<bool>(depth: depth, valueList: <bool>[]);
 

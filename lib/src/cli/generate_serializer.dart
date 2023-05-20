@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,12 @@
 // SOFTWARE.
 
 import "dart:io";
-
 import "package:path/path.dart" as path;
-
 import "../analyzer/analyzer.dart" as analyzer;
 import "../ast/ast.dart";
 import "../common/common.dart";
 import "../generator/generator.dart";
 import "generate_arguments.dart";
-import "generate_dataclass.dart";
 import "input.dart";
 import "output.dart";
 
@@ -44,9 +41,9 @@ Result _taskFailureClassNotAnalyzed(File file) =>
 /// Generate a serializer extensions.
 extension GenerateSerializers on Map<GenerateArgs, dynamic> {
   /// Generate a dataclass.
-  Result generateSerializers() {
+  Result get serializers {
     /// Get a valid input File.
-    final inputFileOrResult = _inputFileOrResult();
+    final inputFileOrResult = _inputFileOrResult;
 
     if (!inputFileOrResult.isOk) {
       return inputFileOrResult.nok!;
@@ -55,32 +52,42 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
     final inputFile = inputFileOrResult.ok!;
 
     /// Get the CustomType by analyzing the input File.
-    final analysisResult = inputFile.parseDataClass();
+    final analysisResult = inputFile.parseDataClass;
 
     if (analysisResult.parent == null) {
       return _taskFailureClassNotAnalyzed(inputFile);
     }
 
-    /// Validate all types and convert to [_TypeData].
-    final typeData = _toTypeData(analysisResult.parent!);
-
-    /// Return Result if Type is invalid.
-    if (typeData is _InvalidType) {
-      return Result.nok(typeData.logOutput);
+    /// Get all CustomTypes (including types of TypeMembers)
+    /// which require code generation.
+    final customTypes = analysisResult.childrenCustomTypes;
+    final parentType = analysisResult.parent!;
+    if (parentType is CustomType) {
+      customTypes.add(parentType);
     }
 
-    /// Generate extensions File.
-    if (typeData is _ValidType) {
-      final typeFile = typeData.file;
-      final data = typeData.type;
+    /// Valid all types and convert to [_CustomTypeData].
+    final customTypesData = _toCustomTypeDataList(customTypes);
+
+    /// Get all invalid types and return Result if any present.
+    final invalidCustomTypes = customTypesData.invalid;
+
+    if (invalidCustomTypes.isNotEmpty) {
+      return Result.nok(invalidCustomTypes);
+    }
+
+    /// Generate an extension File for each [_ValidCustomType].
+    for (final type in customTypesData) {
+      final customType = type as _ValidCustomType;
+      final customTypeFile = customType.file;
+      final data = type.type;
       final inputPath = inputFile.uri.path;
-      final outputPath = typeFile.uri.path;
-      final options = squintGeneratorOptionsWithOverrides;
+      final outputPath = customTypeFile.uri.path;
       final import = path
           .relative(inputPath, from: outputPath)
           .removePrefixIfPresent("../");
-      final content = data.generateJsonDecodingFile(import, options);
-      typeFile.writeAsStringSync(content);
+      final content = data.generateJsonDecodingFile(relativeImport: import);
+      customTypeFile.writeAsStringSync(content);
     }
 
     return Result.ok(analysisResult);
@@ -91,8 +98,8 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
   /// - has .dart extension
   ///
   /// Or Result.nok with log output.
-  Either<File, Result> _inputFileOrResult() {
-    final inputFileOrLog = inputFile();
+  Either<File, Result> get _inputFileOrResult {
+    final inputFileOrLog = inputFile;
 
     if (!inputFileOrLog.isOk) {
       return Either.nok(Result.nok(inputFileOrLog.nok));
@@ -109,40 +116,45 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
     return Either.ok(file);
   }
 
-  _TypeData _toTypeData(AbstractType type) {
-    if (type is StandardType) {
-      return _InvalidType([
-        "Can not generate extensions for a standard type: ${type.className}"
-      ]);
-    }
+  List<_CustomTypeData> _toCustomTypeDataList(
+    Set<CustomType> customTypes,
+  ) =>
+      customTypes.map((customType) {
+        final filename = "${customType.className.snakeCase}_extensions.dart";
+        final maybeOutputFile = outputFile(
+          filename: filename,
+          currentFolder: Directory.current,
+        );
 
-    final filename = "${type.className.snakeCase}_extensions.dart";
-    final maybeOutputFile = outputFile(
-      filename: filename,
-      currentFolder: Directory.current,
-    );
+        if (!maybeOutputFile.isOk) {
+          final log = maybeOutputFile.nok ?? ["Oops something went wrong..."];
+          return _InvalidCustomType(log);
+        }
 
-    if (!maybeOutputFile.isOk) {
-      final log = maybeOutputFile.nok ?? ["Oops something went wrong..."];
-      return _InvalidType(log);
-    }
-
-    return _ValidType(file: maybeOutputFile.ok!, type: type);
-  }
+        return _ValidCustomType(file: maybeOutputFile.ok!, type: customType);
+      }).toList();
 }
 
-class _InvalidType extends _TypeData {
-  /// Construct a new instance of [_InvalidType].
-  const _InvalidType(this.logOutput);
+/// Get List of all [_InvalidCustomType].
+extension on List<_CustomTypeData> {
+  List<String> get invalid => whereType<_InvalidCustomType>()
+      .map((e) => e.logOutput)
+      .expand((e) => e)
+      .toList();
+}
+
+class _InvalidCustomType extends _CustomTypeData {
+  /// Construct a new instance of [_InvalidCustomType].
+  const _InvalidCustomType(this.logOutput);
 
   /// List of messages to be outputted to the command-line.
   final List<String> logOutput;
 }
 
-class _ValidType extends _TypeData {
-  /// Construct a new instance of [_ValidType]
+class _ValidCustomType extends _CustomTypeData {
+  /// Construct a new instance of [_ValidCustomType]
   /// for a [CustomType] which is valid.
-  const _ValidType({
+  const _ValidCustomType({
     required this.file,
     required this.type,
   });
@@ -150,27 +162,10 @@ class _ValidType extends _TypeData {
   /// File to write code to.
   final File file;
 
-  /// [CustomType] or [EnumType ]for which code to be generated.
-  final AbstractType type;
+  /// [CustomType] for which code to be generated.
+  final CustomType type;
 }
 
-abstract class _TypeData {
-  const _TypeData();
-}
-
-extension on AbstractType {
-  String generateJsonDecodingFile(
-      String relativeImport, SquintGeneratorOptions options) {
-    if (this is CustomType) {
-      return (this as CustomType).generateJsonDecodingFile(
-          relativeImport: relativeImport, options: options);
-    }
-
-    if (this is EnumType) {
-      return (this as EnumType)
-          .generateJsonDecodingFile(relativeImport: relativeImport);
-    }
-
-    return "";
-  }
+abstract class _CustomTypeData {
+  const _CustomTypeData();
 }

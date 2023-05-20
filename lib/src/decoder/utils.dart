@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 
 import "../ast/ast.dart";
 import "../common/common.dart";
+import "../converters/undetermined.dart";
 
 /// Find matching AbstractType for String value.
 ///
@@ -61,8 +62,8 @@ extension AbstractTypeFromString on String {
       return type;
     }
 
-    final customType =
-        withoutPostfix._toNonCanonicalTypeOrNull(nullable ?? false);
+    final customType = withoutPostfix._toCustomTypeOrNull;
+
     if (customType != null) {
       return customType;
     }
@@ -74,9 +75,9 @@ extension AbstractTypeFromString on String {
     throw SquintException("Unable to determine type: '$this'");
   }
 
-  NonCanonicalType? _toNonCanonicalTypeOrNull(bool nullable) {
+  CustomType? get _toCustomTypeOrNull {
     final hasMatch = _customClassNameRegex.hasMatch(this);
-    return hasMatch ? NonCanonicalType(this) : null;
+    return hasMatch ? CustomType(className: this, members: []) : null;
   }
 }
 
@@ -138,14 +139,14 @@ AbstractType? _mapType({
 
 /// Regex to match a List from literal value:
 ///
-/// List&lt;...&gt;
+/// List<...>
 ///
 /// {@category decoder}
 final _listRegex = RegExp(r"""^(List)(<(.+?)>|)$""");
 
 /// Regex to match a Map from literal value:
 ///
-/// Map&lt;...,...&gt;
+/// Map<...,...>
 ///
 /// {@category decoder}
 final mapRegex = RegExp(r"""^(Map)(<(.+?),(.+?)>|)$""");

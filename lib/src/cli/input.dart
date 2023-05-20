@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,15 +32,15 @@ typedef Result = Either<File, List<String>>;
 /// {@category generator}
 extension Input on Map<GenerateArgs, dynamic> {
   /// Return the [File] path value of --input if present and if File exists.
-  Result inputFile() {
+  Result get inputFile {
     if (!containsKey(GenerateArgs.input)) {
       return Result.nok([
         "Missing argument '$generateArgumentInput'.",
         "Specify path to input file with --$generateArgumentInput.",
         "Example to generate dataclass from JSON file: ",
-        "dart run $libName:$generateTaskName --$generateArgumentType dataclass --$generateArgumentInput message.json",
+        "flutter pub run $libName:$generateTaskName --$generateArgumentType dataclass --$generateArgumentInput message.json",
         "Example to generate serializer extensions for dart class: ",
-        "dart run $libName:$generateTaskName --$generateArgumentType serializer --$generateArgumentInput foo.dart",
+        "flutter pub run $libName:$generateTaskName --$generateArgumentType serializer --$generateArgumentInput foo.dart",
       ]);
     }
 

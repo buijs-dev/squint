@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,16 @@
 // SOFTWARE.
 
 import "../ast/ast.dart";
+
+/// [AbstractType] to represent a null value which type is unknown.
+class UndeterminedAsDynamic extends AbstractType {
+  /// Construct new [UndeterminedAsDynamic] instance.
+  const UndeterminedAsDynamic() : super(className: "dynamic");
+
+  /// Set to false because dynamic nullability is implicit.
+  @override
+  bool get nullable => false;
+}
 
 /// [JsonNode] to represent a JSON node of unknown type.
 ///

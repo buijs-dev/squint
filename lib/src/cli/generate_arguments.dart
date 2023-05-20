@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2025 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ import "shared.dart";
 
 const _options = standardSquintGeneratorOptions;
 
-/// Either containing parsed arguments as Map&lt;GenerateArgs, dynamic&gt;
+/// Either containing parsed arguments as Map<GenerateArgs, dynamic>
 /// or a List of String log messages.
 typedef Result = Either<Map<GenerateArgs, dynamic>, List<String>>;
 
@@ -135,7 +135,7 @@ enum GenerateArgs {
 /// Helper to parse Command-line arguments for the generate Task.
 extension ArgumentSplitter on List<String> {
   /// Return Map containing [GenerateArgs] and their value (if any).
-  Result toGenerateArguments() {
+  Result get generateArguments {
     final arguments = <GenerateArgs, dynamic>{
       GenerateArgs.overwrite: false,
       GenerateArgs.blankLineBetweenFields: _options.blankLineBetweenFields,
@@ -242,13 +242,13 @@ List<String> _logGeneratorExamples() => [
       "Specify input file with --$generateArgumentInput.",
       "Optional parameters are",
       "--$generateArgumentOutput (folder to write generated code which defaults to current folder)",
-      "Example: dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentOutput foo/bar/gen",
+      "Example: flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentOutput foo/bar/gen",
       "",
       "For $generateArgumentTypeValueDataclass only:",
       "--$generateArgumentAlwaysAddJsonValue (include @JsonValue annotation on all fields)",
-      "Example: dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentAlwaysAddJsonValue  true",
+      "Example: flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentAlwaysAddJsonValue  true",
       "--$generateArgumentIncludeJsonAnnotations (add annotations or not)",
-      "Example: dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentIncludeJsonAnnotations false",
+      "Example: flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentIncludeJsonAnnotations false",
       "--$generateArgumentBlankLineBetweenFields (add blank line between dataclass fields or not)",
-      " Example: dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentBlankLineBetweenFields true",
+      " Example: flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput foo/bar/message.json --$generateArgumentBlankLineBetweenFields true",
     ];
