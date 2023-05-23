@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,12 +88,12 @@ class JsonObjectOrNull extends JsonNode<Map<String, JsonNode>?> {
 }
 
 ///
-class JsonEnumeratedObject<T> extends JsonObject {
+class JsonTypeObject<T> extends JsonObject {
   ///
-  JsonEnumeratedObject({
+  JsonTypeObject({
     required super.data,
     required this.keyToString,
-    required this.keyToEnumValue,
+    required this.toTypedKey,
     String key = "",
   }) : super(key: key);
 
@@ -101,22 +101,22 @@ class JsonEnumeratedObject<T> extends JsonObject {
   final String Function(T) keyToString;
 
   /// Convert String key to enumerated value.
-  final T Function(String) keyToEnumValue;
+  final T Function(String) toTypedKey;
 
   /// Construct a new [JsonObject] where each key is an enumerated value.
-  static JsonObject fromEnumMap<T>(
+  static JsonObject fromTypedMap<T>(
           {required Map<T, dynamic> data,
 
           /// Convert enumerated key to String key.
           required String Function(T) keyToString,
 
           /// Convert String key to enumerated value.
-          required T Function(String) keyToEnumValue,
+          required T Function(String) toTypedKey,
 
           /// Node key.
           String key = ""}) =>
-      JsonEnumeratedObject(
-          keyToEnumValue: keyToEnumValue,
+      JsonTypeObject(
+          toTypedKey: toTypedKey,
           keyToString: keyToString,
           key: key,
           data: data
@@ -155,7 +155,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       );
 
   /// Construct a new [JsonObject] where each key is an enumerated value.
-  static JsonObject fromEnumMap<T>(
+  static JsonObject fromTypedMap<T>(
           {required Map<T, dynamic> data,
 
           /// Convert enumerated key to String key.
@@ -257,15 +257,10 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Get [List] with child [T] or null by [String] key.
   List<T>? arrayOrNull<T>(
     String key, {
-    T Function(JsonObject)? decodeFromJsonObject,
     Function? decoder,
     List? childType,
   }) =>
-      arrayNodeOrNull<T>(key,
-              decodeFromJsonObject: decodeFromJsonObject,
-              decoder: decoder,
-              childType: childType)
-          ?.data;
+      arrayNodeOrNull<T>(key, decoder: decoder, childType: childType)?.data;
 
   /// Get [JsonArray] by [String] key.
   ///
@@ -415,7 +410,6 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Throws [SquintException] if key is not found.
   JsonArray<List<T>>? arrayNodeOrNull<T>(
     String key, {
-    T Function(JsonObject)? decodeFromJsonObject,
     Function? decoder,
     List? childType,
   }) {
@@ -425,9 +419,14 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       return null;
     }
 
+    var array = byKey(key).data as List;
+    if (decoder != null) {
+      array = array.map((value) => decoder(value)).toList();
+    }
+
     return JsonArray<List<T>>(
       key: key,
-      data: (byKey(key).data as List).cast<T>().toList(),
+      data: array.cast<T>().toList(),
     );
   }
 
@@ -485,29 +484,34 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
-  Map<T, R> enumObject<T, R>({
+  Map<T, R> typedObject<T, R>({
     required String key,
-    required T Function(String) keyToEnumValue,
+    required T Function(String) toTypedKey,
+    R Function(dynamic)? toTypedValue,
   }) =>
-      objectNode(key).getDataAsEnumMap(keyToEnumValue: keyToEnumValue);
+      objectNode(key).getDataAsTypedMap(
+          toTypedKey: toTypedKey, toTypedValue: toTypedValue);
 
   /// Get Map<T,R> by [String] key.
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
-  Map<T, R>? enumObjectOrNull<T, R>({
+  Map<T, R>? typedObjectOrNull<T, R>({
     required String key,
-    required T Function(String) keyToEnumValue,
+    required T Function(String) toTypedKey,
+    R Function(dynamic)? toTypedValue,
   }) =>
-      objectNodeOrNull(key)?.getDataAsEnumMap(keyToEnumValue: keyToEnumValue);
+      objectNodeOrNull(key)?.getDataAsTypedMap(
+          toTypedKey: toTypedKey, toTypedValue: toTypedValue);
 
   /// Return raw (unwrapped) object data as Map<String, R>
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
-  Map<T, R> getDataAsEnumMap<T, R>({
-    required T Function(String) keyToEnumValue,
+  Map<T, R> getDataAsTypedMap<T, R>({
+    required T Function(String) toTypedKey,
+    R Function(dynamic)? toTypedValue,
   }) =>
-      data.map(
-          (key, value) => MapEntry(keyToEnumValue.call(key), value.data as R));
+      data.map((key, value) => MapEntry(toTypedKey.call(key),
+          toTypedValue?.call(value.data) ?? value.data as R));
 
   /// Return raw (unwrapped) object data as Map<String, R>
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
