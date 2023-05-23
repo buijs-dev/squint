@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ extension JsonDecoder on String {
   JsonObject get jsonDecode {
     var chars = substring(
       indexOf("{") + 1,
-      lastIndexOf("}"),
+      lastIndexOf("}") + 1,
     ).split("").normalizeSpaces;
 
     final data = <String, JsonNode>{};
@@ -136,7 +136,6 @@ class _ProcessingValue extends _JsonProcessingStep {
           return;
         case "{":
           processing = false;
-
           final counter = BracketCounter(
             characters: chars,
             startIndex: index,

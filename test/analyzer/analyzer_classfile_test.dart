@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -126,11 +126,8 @@ void main() {
     expect(result.childrenCustomTypes.isEmpty, true,
         reason: "There are no customtypes");
 
-    final type = result.parent;
-    expect(type != null, true,
-        reason: "An user created model is always a CustomType");
-
-    expect(type!.members.length, 5);
+    final type = result.parentAsCustomTypeOrFail;
+    expect(type.members.length, 5);
 
     // List<String>
     expect(type.members[0].name, "a1");
@@ -209,7 +206,7 @@ void main() {
     // then:
     expect(result.parent != null, true, reason: "Should have found 1 type");
 
-    final type = result.parent!;
+    final type = result.parentAsCustomTypeOrFail;
 
     expect(type.members.length, 5);
 
@@ -304,10 +301,7 @@ void main() {
     final enumType = result.childrenEnumTypes.first;
     expect(enumType.values[0], "hello", reason: "First value is hello");
     expect(enumType.values[1], "goodbye", reason: "Second value is goodbye");
-    expect(enumType.valuesJSON[0], "hello",
-        reason: "First JSON value is hello");
-    expect(enumType.valuesJSON[1], "goodbye",
-        reason: "Second JSON value is goodbye");
+    expect(enumType.valuesJSON.isEmpty, true);
   });
 
   test("Analyze class with enumerated member containing @JsonValue", () {
@@ -388,12 +382,10 @@ extension TestFileWriter on String {
     // when:
     final result = analyzer.analyze(pathToFile: this);
 
-    final type = result.parent;
+    final type = result.parentAsCustomTypeOrFail;
 
     // then:
-    expect(type != null, true, reason: "Should have found 1 type");
-
-    expect(type!.members.length, 2);
+    expect(type.members.length, 2);
     expect(type.members[0].name, "a1");
     expect(type.members[0].type.toString() == first.toString(), true,
         reason: "First type is not nullable");

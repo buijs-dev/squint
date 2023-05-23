@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,8 @@ Result _taskSuccessCustomType(CustomType type) {
 
 Result _taskSuccessEnumType(EnumType type) {
   return Result.ok(analyzer.AnalysisResult(
-    parent: null,
-    childrenEnumTypes: {type},
+    parent: type,
+    childrenEnumTypes: {},
     childrenCustomTypes: {},
   ));
 }
@@ -79,15 +79,15 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     final inputFile = inputFileOrResult.ok!;
 
     /// Get the CustomType by analyzing the input File.
-    final customTypeOrEnumType = inputFile.determineTypeOrNull;
+    final typeOrNull = inputFile.determineTypeOrNull;
 
-    if (customTypeOrEnumType == null) {
+    if (typeOrNull == null) {
       return _taskFailureJsonNotAnalyzed(inputFile);
     }
 
     /// Get a valid output File.
     final outputFileOrResult = outputFile(
-      filename: "${customTypeOrEnumType.className.snakeCase}_dataclass.dart",
+      filename: "${typeOrNull.className.snakeCase}_dataclass.dart",
       currentFolder: Directory.current,
     );
 
@@ -96,24 +96,22 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     }
 
     /// Generate the data class based on the CustomType.
-    if (customTypeOrEnumType is CustomType) {
+    if (typeOrNull is CustomType) {
       final options = _optionsWithOverrides;
-      final content =
-          customTypeOrEnumType.generateDataClassFile(options: options);
+      final content = typeOrNull.generateDataClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
-      return _taskSuccessCustomType(customTypeOrEnumType);
+      return _taskSuccessCustomType(typeOrNull);
     }
 
     /// Generate the enum class based on the EnumType
-    if (customTypeOrEnumType is EnumType) {
+    if (typeOrNull is EnumType) {
       final options = _optionsWithOverrides;
-      final content =
-          customTypeOrEnumType.generateEnumClassFile(options: options);
+      final content = typeOrNull.generateEnumClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
-      return _taskSuccessEnumType(customTypeOrEnumType);
+      return _taskSuccessEnumType(typeOrNull);
     }
 
-    return _taskFailureUnknownType(customTypeOrEnumType);
+    return _taskFailureUnknownType(typeOrNull);
   }
 
   /// Return [File] input if:

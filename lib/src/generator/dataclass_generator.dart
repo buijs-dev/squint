@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,8 @@ extension CustomType2DataClass on CustomType {
     final customs = result.childrenCustomTypes;
     final enums = result.childrenEnumTypes;
     final members = <TypeMember>[];
-
-    for (final member in result.parent!.members) {
+    final parent = result.parent! as CustomType;
+    for (final member in parent.members) {
       members.add(TypeMember(
         name: member.name,
         annotations: member.annotations,
@@ -60,7 +60,7 @@ extension CustomType2DataClass on CustomType {
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
   }) {
     final buffer = StringBuffer()..write("""
-      |// Copyright (c) 2021 - 2022 Buijs Software
+      |// Copyright (c) 2021 - 2023 Buijs Software
       |//
       |// Permission is hereby granted, free of charge, to any person obtaining a copy
       |// of this software and associated documentation files (the "Software"), to deal

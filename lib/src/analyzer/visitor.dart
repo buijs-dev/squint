@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -112,7 +112,13 @@ extension on EnumDeclaration {
       final annotations = constant.childEntities.jsonAnnotations;
       final jsonValueOrNull = annotations.firstBy((t) => t.name == "JsonValue");
       values.add(value);
-      valuesJSON.add(jsonValueOrNull?.data["tag"] ?? value);
+      final jsonValueDataOrNull = jsonValueOrNull?.data["tag"];
+      if (jsonValueDataOrNull != null) {
+        valuesJSON.add(jsonValueDataOrNull);
+      } else if (value.toUpperCase() == "NONE") {
+        // NONE/none are reserved values to represent optionality.
+        valuesJSON.add("");
+      }
     }
 
     return EnumType(

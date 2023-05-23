@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,26 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import "package:squint_json/src/ast/ast.dart";
+import "package:squint_json/src/cli/const.dart";
 import "package:squint_json/src/cli/generate.dart";
+import "package:squint_json/src/cli/generate_arguments.dart";
 import "package:squint_json/src/common/common.dart";
 
 /// Run tasks for a Consumer project.
 Future<void> main(List<String> args) async {
   """
   ════════════════════════════════════════════
-     SQUINT (v0.1.1)                               
+     SQUINT (v0.1.2)                               
   ════════════════════════════════════════════
   """
       .log();
   final result = runGenerateTask(args);
   if (result.isOk) {
-    <AbstractType?>{
-      result.ok?.parent,
-      ...?result.ok?.childrenEnumTypes,
-      ...?result.ok?.childrenCustomTypes
-    }.whereType<AbstractType>().forEach(
-        (type) => """Generated code for type: ${type.className}""".log());
+    final arguments = args.generateArguments.ok!;
+    final toBeGenerated = arguments[GenerateArgs.type] as String;
+    final generatedType = toBeGenerated == generateArgumentTypeValueDataclass
+        ? "dataclass"
+        : "(de)serializer extensions";
+    """Generated $generatedType code for type: ${result.ok?.parent?.className}"""
+        .log();
     """Finished code generation.""".log();
   } else {
     result.nok?.forEach((message) => message.log());

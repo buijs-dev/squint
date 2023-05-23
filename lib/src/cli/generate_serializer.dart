@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2023 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,33 +58,25 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
       return _taskFailureClassNotAnalyzed(inputFile);
     }
 
-    /// Get all CustomTypes (including types of TypeMembers)
-    /// which require code generation.
-    final customTypes = analysisResult.childrenCustomTypes
-      ..add(analysisResult.parent!);
+    /// Validate all types and convert to [_TypeData].
+    final typeData = _toTypeData(analysisResult.parent!);
 
-    /// Valid all types and convert to [_CustomTypeData].
-    final customTypesData = _toCustomTypeDataList(customTypes);
-
-    /// Get all invalid types and return Result if any present.
-    final invalidCustomTypes = customTypesData.invalid;
-
-    if (invalidCustomTypes.isNotEmpty) {
-      return Result.nok(invalidCustomTypes);
+    /// Return Result if Type is invalid.
+    if (typeData is _InvalidType) {
+      return Result.nok(typeData.logOutput);
     }
 
-    /// Generate an extension File for each [_ValidCustomType].
-    for (final type in customTypesData) {
-      final customType = type as _ValidCustomType;
-      final customTypeFile = customType.file;
-      final data = type.type;
+    /// Generate extensions File.
+    if (typeData is _ValidType) {
+      final typeFile = typeData.file;
+      final data = typeData.type;
       final inputPath = inputFile.uri.path;
-      final outputPath = customTypeFile.uri.path;
+      final outputPath = typeFile.uri.path;
       final import = path
           .relative(inputPath, from: outputPath)
           .removePrefixIfPresent("../");
-      final content = data.generateJsonDecodingFile(relativeImport: import);
-      customTypeFile.writeAsStringSync(content);
+      final content = data.generateJsonDecodingFile(import);
+      typeFile.writeAsStringSync(content);
     }
 
     return Result.ok(analysisResult);
@@ -113,45 +105,40 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
     return Either.ok(file);
   }
 
-  List<_CustomTypeData> _toCustomTypeDataList(
-    Set<CustomType> customTypes,
-  ) =>
-      customTypes.map((customType) {
-        final filename = "${customType.className.snakeCase}_extensions.dart";
-        final maybeOutputFile = outputFile(
-          filename: filename,
-          currentFolder: Directory.current,
-        );
+  _TypeData _toTypeData(AbstractType type) {
+    if (type is StandardType) {
+      return _InvalidType([
+        "Can not generate extensions for a standard type: ${type.className}"
+      ]);
+    }
 
-        if (!maybeOutputFile.isOk) {
-          final log = maybeOutputFile.nok ?? ["Oops something went wrong..."];
-          return _InvalidCustomType(log);
-        }
+    final filename = "${type.className.snakeCase}_extensions.dart";
+    final maybeOutputFile = outputFile(
+      filename: filename,
+      currentFolder: Directory.current,
+    );
 
-        return _ValidCustomType(file: maybeOutputFile.ok!, type: customType);
-      }).toList();
+    if (!maybeOutputFile.isOk) {
+      final log = maybeOutputFile.nok ?? ["Oops something went wrong..."];
+      return _InvalidType(log);
+    }
+
+    return _ValidType(file: maybeOutputFile.ok!, type: type);
+  }
 }
 
-/// Get List of all [_InvalidCustomType].
-extension on List<_CustomTypeData> {
-  List<String> get invalid => whereType<_InvalidCustomType>()
-      .map((e) => e.logOutput)
-      .expand((e) => e)
-      .toList();
-}
-
-class _InvalidCustomType extends _CustomTypeData {
-  /// Construct a new instance of [_InvalidCustomType].
-  const _InvalidCustomType(this.logOutput);
+class _InvalidType extends _TypeData {
+  /// Construct a new instance of [_InvalidType].
+  const _InvalidType(this.logOutput);
 
   /// List of messages to be outputted to the command-line.
   final List<String> logOutput;
 }
 
-class _ValidCustomType extends _CustomTypeData {
-  /// Construct a new instance of [_ValidCustomType]
+class _ValidType extends _TypeData {
+  /// Construct a new instance of [_ValidType]
   /// for a [CustomType] which is valid.
-  const _ValidCustomType({
+  const _ValidType({
     required this.file,
     required this.type,
   });
@@ -159,10 +146,26 @@ class _ValidCustomType extends _CustomTypeData {
   /// File to write code to.
   final File file;
 
-  /// [CustomType] for which code to be generated.
-  final CustomType type;
+  /// [CustomType] or [EnumType ]for which code to be generated.
+  final AbstractType type;
 }
 
-abstract class _CustomTypeData {
-  const _CustomTypeData();
+abstract class _TypeData {
+  const _TypeData();
+}
+
+extension on AbstractType {
+  String generateJsonDecodingFile(String relativeImport) {
+    if (this is CustomType) {
+      return (this as CustomType)
+          .generateJsonDecodingFile(relativeImport: relativeImport);
+    }
+
+    if (this is EnumType) {
+      return (this as EnumType)
+          .generateJsonDecodingFile(relativeImport: relativeImport);
+    }
+
+    return "";
+  }
 }
