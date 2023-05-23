@@ -114,8 +114,17 @@ extension on TypeMember {
       } else if (unwrapperType == "JsonBoolean") {
         unwrapper = '${dataPrefix}booleanNode$q("$jsonKey")';
       } else if (unwrapperType == "JsonArray") {
-        unwrapper =
-            '${dataPrefix}arrayNode$q<${(type as ListType).child.printType}>("$jsonKey")';
+        final childType = (type as ListType).child;
+        unwrapper = "${dataPrefix}arrayNode$q<${childType.printType}>";
+        if (childType is CustomType) {
+          unwrapper +=
+              '("$jsonKey", decoder: (dynamic value) => JsonObject.fromMap(data: value as Map<String, dynamic>).to${childType.className})';
+        } else if (childType is EnumType) {
+          unwrapper +=
+              '("$jsonKey", decoder: (dynamic value) => value.to${childType.className})';
+        } else {
+          unwrapper += '("$jsonKey")';
+        }
       } else if (unwrapperType == "JsonObject") {
         unwrapper = '${dataPrefix}objectNode$q("$jsonKey")';
       } else {
@@ -135,15 +144,36 @@ extension on TypeMember {
       case "bool":
         return '$name: ${dataPrefix}boolean$q("$jsonKey")';
       case "List":
-        return '$name: ${dataPrefix}array$q<${(type as ListType).child.printType}>("$jsonKey")';
+        final childType = (type as ListType).child;
+        final decoderOrBlank = childType.printDecoderMethod;
+        if (childType is CustomType) {
+          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey", decoder: $decoderOrBlank)';
+        } else if (childType is EnumType) {
+          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey", decoder: $decoderOrBlank)';
+        } else {
+          return '$name: ${dataPrefix}array$q<${childType.printType}>("$jsonKey")';
+        }
       case "Map":
         final mapType = type as MapType;
-        final mapKeyType = mapType.key;
+        final mapKeyType = mapType.validKeyTypeOrThrow;
         final mapKeyTypeString = mapKeyType.className;
-        if (mapKeyType is EnumType) {
-          return '$name: ${dataPrefix}enumObject<$mapKeyTypeString,${mapType.value.className}>$q(key: "$jsonKey", keyToEnumValue: (String entry) => $mapKeyTypeString.values.firstWhere((value) => value == entry, orElse: () => $mapKeyTypeString.${mapKeyType.noneValue}))';
+        final mapValueType = mapType.value;
+        final mapValueDecoder = mapValueType.printDecoderMethod;
+        final mapValueDecoderLine =
+            mapValueDecoder == "" ? "" : ", toTypedValue: $mapValueDecoder";
+        if (mapKeyType is StringType) {
+          return '$name: ${dataPrefix}object$q("$jsonKey" $mapValueDecoderLine)';
+        } else if (mapKeyType is EnumType) {
+          return '$name: ${dataPrefix}typedObject<$mapKeyTypeString,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String entry) => $mapKeyTypeString.values.firstWhere((value) => value == entry, orElse: () => $mapKeyTypeString.${mapKeyType.noneValue}) $mapValueDecoderLine)';
+        } else if (mapKeyType is IntType) {
+          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => int.parse(value) $mapValueDecoderLine)';
+        } else if (mapKeyType is DoubleType) {
+          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => double.parse(value) $mapValueDecoderLine)';
+        } else if (mapKeyType is BooleanType) {
+          return '$name: ${dataPrefix}typedObject<int,${mapType.value.className}>$q(key: "$jsonKey", toTypedKey: (String value) => value.toUpperCase() == "TRUE" $mapValueDecoderLine)';
         } else {
-          return '$name: ${dataPrefix}object$q("$jsonKey")';
+          throw SquintException(
+              "Map has unsupported key Type: ${mapKeyType.className}");
         }
       case "dynamic":
         return '$name: ${dataPrefix}byKey("$jsonKey").data';
@@ -182,12 +212,21 @@ extension on TypeMember {
         return 'JsonArray$q<dynamic>(key: "$jsonKey", data: $dataPrefix$name)';
       case "Map":
         final mapType = type as MapType;
-        final mapKeyType = mapType.key;
+        final mapKeyType = mapType.validKeyTypeOrThrow;
         final mapKeyTypeString = mapKeyType.className;
-        if (mapKeyType is EnumType) {
-          return 'JsonObject$q.fromEnumMap<$mapKeyTypeString>(keyToString: ($mapKeyTypeString entry) => entry.name, key: "$jsonKey", data: $dataPrefix$name)';
-        } else {
+        if (mapKeyType is StringType) {
           return 'JsonObject$q.fromMap(key: "$jsonKey", data: $dataPrefix$name)';
+        } else if (mapKeyType is EnumType) {
+          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: ($mapKeyTypeString entry) => entry.name, key: "$jsonKey", data: $dataPrefix$name)';
+        } else if (mapKeyType is IntType) {
+          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (int value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
+        } else if (mapKeyType is DoubleType) {
+          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (double value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
+        } else if (mapKeyType is BooleanType) {
+          return 'JsonObject$q.fromTypedMap<$mapKeyTypeString>(keyToString: (bool value) => "\$value", key: "$jsonKey", data: $dataPrefix$name)';
+        } else {
+          throw SquintException(
+              "Map has unsupported key Type: ${mapKeyType.className}");
         }
       case "dynamic":
         return 'dynamicValue(key: "$jsonKey", data: $dataPrefix$name)';
@@ -206,7 +245,8 @@ extension ImportsBuilder on CustomType {
       ..removeWhere((type) => type.className == className);
     return types
         .map((e) => e.className.snakeCase)
-        .map((e) => "import '${e}_dataclass.dart';\n")
+        .map((e) =>
+            "import '${e}_dataclass.dart';\nimport '${e}_extensions.dart';\n")
         .toSet();
   }
 }
@@ -217,6 +257,28 @@ extension NoneValueBuilder on EnumType {
   String get noneValue =>
       values.every((e) => e == e.toUpperCase()) ? "NONE" : "none";
 }
+
+extension on MapType {
+  AbstractType get validKeyTypeOrThrow {
+    if (key.nullable) {
+      throw SquintException("Nullable keys are not allowed for Type Map.");
+    }
+
+    if (_supportedMapKeyTypes.contains(key.runtimeType)) {
+      return key;
+    }
+
+    throw SquintException("Map has unsupported key Type: ${key.className}");
+  }
+}
+
+final _supportedMapKeyTypes = [
+  StringType,
+  IntType,
+  DoubleType,
+  BooleanType,
+  EnumType
+];
 
 /// Utility to normalize user defined Types.
 extension AbstractTypeNormalizer on AbstractType {
@@ -256,5 +318,19 @@ extension AbstractTypeNormalizer on AbstractType {
     }
 
     return this;
+  }
+}
+
+/// Output decoding method line.
+extension DecoderMethod on AbstractType {
+  /// Output decoding method line.
+  String get printDecoderMethod {
+    if (this is CustomType) {
+      return "(dynamic value) => JsonObject.fromMap(data: value as Map<String, dynamic>).to$className";
+    } else if (this is EnumType) {
+      return "(dynamic value) => value.to$className";
+    } else {
+      return "";
+    }
   }
 }

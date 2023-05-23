@@ -65,6 +65,10 @@ class AnalysisResult {
 
   /// Get the parent as [EnumType].
   EnumType get parentAsEnumTypeOrFail => parent! as EnumType;
+
+  @override
+  String toString() =>
+      "AnalysisResult for parent: $parent. CustomType children: $childrenCustomTypes. EnumType children: $childrenEnumTypes";
 }
 
 /// The analyzer can read files and return metadata about (dart) classes.

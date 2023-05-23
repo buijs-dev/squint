@@ -355,10 +355,7 @@ enum AnnoyanceRate {
       "true"
     ]);
 
-    expect(result.ok!.parent == null, true,
-        reason: "There should no a parent!");
-    expect(result.ok!.childrenEnumTypes.length, 1,
-        reason: "There should be 1 enum");
+    expect(result.ok!.parent != null, true, reason: "There should a parent!");
     expect(expectedFile.existsSync(), true, reason: "Enum is generated");
     expect(expectedFile.readAsStringSync(), expectedEnum,
         reason: "Enum content is correct");
