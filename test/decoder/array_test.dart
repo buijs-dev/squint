@@ -320,4 +320,43 @@ void main() {
     // then
     expect(structure is List<List<List<List<String>>>>, true);
   });
+
+  test("decoding a nested List and Map", () {
+    final decoded = nestedJson.jsonDecode;
+    expect(decoded.string("name"), "Anne");
+  });
 }
+
+const nestedJson = """
+{
+  "name":"Anne",
+  "age":25,
+  "bornOnPlanet":"EARTH",
+  "isHuman":true,
+  "friends": [
+    {
+      "name":"Andre",
+      "age":155,"
+      bornOnPlanet":"EGO",
+      "isHuman":false,
+      "friends":[],
+      "favoritePizzas":{"4 cheese":9.2}
+    },
+    {
+      "name":"Alain",
+      "age":13,
+      "bornOnPlanet":"MARS",
+      "isHuman":false,
+      "friends":[],
+      "favoritePizzas":
+        {
+          "6 cheese!?":8.9
+        }
+      }
+   ],
+   "favoritePizzas":
+    { 
+      "Is there ever enough cheese? No ;-)":10.0
+    }
+  }
+""";

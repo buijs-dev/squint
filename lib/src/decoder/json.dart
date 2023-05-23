@@ -38,7 +38,7 @@ extension JsonDecoder on String {
   JsonObject get jsonDecode {
     var chars = substring(
       indexOf("{") + 1,
-      lastIndexOf("}"),
+      lastIndexOf("}") + 1,
     ).split("").normalizeSpaces;
 
     final data = <String, JsonNode>{};
@@ -136,7 +136,6 @@ class _ProcessingValue extends _JsonProcessingStep {
           return;
         case "{":
           processing = false;
-
           final counter = BracketCounter(
             characters: chars,
             startIndex: index,
