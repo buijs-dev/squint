@@ -1,3 +1,6 @@
+## 0.1.3
+- Bump Flutter SDK range to ">=2.18.0 <4.0.0".
+
 ## 0.1.2
 - Add support for generating enum extensions.
 - Bugfix: Incorrect bracket count when processing Maps nested inside Lists.
