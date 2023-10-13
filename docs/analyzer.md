@@ -124,7 +124,7 @@ class SimpleResponse {
 
 Will return a CustomType instance:
 - className: SimpleResponse
-- members: [IntType a1, NullableStringType a2]
+- members: IntType a1, NullableStringType a2
 
 Given a valid CustomType metadata JSON:
 
@@ -148,7 +148,7 @@ Given a valid CustomType metadata JSON:
 
 Will return a CustomType instance:
 - className: MyResponse
-- members: [IntType a1, NullableStringType a2]
+- members: IntType a1, NullableStringType a2
 
 Given a valid EnumType metadata JSON:
 
@@ -168,8 +168,8 @@ Given a valid EnumType metadata JSON:
 
 Will return a CustomType instance:
 - className: MyResponse
-- values: ["FOO", "BAR"]
-- valuesJSON: ["foo", "bar"]
+- values: "FOO", "BAR"
+- valuesJSON: "foo", "bar"
 
 > The valuesJSON list is optional which can be used to differentiate between
 > member names of an enum and how they should be serialized in a JSON String.

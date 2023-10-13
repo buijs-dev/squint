@@ -328,7 +328,9 @@ extension JsonArrayDecoder on String {
   /// Example:
   ///
   /// Given a JSON Array:
+  /// ```dart
   /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
+  /// ```
   ///
   /// Would result in the following Map:
   /// ".0.0.0.0" : "hello"
@@ -408,7 +410,9 @@ extension ListDecoder on List {
   /// Example:
   ///
   /// Given a List:
+  /// ```dart
   /// [[[ "hello", "goodbye" ], ["Sam", "Hanna"]]]
+  /// ```
   ///
   /// Would result in the following Map:
   /// ".0.0.0.0" : "hello"
