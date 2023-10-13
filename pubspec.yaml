@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   analyzer: ^6.3.0
-  dart_style: ^2.3.3
+  dart_style: ^2.2.4 # can be bumped when min SDK is 2.19.0
   path: ^1.8.1
 
 dev_dependencies:
