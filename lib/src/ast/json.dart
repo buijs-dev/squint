@@ -889,12 +889,12 @@ class JsonBooleanOrNull extends JsonNode<bool?> {
 ///
 /// Example:
 ///
-/// ```
-///   "padawans":["Anakin", "Obi-Wan"]
+/// ```dart
+///   "padawans": ["Anakin", "Obi-Wan"]
 /// ```
 ///
-/// key = padawans
-/// data = ["Anakin", "Obi-Wan"]
+/// key = "padawans"
+/// data = "Anakin", "Obi-Wan"
 /// T = String
 ///
 /// {@category ast}
@@ -930,12 +930,12 @@ class JsonArray<T> extends JsonNode<T> {
 ///
 /// Example:
 ///
-/// ```
+/// ```dart
 ///   "padawans":["Anakin", "Obi-Wan"]
 /// ```
 ///
 /// key = padawans
-/// data = ["Anakin", "Obi-Wan"]
+/// data = "Anakin", "Obi-Wan"
 /// T = String
 ///
 /// {@category ast}

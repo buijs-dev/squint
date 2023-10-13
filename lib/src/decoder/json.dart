@@ -280,9 +280,11 @@ class BracketCounter {
   /// List of all characters between opening and closing bracket.
   ///
   /// Example:
+  /// ```dart
   /// [[1,2,3,4],[4,6,8],[1,0,1,1]], "anotherKey": []
   ///
   /// ContentBetweenBrackets == [[1,2,3,4],[4,6,8],[1,0,1,1]].
+  /// ```
   List<String> get contentBetweenBrackets {
     _totalDepth = 1;
 
