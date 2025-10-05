@@ -450,7 +450,8 @@ class ListOpeningBracketToken extends _Token {
           depth: currentDepth + 1,
           size: currentSize,
           value: currentValue,
-          key: keygen.nextKey(output.keys.toList(), ListOpeningBracketToken),
+          key: keygen.nextKey(
+              output.keys.toList(), _ListTokenType.listOpeningBracket),
         );
 }
 
@@ -473,7 +474,8 @@ class ListClosingBracketToken extends _Token {
             currentKey: keygen.currentKey,
             output: output,
           ),
-          key: keygen.nextKey(output.keys.toList(), ListClosingBracketToken),
+          key: keygen.nextKey(
+              output.keys.toList(), _ListTokenType.listClosingBracket),
         );
 }
 
@@ -522,7 +524,8 @@ class ListValueSeparatorToken extends _Token {
             currentKey: keygen.currentKey,
             output: output,
           ),
-          key: keygen.nextKey(output.keys.toList(), ListValueSeparatorToken),
+          key: keygen.nextKey(
+              output.keys.toList(), _ListTokenType.listValueSeparator),
         );
 
   static Map<int, int> _size(Map<int, int> currentSize, int depth) {
@@ -672,6 +675,12 @@ int _setObjectValueAndReturnRemainder({
   }
 }
 
+enum _ListTokenType {
+  listOpeningBracket,
+  listClosingBracket,
+  listValueSeparator,
+}
+
 abstract class _Token {
   _Token({
     required this.size,
@@ -763,15 +772,15 @@ class ArrayDecodingKeyGenerator {
   String currentKey;
 
   /// Determine the next key value depending on the last encountered token.
-  String nextKey(List<String> keys, Type token) {
+  String nextKey(List<String> keys, _ListTokenType token) {
     switch (token) {
-      case ListOpeningBracketToken():
+      case _ListTokenType.listOpeningBracket:
         currentKey = "$currentKey.0";
         break;
-      case ListClosingBracketToken():
+      case _ListTokenType.listClosingBracket:
         currentKey = currentKey.substring(0, currentKey.lastIndexOf("."));
         break;
-      case ListValueSeparatorToken():
+      case _ListTokenType.listValueSeparator:
         incrementWidth;
     }
 
