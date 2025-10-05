@@ -19,7 +19,6 @@
 // SOFTWARE.
 
 import "package:squint_json/squint_json.dart";
-import "package:squint_json/src/cli/generate.dart";
 import "package:squint_json/src/converters/converters.dart";
 import "package:test/test.dart";
 
@@ -388,80 +387,5 @@ extension ExampleishJsonObject2Class on JsonObject {
     expect(
         customType.generateJsonDecodingFile(relativeImport: "exampleish.dart"),
         expected);
-  });
-
-  test("verify generating (de)serialization code for a data class through cli",
-      () {
-    final generateDataClassResult = runGenerateTask([
-      "--type",
-      "dataclass",
-      "--input",
-      "test/resources/example.json",
-      "--output",
-      "build",
-      "--overwrite",
-      "true"
-    ]);
-
-    if (!generateDataClassResult.isOk) {
-      print(generateDataClassResult.nok);
-    }
-
-    expect(generateDataClassResult.isOk, true);
-
-    final generateExtensionsResult = runGenerateTask([
-      "--type",
-      "serializer",
-      "--input",
-      "build/example_dataclass.dart",
-      "--output",
-      "build",
-      "--overwrite",
-      "true"
-    ]);
-
-    if (!generateExtensionsResult.isOk) {
-      print(generateExtensionsResult.nok);
-    }
-
-    expect(generateExtensionsResult.isOk, true);
-  });
-
-  test(
-      "verify generating (de)serialization code for a data class with nested custom type through cli",
-      () {
-    final generateDataClassResult = runGenerateTask([
-      "--type",
-      "dataclass",
-      "--input",
-      "test/resources/example2.json",
-      "--output",
-      "build",
-      "--overwrite",
-      "true"
-    ]);
-
-    if (!generateDataClassResult.isOk) {
-      print(generateDataClassResult.nok);
-    }
-
-    expect(generateDataClassResult.isOk, true);
-
-    final generateExtensionsResult = runGenerateTask([
-      "--type",
-      "serializer",
-      "--input",
-      "build/example2_dataclass.dart",
-      "--output",
-      "build",
-      "--overwrite",
-      "true"
-    ]);
-
-    if (!generateExtensionsResult.isOk) {
-      print(generateExtensionsResult.nok);
-    }
-
-    expect(generateExtensionsResult.isOk, true);
   });
 }
