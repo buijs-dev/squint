@@ -1,0 +1,8 @@
+{
+  "security_service": {
+    "client": {
+      "url": "${SECURITY_SERVICE_URL}",
+      "port": 8080
+    }
+  }
+}

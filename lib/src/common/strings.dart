@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import "package:dart_style/dart_style.dart";
+import "package:pub_semver/pub_semver.dart";
 
 final _isAlphabeticRegex = RegExp(r"""^[a-zA-Z]$""");
 
@@ -134,5 +135,6 @@ extension StringUtils on String {
       .replaceAll(",|", "|");
 
   /// Format a String as dart code using dart_style DartFormatter.
-  String get formattedDartCode => DartFormatter().format(format);
+  String get formattedDartCode =>
+      DartFormatter(languageVersion: Version.parse("3.9.2")).format(format);
 }

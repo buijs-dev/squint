@@ -1,0 +1,15 @@
+{
+  "className": "MyResponse",
+  "members": [
+    {
+      "name": "a1",
+      "type": "int",
+      "nullable": false
+    },
+    {
+      "name": "a2",
+      "type": "String",
+      "nullable": true
+    }
+  ]
+}

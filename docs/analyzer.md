@@ -96,13 +96,13 @@ void main() {
 To analyse a file from the command-line, one should specify an input file and an output folder using --input and --output respectively.
 
 ```shell
-flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output
+dart run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output
 ```
 
 Use --overwrite parameter to allow overriding existing metadata JSON files.
 
 ```shell
-flutter pub run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
+dart run squint_json:analyze --input foo/some_class_file.dart --output foo/bar/output --overwrite true
 ```
 
 ### Examples

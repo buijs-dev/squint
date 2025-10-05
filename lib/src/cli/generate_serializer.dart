@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,12 +19,15 @@
 // SOFTWARE.
 
 import "dart:io";
+
 import "package:path/path.dart" as path;
+
 import "../analyzer/analyzer.dart" as analyzer;
 import "../ast/ast.dart";
 import "../common/common.dart";
 import "../generator/generator.dart";
 import "generate_arguments.dart";
+import "generate_dataclass.dart";
 import "input.dart";
 import "output.dart";
 
@@ -41,9 +44,9 @@ Result _taskFailureClassNotAnalyzed(File file) =>
 /// Generate a serializer extensions.
 extension GenerateSerializers on Map<GenerateArgs, dynamic> {
   /// Generate a dataclass.
-  Result get serializers {
+  Result generateSerializers() {
     /// Get a valid input File.
-    final inputFileOrResult = _inputFileOrResult;
+    final inputFileOrResult = _inputFileOrResult();
 
     if (!inputFileOrResult.isOk) {
       return inputFileOrResult.nok!;
@@ -52,7 +55,7 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
     final inputFile = inputFileOrResult.ok!;
 
     /// Get the CustomType by analyzing the input File.
-    final analysisResult = inputFile.parseDataClass;
+    final analysisResult = inputFile.parseDataClass();
 
     if (analysisResult.parent == null) {
       return _taskFailureClassNotAnalyzed(inputFile);
@@ -72,10 +75,11 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
       final data = typeData.type;
       final inputPath = inputFile.uri.path;
       final outputPath = typeFile.uri.path;
+      final options = squintGeneratorOptionsWithOverrides;
       final import = path
           .relative(inputPath, from: outputPath)
           .removePrefixIfPresent("../");
-      final content = data.generateJsonDecodingFile(import);
+      final content = data.generateJsonDecodingFile(import, options);
       typeFile.writeAsStringSync(content);
     }
 
@@ -87,8 +91,8 @@ extension GenerateSerializers on Map<GenerateArgs, dynamic> {
   /// - has .dart extension
   ///
   /// Or Result.nok with log output.
-  Either<File, Result> get _inputFileOrResult {
-    final inputFileOrLog = inputFile;
+  Either<File, Result> _inputFileOrResult() {
+    final inputFileOrLog = inputFile();
 
     if (!inputFileOrLog.isOk) {
       return Either.nok(Result.nok(inputFileOrLog.nok));
@@ -155,10 +159,11 @@ abstract class _TypeData {
 }
 
 extension on AbstractType {
-  String generateJsonDecodingFile(String relativeImport) {
+  String generateJsonDecodingFile(
+      String relativeImport, SquintGeneratorOptions options) {
     if (this is CustomType) {
-      return (this as CustomType)
-          .generateJsonDecodingFile(relativeImport: relativeImport);
+      return (this as CustomType).generateJsonDecodingFile(
+          relativeImport: relativeImport, options: options);
     }
 
     if (this is EnumType) {

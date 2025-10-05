@@ -50,12 +50,12 @@ Given the following JSON in file foo/bar/example.json:
 
 Using the cli command:
 ```shell
-flutter pub run squint_json:generate --type dataclass --input foo/bar/example.json
+dart run squint_json:generate --type dataclass --input foo/bar/example.json
 ```
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -286,7 +286,7 @@ be added to fields which have a different name in the JSON String and in the dat
 annoyance-rate in JSON will be generated as annoyanceRate in the data class with annotation @JsonValue("annoyance-rate").
 
 ```shell
-flutter pub run squint_json:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
+dart run squint_json:generate --type dataclass --input foo/example.json --alwaysAddJsonValue true
 ```
 
 ```dart
@@ -412,7 +412,7 @@ class example {
 Set includeJsonAnnotations as false, to generate a class without any annotations.
 
 ```shell
-flutter pub run squint_json:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
+dart run squint_json:generate --type dataclass --input foo/example.json --includeJsonAnnotations false
 ```
 
 ```dart
@@ -501,12 +501,12 @@ class TestingExample {
 
 Using the cli command:
 ```shell
-flutter pub run squint_json:generate --type serializer --input foo/bar/testing_example.dart
+dart run squint_json:generate --type serializer --input foo/bar/testing_example.dart
 ```
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -597,12 +597,12 @@ int decodeId(JsonFloatingNumber id) =>
 
 Using the cli command:
 ```shell
-flutter pub run squint_json:generate --type serializer --input foo/bar/testing_example.dart
+dart run squint_json:generate --type serializer --input foo/bar/testing_example.dart
 ```
 
 Should generate the following code:
 ```dart
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
