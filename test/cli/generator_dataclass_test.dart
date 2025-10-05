@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,13 @@
 
 import "dart:core";
 import "dart:io";
+import "package:path/path.dart" as path;
 
 import "package:squint_json/squint_json.dart";
+import "package:squint_json/src/cli/const.dart";
 import "package:squint_json/src/cli/generate.dart";
+import "package:squint_json/src/cli/generate_arguments.dart";
+import "package:squint_json/src/cli/generate_dataclass.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -108,7 +112,7 @@ void main() {
   """;
 
   const expected = """
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -179,10 +183,7 @@ class Example {
 
 @squint
 class Objectives {
-  const Objectives({
-    required this.inMission,
-    required this.missionResults,
-  });
+  const Objectives({required this.inMission, required this.missionResults});
 
   @JsonValue("inMission")
   final bool inMission;
@@ -200,19 +201,21 @@ enum AnnoyanceRate {
   @JsonValue("UNBEARABLE")
   unbearable,
   @JsonValue("")
-  none
+  none,
 }
 
-JsonObject encodeObjectives(Objectives object) =>
-    JsonObject.fromNodes(key: "objectives", nodes: [
-      JsonBoolean(key: "inMission", data: object.inMission),
-      JsonArray<dynamic>(key: "missionResults", data: object.missionResults),
-    ]);
+JsonObject encodeObjectives(Objectives object) => JsonObject.fromNodes(
+  key: "objectives",
+  nodes: [
+    JsonBoolean(key: "inMission", data: object.inMission),
+    JsonArray<dynamic>(key: "missionResults", data: object.missionResults),
+  ],
+);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(
-      inMission: object.boolean("inMission"),
-      missionResults: object.array<bool>("missionResults"),
-    );
+  inMission: object.boolean("inMission"),
+  missionResults: object.array<bool>("missionResults"),
+);
 
 JsonString encodeAnnoyanceRate(AnnoyanceRate object) {
   switch (object) {
@@ -303,7 +306,7 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 
     // given:
     const expectedEnum = """
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -335,7 +338,7 @@ enum AnnoyanceRate {
   @JsonValue("UNBEARABLE")
   unbearable,
   @JsonValue("")
-  none
+  none,
 }
 """;
     final annoyanceRateFile =
@@ -355,12 +358,124 @@ enum AnnoyanceRate {
       "true"
     ]);
 
-    expect(result.ok!.parent == null, true,
-        reason: "There should no a parent!");
-    expect(result.ok!.childrenEnumTypes.length, 1,
-        reason: "There should be 1 enum");
+    expect(result.ok!.parent != null, true, reason: "There should a parent!");
     expect(expectedFile.existsSync(), true, reason: "Enum is generated");
     expect(expectedFile.readAsStringSync(), expectedEnum,
         reason: "Enum content is correct");
+  });
+
+  test("When the input File does not exist then a Result NOK is returned", () {
+    // given:
+    final arguments = {
+      GenerateArgs.type: generateArgumentTypeValueDataclass,
+      GenerateArgs.input: "doesNotExist.json"
+    };
+
+    // when:
+    final result = arguments.generateDataClass();
+    expect(result.isOk, false);
+    expect(result.nok != null, true);
+    expect(result.nok!.length, 1);
+    expect(result.nok![0].startsWith("File does not exist:"), true);
+    expect(result.nok![0].endsWith("doesNotExist.json"), true);
+  });
+
+  test(
+      "When the input File exists but is not JSON then a Result NOK is returned",
+      () {
+    // setup:
+    final notJsonFile =
+        File("${path.current}${Platform.pathSeparator}notJson.txt")
+          ..createSync(recursive: true);
+
+    // given:
+    final arguments = {
+      GenerateArgs.type: generateArgumentTypeValueDataclass,
+      GenerateArgs.input: notJsonFile.path,
+    };
+
+    // when:
+    final result = arguments.generateDataClass();
+
+    // cleanup:
+    notJsonFile.deleteSync();
+
+    // then:
+    expect(result.isOk, false);
+    expect(result.nok != null, true);
+    expect(result.nok!.length, 1);
+    expect(result.nok![0].startsWith("File is not a .json File:"), true);
+    expect(result.nok![0].endsWith("notJson.txt"), true);
+  });
+
+  test(
+      "When the input File JSON content is invalid then a Result NOK is returned",
+      () {
+    // setup:
+    final invalidJson =
+        File("${path.current}${Platform.pathSeparator}invalid.json")
+          ..createSync(recursive: true)
+          ..writeAsStringSync("""notJson!""");
+
+    // given:
+    final arguments = {
+      GenerateArgs.type: generateArgumentTypeValueDataclass,
+      GenerateArgs.input: invalidJson.path,
+      GenerateArgs.includeJsonAnnotations: true,
+      GenerateArgs.alwaysAddJsonValue: true,
+      GenerateArgs.blankLineBetweenFields: true,
+    };
+
+    // when:
+    final result = arguments.generateDataClass();
+
+    //cleanup:
+    invalidJson.deleteSync();
+
+    // then:
+    expect(result.isOk, false);
+    expect(result.nok != null, true);
+    expect(result.nok!.length, 1);
+    expect(result.nok![0].startsWith("Failed to analyze .json File:"), true);
+    expect(result.nok![0].endsWith("invalid.json"), true);
+  });
+
+  test("When the output File already exists then a Result NOK is returned", () {
+    // setup:
+    final exampleJson = File("someJsonFoo.json")
+      ..createSync(recursive: true)
+      ..writeAsStringSync("""{"field": "value"}""");
+
+    // setup: output file exists
+    final outputFile = File("some_json_foo_dataclass.dart")
+      ..createSync(recursive: true);
+
+    // given:
+    final arguments = {
+      GenerateArgs.type: generateArgumentTypeValueDataclass,
+      GenerateArgs.input: exampleJson.path,
+      GenerateArgs.includeJsonAnnotations: true,
+      GenerateArgs.alwaysAddJsonValue: true,
+      GenerateArgs.blankLineBetweenFields: true,
+    };
+
+    // when:
+    final result = arguments.generateDataClass();
+
+    // cleanup:
+    exampleJson.deleteSync();
+    outputFile.deleteSync();
+
+    // then:
+    expect(result.isOk, false);
+    expect(result.nok != null, true);
+    expect(result.nok!.length, 2);
+    expect(
+        result.nok![0].startsWith(
+            "Failed to write generated code because File already exists"),
+        true);
+    expect(result.nok![0].endsWith("some_json_foo_dataclass.dart."), true);
+    expect(result.nok![1],
+        "Use '--$generateArgumentOverwrite true' to allow overwriting existing files.");
   });
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,18 +28,14 @@ extension Json2CustomType on JsonObject {
   /// Convert a [JsonObject] to a [CustomType].
   CustomType toCustomType({
     required String className,
-  }) {
-    final customType = CustomType(
-      className: className,
-      members: data.toTypeMembers,
-    ).normalizeMemberNames;
-
-    return customType.withDataClassMetadata;
-  }
+  }) =>
+      CustomType(className: className, members: data.toTypeMembers())
+          .withNormalizedMemberNames()
+          .withDataClassMetadata();
 }
 
 extension on CustomType {
-  CustomType get normalizeMemberNames => CustomType(
+  CustomType withNormalizedMemberNames() => CustomType(
       className: className,
       members: members.map((TypeMember typeMember) {
         return typeMember.normalizeNameAndJsonKey;
@@ -65,8 +61,9 @@ extension on TypeMember {
   /// - [annotations] containing JsonValue [TypeAnnotation]
   /// and JSON node key if not identical to [name].
   TypeMember get normalizeNameAndJsonKey {
-    final memberType =
-        type is CustomType ? (type as CustomType).normalizeMemberNames : type;
+    final memberType = type is CustomType
+        ? (type as CustomType).withNormalizedMemberNames()
+        : type;
 
     final memberName = name
         .replaceAll(" ", "_")
@@ -122,7 +119,7 @@ extension on TypeMember {
 }
 
 extension on Map<String, JsonNode> {
-  List<TypeMember> get toTypeMembers {
+  List<TypeMember> toTypeMembers() {
     final typeMembers = reduce<TypeMember>(
       (key, value) => TypeMember(
         name: key,

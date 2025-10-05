@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,24 +32,29 @@ extension CustomType2DataClass on CustomType {
   /// the annotations.
   ///
   /// {@category generator}
-  CustomType get withDataClassMetadata {
+  CustomType withDataClassMetadata() {
     final dataclass = generateDataClassFile();
     final result = analyze(fileContent: dataclass);
-    final customs = result.childrenCustomTypes;
-    final enums = result.childrenEnumTypes;
-    final members = <TypeMember>[];
     final parent = result.parent! as CustomType;
-    for (final member in parent.members) {
-      members.add(TypeMember(
+    final parentMembersCopy = <TypeMember>[];
+
+    for (final member in members) {
+      final annotations = parent.members
+              .where((annotatedMember) => annotatedMember.name == member.name)
+              .firstOrNull
+              ?.annotations ??
+          [];
+
+      parentMembersCopy.add(TypeMember(
         name: member.name,
-        annotations: member.annotations,
-        type: member.type.normalizeType(enums, customs),
+        annotations: annotations,
+        type: member.type,
       ));
     }
 
     return CustomType(
       className: result.parent!.className,
-      members: members,
+      members: parentMembersCopy,
     );
   }
 
@@ -60,7 +65,7 @@ extension CustomType2DataClass on CustomType {
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
   }) {
     final buffer = StringBuffer()..write("""
-      |// Copyright (c) 2021 - 2023 Buijs Software
+      |// Copyright (c) 2021 - 2025 Buijs Software
       |//
       |// Permission is hereby granted, free of charge, to any person obtaining a copy
       |// of this software and associated documentation files (the "Software"), to deal
@@ -83,13 +88,9 @@ extension CustomType2DataClass on CustomType {
       |import 'package:squint_json/squint_json.dart';
       |""");
 
-    final unwrapped =
-        unwrapNestedTypes(members.map((e) => e.type).toList()).toSet();
-
+    final unwrapped = unwrapNestedTypes().toSet();
     final enums = unwrapped.whereType<EnumType>().toSet();
-
     final customs = unwrapped.whereType<CustomType>().toSet();
-
     if (options.includeCustomTypeImports && !options.generateChildClasses) {
       importStatements(Set<AbstractType>.of(unwrapped)
             ..addAll(enums)
@@ -104,7 +105,8 @@ extension CustomType2DataClass on CustomType {
     /// If generateChildClasses is set to false
     /// then skip code generation for TypeMember CustomTypes/EnumTypes.
     if (options.generateChildClasses) {
-      for (final ct in customs.toSet()) {
+      for (final ct
+          in customs.where((type) => type.className != className).toSet()) {
         buffer.write(ct.generateDataClassBody(options));
       }
 
@@ -113,32 +115,7 @@ extension CustomType2DataClass on CustomType {
       }
     }
 
-    final toBeEncoded = members.where((element) {
-      return element.type is CustomType || element.type is EnumType;
-    }).map((element) {
-      final name = element.name;
-      final annotations = element.annotations;
-      final type = element.type;
-      if (type is CustomType) {
-        return TypeMember(
-          name: name,
-          type: customs
-              .firstWhere((element) => element.className == type.className),
-          annotations: annotations,
-        );
-      }
-      if (type is EnumType) {
-        return TypeMember(
-          name: name,
-          type: enums
-              .firstWhere((element) => element.className == type.className),
-          annotations: annotations,
-        );
-      }
-
-      throw SquintException("Unknown data type: $type");
-    }).toList();
-
+    final toBeEncoded = _collectToBeEncoded(members, customs, enums);
     for (final ct in toBeEncoded) {
       buffer
         ..write(ct.encodingMethodBody)
@@ -146,6 +123,46 @@ extension CustomType2DataClass on CustomType {
     }
 
     return buffer.toString().formattedDartCode;
+  }
+
+  Set<TypeMember> _collectToBeEncoded(List<TypeMember> members,
+      Set<CustomType> customTypes, Set<EnumType> enumTypes) {
+    return members
+        .where((element) {
+          return element.type is CustomType || element.type is EnumType;
+        })
+        .map((element) {
+          final name = element.name;
+          final annotations = element.annotations;
+          final type = element.type;
+          if (type is CustomType) {
+            final nestedToBeEncoded =
+                _collectToBeEncoded(type.members, customTypes, enumTypes);
+            return <TypeMember>{
+              TypeMember(
+                name: name,
+                type: customTypes.firstWhere(
+                    (element) => element.className == type.className),
+                annotations: annotations,
+              ),
+              ...nestedToBeEncoded
+            };
+          }
+          if (type is EnumType) {
+            return <TypeMember>{
+              TypeMember(
+                name: name,
+                type: enumTypes.firstWhere(
+                    (element) => element.className == type.className),
+                annotations: annotations,
+              )
+            };
+          }
+
+          throw SquintException("Unknown data type: $type");
+        })
+        .expand((typeMember) => typeMember)
+        .toSet();
   }
 
   /// Generate data class from [CustomType].
@@ -178,29 +195,6 @@ extension CustomType2DataClass on CustomType {
       |
       """
         .format;
-  }
-
-  ///
-  List<AbstractType> unwrapNestedTypes(List<AbstractType> types) {
-    final output = types
-        .where((element) => element is! MapType || element is! ListType)
-        .toList();
-
-    final maps = types.whereType<MapType>();
-
-    for (final element in maps) {
-      output
-        ..addAll(unwrapNestedTypes([element.key]))
-        ..addAll(unwrapNestedTypes([element.value]));
-    }
-
-    final lists = types.whereType<ListType>();
-
-    for (final element in lists) {
-      output.addAll(unwrapNestedTypes([element.child]));
-    }
-
-    return output;
   }
 }
 

@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 //
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ import "../common/common.dart";
 /// - [EnumType]
 ///
 /// {@category ast}
-abstract class AbstractType {
+sealed class AbstractType {
   /// Construct a new AbstractType.
   const AbstractType({
     required this.className,
@@ -66,7 +66,7 @@ abstract class AbstractType {
 /// - [NullableFloat64ListType] Float64List?
 ///
 /// {@category ast}
-abstract class StandardType extends AbstractType {
+sealed class StandardType extends AbstractType {
   /// Construct a new AbstractType.
   const StandardType({
     required String className,
@@ -99,6 +99,17 @@ class CustomType extends AbstractType {
   /// Fields of this class.
   final List<TypeMember> members;
 
+  /// Copy this instance with different nullable value.
+  CustomType copyWith({
+    bool? nullable,
+    List<TypeMember>? members,
+  }) =>
+      CustomType(
+        className: className,
+        members: members ?? this.members,
+        nullable: nullable ?? this.nullable,
+      );
+
   @override
   final bool nullable;
 
@@ -123,17 +134,32 @@ class CustomType extends AbstractType {
 /// {@category ast}
 class EnumType extends AbstractType {
   /// Construct a new CustomType.
-  const EnumType(
-      {required String className,
-      required this.values,
-      required this.valuesJSON})
-      : super(className: className);
+  const EnumType({
+    required String className,
+    required this.values,
+    required this.valuesJSON,
+    this.nullable = false,
+  }) : super(className: className);
+
+  @override
+  final bool nullable;
 
   /// Fields of this class.
   final List<String> values;
 
   /// Fields of this class.
   final List<String> valuesJSON;
+
+  /// Copy this instance with different nullable value.
+  EnumType copyWith({
+    bool? nullable,
+    List<String>? values,
+  }) =>
+      EnumType(
+          className: className,
+          values: values ?? this.values,
+          valuesJSON: valuesJSON,
+          nullable: nullable ?? this.nullable);
 
   @override
   bool operator ==(Object other) =>
@@ -150,10 +176,7 @@ class EnumType extends AbstractType {
 
   @override
   String toString() =>
-      "EnumType(name=$className, values=$values, valuesJSON=$valuesJSON)";
-
-  @override
-  bool get nullable => false;
+      "EnumType(name=$className, nullable=$nullable, values=$values, valuesJSON=$valuesJSON)";
 }
 
 /// A class type member (field).
@@ -506,4 +529,23 @@ class NullableMapType extends MapType {
 
   @override
   bool get nullable => true;
+}
+
+/// [AbstractType] to represent a null value which type is unknown.
+class UndeterminedAsDynamic extends AbstractType {
+  /// Construct new [UndeterminedAsDynamic] instance.
+  const UndeterminedAsDynamic() : super(className: "dynamic");
+
+  /// Set to false because dynamic nullability is implicit.
+  @override
+  bool get nullable => false;
+}
+
+/// [AbstractType] which is one of [CustomType] or [EnumType].
+class NonCanonicalType extends AbstractType {
+  /// Construct new [NonCanonicalType] instance.
+  const NonCanonicalType(String className) : super(className: className);
+
+  @override
+  bool get nullable => false;
 }

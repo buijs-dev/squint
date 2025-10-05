@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
   /// Generate a dataclass.
   ///
   /// {@category generator}
-  Result get dataclass {
+  Result generateDataClass() {
     /// Get a valid input File.
     final inputFileOrResult = _inputFileOrResult;
 
@@ -86,6 +86,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
     }
 
     /// Get a valid output File.
+    // todo collect map of files and content and only create all files when generating has succeeded
     final outputFileOrResult = outputFile(
       filename: "${typeOrNull.className.snakeCase}_dataclass.dart",
       currentFolder: Directory.current,
@@ -97,7 +98,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
 
     /// Generate the data class based on the CustomType.
     if (typeOrNull is CustomType) {
-      final options = _optionsWithOverrides;
+      final options = squintGeneratorOptionsWithOverrides;
       final content = typeOrNull.generateDataClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
       return _taskSuccessCustomType(typeOrNull);
@@ -105,7 +106,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
 
     /// Generate the enum class based on the EnumType
     if (typeOrNull is EnumType) {
-      final options = _optionsWithOverrides;
+      final options = squintGeneratorOptionsWithOverrides;
       final content = typeOrNull.generateEnumClassFile(options: options);
       outputFileOrResult.ok!.writeAsStringSync(content);
       return _taskSuccessEnumType(typeOrNull);
@@ -120,7 +121,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
   ///
   /// Or Result.nok with log output.
   Either<File, Result> get _inputFileOrResult {
-    final inputFileOrLog = inputFile;
+    final inputFileOrLog = inputFile();
 
     if (!inputFileOrLog.isOk) {
       return Either.nok(Result.nok(inputFileOrLog.nok));
@@ -139,7 +140,7 @@ extension GenerateDataClass on Map<GenerateArgs, dynamic> {
 
   /// Get instance of [standardSquintGeneratorOptions] and override
   /// values retrieved from command-line input.
-  SquintGeneratorOptions get _optionsWithOverrides =>
+  SquintGeneratorOptions get squintGeneratorOptionsWithOverrides =>
       standardSquintGeneratorOptions.copyWith(
         includeJsonAnnotations: (this[GenerateArgs.includeJsonAnnotations] ??
             standardSquintGeneratorOptions.includeJsonAnnotations) as bool,
@@ -161,7 +162,7 @@ extension on File {
   /// or null if failed to.
   AbstractType? get determineTypeOrNull {
     if (path.contains(analyzer.metadataMarkerPrefix)) {
-      final metadata = parseMetadata;
+      final metadata = parseMetadata();
       final parent = metadata.parent;
       if (parent != null) {
         return parent;

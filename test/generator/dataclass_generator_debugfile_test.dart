@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ void main() {
   """;
 
   const expected = """
-// Copyright (c) 2021 - 2022 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -178,10 +178,7 @@ class Example {
 
 @squint
 class Objectives {
-  const Objectives({
-    required this.inMission,
-    required this.missionResults,
-  });
+  const Objectives({required this.inMission, required this.missionResults});
 
   @JsonValue("inMission")
   final bool inMission;
@@ -199,19 +196,21 @@ enum AnnoyanceRate {
   @JsonValue("UNBEARABLE")
   unbearable,
   @JsonValue("")
-  none
+  none,
 }
 
-JsonObject encodeObjectives(Objectives object) =>
-    JsonObject.fromNodes(key: "objectives", nodes: [
-      JsonBoolean(key: "inMission", data: object.inMission),
-      JsonArray<dynamic>(key: "missionResults", data: object.missionResults),
-    ]);
+JsonObject encodeObjectives(Objectives object) => JsonObject.fromNodes(
+  key: "objectives",
+  nodes: [
+    JsonBoolean(key: "inMission", data: object.inMission),
+    JsonArray<dynamic>(key: "missionResults", data: object.missionResults),
+  ],
+);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(
-      inMission: object.boolean("inMission"),
-      missionResults: object.array<bool>("missionResults"),
-    );
+  inMission: object.boolean("inMission"),
+  missionResults: object.array<bool>("missionResults"),
+);
 
 JsonString encodeAnnoyanceRate(AnnoyanceRate object) {
   switch (object) {
@@ -246,7 +245,6 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 }
 """;
 
-  // TODO Objectives is nullable so decoder/encoder should output nullsafe
   test("Verify Converting a JSON String to a data class", () {
     // setup:
     final sep = Platform.pathSeparator;
@@ -267,9 +265,7 @@ AnnoyanceRate decodeAnnoyanceRate(JsonString value) {
 
     // when:
     final result = analyze(pathToFile: exampleFile.absolute.path);
-
-    final actual = result.parent!.generateDataClassFile();
-
+    final actual = result.parentAsCustomTypeOrFail.generateDataClassFile();
     expect(actual, expected);
   });
 }

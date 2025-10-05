@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -765,13 +765,13 @@ class ArrayDecodingKeyGenerator {
   /// Determine the next key value depending on the last encountered token.
   String nextKey(List<String> keys, Type token) {
     switch (token) {
-      case ListOpeningBracketToken:
+      case ListOpeningBracketToken():
         currentKey = "$currentKey.0";
         break;
-      case ListClosingBracketToken:
+      case ListClosingBracketToken():
         currentKey = currentKey.substring(0, currentKey.lastIndexOf("."));
         break;
-      case ListValueSeparatorToken:
+      case ListValueSeparatorToken():
         incrementWidth;
     }
 
@@ -820,13 +820,13 @@ List buildListStructure<T>(List<List<int>> positions, {List<T>? valueList}) {
   );
 }
 
-/// Get a List<T> with 0 or more parent lists.
+/// Get a List&lt;T&gt; with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List<T>
-/// [depth] 2 = List<List<List<T>>>.
+/// [depth] 0 = List&lt;T&gt;
+/// [depth] 2 = List&lt;List&lt;List&lt;T&gt;&gt;&gt;.
 List getNestedList<T>({
   required int depth,
   required List<T> valueList,
@@ -841,13 +841,13 @@ List getNestedList<T>({
 /// Add another List arround the given List and keep the it strongly typed.
 List<List<T>> _addParent<T>(List<T> list) => [list];
 
-/// Get a List<String> with 0 or more parent lists.
+/// Get a List&lt;String&gt; with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List<String>
-/// [depth] 2 = List<List<List<String>>>.
+/// [depth] 0 = List&lt;String&gt;
+/// [depth] 2 = List&lt;List&lt;List&lt;String&gt;&gt;&gt;.
 List getNestedStringList(int depth) =>
     getNestedList<String>(depth: depth, valueList: <String>[]);
 
@@ -855,13 +855,13 @@ List getNestedStringList(int depth) =>
 List getNestedNullableStringList(int depth) =>
     getNestedList<String?>(depth: depth, valueList: <String?>[]);
 
-/// Get a List<int> with 0 or more parent lists.
+/// Get a List&lt;int&gt; with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List<int>
-/// [depth] 2 = List<List<List<int>>>.
+/// [depth] 0 = List&lt;int&gt;
+/// [depth] 2 = List&lt;List&lt;List&lt;int&gt;&gt;&gt;.
 List getNestedIntList(int depth) =>
     getNestedList<int>(depth: depth, valueList: <int>[]);
 
@@ -869,13 +869,13 @@ List getNestedIntList(int depth) =>
 List getNestedNullableIntList(int depth) =>
     getNestedList<int?>(depth: depth, valueList: <int?>[]);
 
-/// Get a List<double> with 0 or more parent lists.
+/// Get a List&lt;double&gt; with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List<double>
-/// [depth] 2 = List<List<List<double>>>.
+/// [depth] 0 = List&lt;double&gt;
+/// [depth] 2 = List&lt;List&lt;List&lt;double&gt;&gt;&gt;.
 List getNestedDoubleList(int depth) =>
     getNestedList<double>(depth: depth, valueList: <double>[]);
 
@@ -883,13 +883,13 @@ List getNestedDoubleList(int depth) =>
 List getNestedNullableDoubleList(int depth) =>
     getNestedList<double?>(depth: depth, valueList: <double?>[]);
 
-/// Get a List<bool> with 0 or more parent lists.
+/// Get a List&lt;bool&gt; with 0 or more parent lists.
 ///
 /// Specify [depth] to added one or more parent Lists.
 ///
 /// Example:
-/// [depth] 0 = List<bool>
-/// [depth] 2 = List<List<List<bool>>>.
+/// [depth] 0 = List&lt;bool&gt;
+/// [depth] 2 = List&lt;List&lt;List&lt;bool&gt;&gt;&gt;.
 List getNestedBoolList(int depth) =>
     getNestedList<bool>(depth: depth, valueList: <bool>[]);
 
