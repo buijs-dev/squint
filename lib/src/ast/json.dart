@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@ import "ast.dart";
 /// {@category encoder}
 /// {@category decoder}
 abstract class JsonNode<T> {
-  ///extends JsonNode<T> {
   /// Construct a new [JsonNode].
   const JsonNode({
     required this.key,
@@ -142,7 +141,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
     String key = "",
   }) =>
       JsonObject(
-        data: {for (var node in nodes) node.key: node},
+        data: {for (final node in nodes) node.key: node},
         key: key,
       );
 
@@ -175,8 +174,9 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   JsonNode byKey(String key) {
     if (hasKey(key)) {
       return data[key]!;
+    } else {
+      return JsonMissing(key: key);
     }
-    return JsonMissing(key: key);
   }
 
   /// Returns true if JSON content contains key.
@@ -449,13 +449,13 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   JsonBoolean? booleanNodeOrNull(String key) =>
       _byKeyOfType<JsonBoolean>(key, true);
 
-  /// Get Map<String,R> by [String] key.
+  /// Get Map by [String] key.
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
   Map<String, R> object<R>(String key) => objectNode(key).getDataAsMap();
 
-  /// Get Map<String,R> by [String] key.
+  /// Get Map by [String] key.
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
@@ -480,7 +480,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
     return JsonObject(data: object.data, key: object.key);
   }
 
-  /// Get Map<T,R> by [String] key.
+  /// Get Map by [String] key.
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
@@ -492,7 +492,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       objectNode(key).getDataAsTypedMap(
           toTypedKey: toTypedKey, toTypedValue: toTypedValue);
 
-  /// Get Map<T,R> by [String] key.
+  /// Get Map by [String] key.
   ///
   /// Throws [SquintException] if key is not found
   /// or values are not all of type [R].
@@ -504,7 +504,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       objectNodeOrNull(key)?.getDataAsTypedMap(
           toTypedKey: toTypedKey, toTypedValue: toTypedValue);
 
-  /// Return raw (unwrapped) object data as Map<String, R>
+  /// Return raw (unwrapped) object data as Map
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<T, R> getDataAsTypedMap<T, R>({
     required T Function(String) toTypedKey,
@@ -513,7 +513,7 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       data.map((key, value) => MapEntry(toTypedKey.call(key),
           toTypedValue?.call(value.data) ?? value.data as R));
 
-  /// Return raw (unwrapped) object data as Map<String, R>
+  /// Return raw (unwrapped) object data as Map
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, R> getDataAsMap<R>() =>
       data.map((key, value) => MapEntry(key, value.data as R));
@@ -586,7 +586,7 @@ class JsonMap<T> extends JsonNode<Map<String, JsonNode<T>>> {
       ? '{\n ${data.values.map((o) => o.stringify).join(",\n")}\n}'
       : '"$key": {\n ${data.values.map((o) => o.stringify).join(",\n")}\n}';
 
-  /// Return raw (unwrapped) object data as Map<String, R>
+  /// Return raw (unwrapped) object data as Map
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, T> get dataTyped => data.map((key, value) {
         return MapEntry(key, value.data);
@@ -893,12 +893,12 @@ class JsonBooleanOrNull extends JsonNode<bool?> {
 ///
 /// Example:
 ///
-/// ```
-///   "padawans":["Anakin", "Obi-Wan"]
+/// ```dart
+///   "padawans": ["Anakin", "Obi-Wan"]
 /// ```
 ///
-/// key = padawans
-/// data = ["Anakin", "Obi-Wan"]
+/// key = "padawans"
+/// data = "Anakin", "Obi-Wan"
 /// T = String
 ///
 /// {@category ast}
@@ -934,12 +934,12 @@ class JsonArray<T> extends JsonNode<T> {
 ///
 /// Example:
 ///
-/// ```
+/// ```dart
 ///   "padawans":["Anakin", "Obi-Wan"]
 /// ```
 ///
 /// key = padawans
-/// data = ["Anakin", "Obi-Wan"]
+/// data = "Anakin", "Obi-Wan"
 /// T = String
 ///
 /// {@category ast}

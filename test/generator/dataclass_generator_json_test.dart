@@ -70,7 +70,7 @@ void main() {
 
     // then:
     expect(podo, """
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -147,10 +147,7 @@ class Example {
 
 @squint
 class Objectives {
-  const Objectives({
-    required this.inMission,
-    required this.missionResults,
-  });
+  const Objectives({required this.inMission, required this.missionResults});
 
   @JsonValue("in-mission")
   final bool inMission;
@@ -159,16 +156,18 @@ class Objectives {
   final List<bool> missionResults;
 }
 
-JsonObject encodeObjectives(Objectives object) =>
-    JsonObject.fromNodes(key: "objectives", nodes: [
-      JsonBoolean(key: "in-mission", data: object.inMission),
-      JsonArray<dynamic>(key: "mission-results", data: object.missionResults),
-    ]);
+JsonObject encodeObjectives(Objectives object) => JsonObject.fromNodes(
+  key: "objectives",
+  nodes: [
+    JsonBoolean(key: "in-mission", data: object.inMission),
+    JsonArray<dynamic>(key: "mission-results", data: object.missionResults),
+  ],
+);
 
 Objectives decodeObjectives(JsonObject object) => Objectives(
-      inMission: object.boolean("in-mission"),
-      missionResults: object.array<bool>("mission-results"),
-    );
+  inMission: object.boolean("in-mission"),
+  missionResults: object.array<bool>("mission-results"),
+);
 """);
   });
 

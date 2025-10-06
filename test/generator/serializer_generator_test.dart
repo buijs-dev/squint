@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ void main() {
     };
 
     // when:
-    final result = arguments.serializers;
+    final result = arguments.generateSerializers();
     expect(result.isOk, false);
     expect(result.nok != null, true);
     expect(result.nok!.length, 1);
@@ -58,7 +58,7 @@ void main() {
     };
 
     // when:
-    final result = arguments.serializers;
+    final result = arguments.generateSerializers();
     expect(result.isOk, false);
     expect(result.nok != null, true);
     expect(result.nok!.length, 1);
@@ -82,7 +82,7 @@ void main() {
     };
 
     // when:
-    final result = arguments.serializers;
+    final result = arguments.generateSerializers();
     expect(result.isOk, false);
     expect(result.nok != null, true);
     expect(result.nok!.length, 1);
@@ -121,7 +121,7 @@ void main() {
     };
 
     // when:
-    final result = arguments.serializers;
+    final result = arguments.generateSerializers();
 
     // cleanup:
     exampleDart.delete();

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 import "../common/common.dart";
 import "shared.dart";
 
-/// Either containing parsed arguments as Map<GenerateArgs, dynamic>
+/// Either containing parsed arguments as Map&lt;GenerateArgs, dynamic&gt;
 /// or a List of String log messages.
 typedef Result = Either<Map<AnalyzeArgs, dynamic>, List<String>>;
 
@@ -111,5 +111,5 @@ List<String> _logAnalyzerExamples() => [
       "Specify output folder with --output.",
       "",
       "Example command: ",
-      "flutter pub run squint_json:analyze --input foo/bar.dart --output foo/output",
+      "dart run squint_json:analyze --input foo/bar.dart --output foo/output",
     ];

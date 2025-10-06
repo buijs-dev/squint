@@ -1,4 +1,3 @@
-// ignore_for_file: avoid_print, avoid_annotating_with_dynamic
 // Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,12 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/// Helper for logging.
-extension Logger on String {
-  /// Log an info message.
-  String log({dynamic context}) {
-    final msg = context == null ? this : "$this\n$context";
-    print(msg);
-    return msg;
-  }
+import "dart:core";
+
+import "package:squint_json/src/ast/ast.dart";
+import "package:squint_json/src/generator/shared.dart";
+import "package:test/test.dart";
+
+void main() {
+  test("When a CustomType contains a nested CustomType then it is collected",
+      () {
+    // given:
+    const childChildCustomType = CustomType(
+        className: "Bar1",
+        members: [TypeMember(name: "name", type: StringType())]);
+    const childCustomType = CustomType(
+        className: "Bar2",
+        members: [TypeMember(name: "name", type: childChildCustomType)]);
+    const parentCustomType = CustomType(
+        className: "Foo",
+        members: [TypeMember(name: "bar", type: childCustomType)]);
+
+    // when
+    final unwrapped = parentCustomType.unwrapNestedTypes();
+
+    expect(unwrapped.contains(childCustomType), true,
+        reason: "should contain child type");
+    expect(unwrapped.contains(childChildCustomType), true,
+        reason: "should contain child of child type");
+  });
 }

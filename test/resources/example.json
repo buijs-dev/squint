@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "isJedi": true,
+  "hasPadawan": false,
+  "bff": "Leia",
+  "jedi": [
+    "Obi-Wan", "Anakin", "Luke Skywalker"
+  ],
+  "coordinates": [22, 4.4, -15],
+  "objectives": {
+    "in-mission": false,
+    "mission-results": [false, true, true, false]
+  },
+  "annoyance-rate": [
+    { "JarJarBinks" : 9000 }
+  ],
+  "foo": null
+}

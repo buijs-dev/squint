@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ extension EnumType2EnumClass on EnumType {
     SquintGeneratorOptions options = standardSquintGeneratorOptions,
   }) {
     final buffer = StringBuffer()..write("""
-      |// Copyright (c) 2021 - 2023 Buijs Software
+      |// Copyright (c) 2021 - 2025 Buijs Software
       |//
       |// Permission is hereby granted, free of charge, to any person obtaining a copy
       |// of this software and associated documentation files (the "Software"), to deal
@@ -81,9 +81,13 @@ extension EnumType2EnumClass on EnumType {
       index += 1;
     }
 
+    // todo add option to squintGen to configure how to format enum fields
+    // camelcase, pascalcase
+    final copied = copyWith(values: values);
+
     return hasJsonValues
-        ? _enumWithAnnotations(options)
-        : _enumWithoutAnnotations(options);
+        ? copied._enumWithAnnotations(options)
+        : copied._enumWithoutAnnotations(options);
   }
 
   String _enumWithoutAnnotations(SquintGeneratorOptions options) =>

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ typedef Result = Either<analyzer.AnalysisResult, List<String>?>;
 
 /// Run the analyzer task.
 Result runGenerateTask(List<String> args) {
-  final argumentsOrLog = args.generateArguments;
+  final argumentsOrLog = args.toGenerateArguments();
 
   if (!argumentsOrLog.isOk) {
     return Result.nok(argumentsOrLog.nok);
@@ -44,29 +44,29 @@ Result runGenerateTask(List<String> args) {
       "Missing argument '$generateArgumentType'.",
       "Specify what code to be generated with --$generateArgumentInput.",
       "Example to generate dataclass from JSON file: ",
-      "flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput message.json",
+      "dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueDataclass --$generateArgumentInput message.json",
       "Example to generate serializer extensions for dart class: ",
-      "flutter pub run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueSerializer --$generateArgumentInput foo.dart",
+      "dart run $libName:$generateTaskName --$generateArgumentType $generateArgumentTypeValueSerializer --$generateArgumentInput foo.dart",
     ]);
   }
 
   final toBeGenerated = arguments[GenerateArgs.type] as String;
 
   if (toBeGenerated == generateArgumentTypeValueDataclass) {
-    final dataclassOrLog = arguments.dataclass;
-    if (!dataclassOrLog.isOk) {
-      return Result.nok(dataclassOrLog.nok);
-    } else {
+    final dataclassOrLog = arguments.generateDataClass();
+    if (dataclassOrLog.isOk) {
       return Result.ok(dataclassOrLog.ok!);
+    } else {
+      return Result.nok(dataclassOrLog.nok);
     }
   }
 
   if (toBeGenerated == generateArgumentTypeValueSerializer) {
-    final serializerOrLog = arguments.serializers;
-    if (!serializerOrLog.isOk) {
-      return Result.nok(serializerOrLog.nok);
-    } else {
+    final serializerOrLog = arguments.generateSerializers();
+    if (serializerOrLog.isOk) {
       return Result.ok(serializerOrLog.ok!);
+    } else {
+      return Result.nok(serializerOrLog.nok);
     }
   }
 

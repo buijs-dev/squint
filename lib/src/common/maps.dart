@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@
 
 /// Map processing utilities.
 extension MapProcessor<K, V> on Map<K, V> {
-  /// Convert Map<K,V> to List<T>.
+  /// Convert Map&lt;K,V&gt; to List&lt;T&gt;.
   List<T> reduce<T>(T Function(K, V) reduce) {
     return map((K key, V value) {
       return MapEntry(key, reduce.call(key, value));

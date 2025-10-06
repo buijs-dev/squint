@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -280,9 +280,11 @@ class BracketCounter {
   /// List of all characters between opening and closing bracket.
   ///
   /// Example:
+  /// ```dart
   /// [[1,2,3,4],[4,6,8],[1,0,1,1]], "anotherKey": []
   ///
   /// ContentBetweenBrackets == [[1,2,3,4],[4,6,8],[1,0,1,1]].
+  /// ```
   List<String> get contentBetweenBrackets {
     _totalDepth = 1;
 

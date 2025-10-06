@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -251,6 +251,48 @@ extension ImportsBuilder on CustomType {
   }
 }
 
+/// Utility to find all nested data types (if any).
+extension NestedTypeFinder on AbstractType {
+  /// Find nested [AbstractType].
+  List<AbstractType> unwrapNestedTypes() {
+    switch (this) {
+      case final StandardType standardType:
+        switch (standardType) {
+          case final ListType listType:
+            final childType = listType.child;
+            final nestedTypes = childType.unwrapNestedTypes();
+            return [listType, childType, ...nestedTypes];
+          case final MapType mapType:
+            final keyType = mapType.key;
+            final valueType = mapType.value;
+            final nestedKeyTypes = keyType.unwrapNestedTypes();
+            final nestedValueTypes = valueType.unwrapNestedTypes();
+            return [
+              mapType,
+              keyType,
+              valueType,
+              ...nestedKeyTypes,
+              ...nestedValueTypes
+            ];
+          case _:
+            return [standardType];
+        }
+      case final EnumType enumType:
+        return [enumType];
+      case final UndeterminedAsDynamic undeterminedAsDynamic:
+        return [undeterminedAsDynamic];
+      case final CustomType customType:
+        final nestedTypes = customType.members
+            .map((member) => member.type.unwrapNestedTypes())
+            .expand((type) => type)
+            .toList();
+        return [customType, ...nestedTypes];
+      case NonCanonicalType():
+        return [const UndeterminedAsDynamic()];
+    }
+  }
+}
+
 /// Return [String] enum value for empty JSON String.
 extension NoneValueBuilder on EnumType {
   /// Return "NONE" if all enum values are uppercase or "none" if not.
@@ -291,13 +333,19 @@ extension AbstractTypeNormalizer on AbstractType {
     final customTypeOrNull =
         customTypes.firstBy((type) => type.className == className);
     if (customTypeOrNull != null) {
-      return customTypeOrNull;
+      if (customTypeOrNull.members.isEmpty) {
+        final thisCustomType = this as CustomType;
+        return customTypeOrNull.copyWith(
+            nullable: nullable, members: thisCustomType.members);
+      } else {
+        return customTypeOrNull.copyWith(nullable: nullable);
+      }
     }
 
     final enumTypeOrNull =
         enumTypes.firstBy((type) => type.className == className);
     if (enumTypeOrNull != null) {
-      return enumTypeOrNull;
+      return enumTypeOrNull.copyWith(nullable: nullable);
     }
 
     if (this is ListType) {

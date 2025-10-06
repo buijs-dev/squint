@@ -1,4 +1,4 @@
-// Copyright (c) 2021 - 2023 Buijs Software
+// Copyright (c) 2021 - 2025 Buijs Software
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,6 @@ import "../ast/ast.dart";
 import "../common/common.dart";
 import "object2custom.dart";
 import "object2map.dart";
-import "undetermined.dart";
 
 /// Convert a [JsonNode] to an [AbstractType].
 extension JsonNode2AbstractType on JsonNode {
@@ -103,11 +102,11 @@ extension JsonNode2AbstractType on JsonNode {
       ///
       /// Example:
       ///
-      /// If a List contains a Map<String, dynamic> and all children
+      /// If a List contains a Map&lt;String, dynamic&gt; and all children
       /// of type dynamic are of the same type, for instance String,
-      /// then this can be returned as Map<String, String>.
+      /// then this can be returned as Map&lt;String, String&gt;.
       ///
-      /// If a List contains a Map<String,dynamic> and all all children
+      /// If a List contains a Map&lt;String,dynamic&gt; and all all children
       /// are not of the same type, for instance some are String and
       /// others double, then this could not be cast to a Map<String,String>
       /// or Map<String,double>. In this case building a JsonObject and
