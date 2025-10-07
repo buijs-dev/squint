@@ -371,7 +371,7 @@ extension JsonArrayDecoder on String {
     while (i < input.length) {
       if (previousToken is ListOpeningBracketToken &&
           currentToken is ListClosingBracketToken) {
-        output[keygen.currentKey] = _PlaceHolder(key: keygen.currentKey);
+        output[keygen.currentKey] = UntypedJsonNode(key: keygen.currentKey);
       }
       previousToken = currentToken;
       currentToken = _Token.fromChar(
@@ -391,12 +391,8 @@ extension JsonArrayDecoder on String {
       currentValue = currentToken.value;
     }
 
-    return output..removeWhere((key, value) => value is _PlaceHolder);
+    return output..removeWhere((key, value) => value is UntypedJsonNode);
   }
-}
-
-class _PlaceHolder extends JsonNode {
-  _PlaceHolder({required super.key}) : super(data: "");
 }
 
 /// Decode a Dart List.

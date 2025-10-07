@@ -35,7 +35,19 @@ void main() {
           "foobject": {  "x": "y" },
           "numberuno": 1,
           "nowaiii": true,
-          "nothing": null 
+          "nothing": null,
+          "youDontSay": { 
+            "but": {
+              "I": 1,
+              "do": "saySo",
+              "kay": ["bye", "ciao"],
+            },
+             "hello": {
+                "is": 1,
+                "it": 2,
+                "me": 3
+              }
+          } 
         }""";
 
   final decoded = example.jsonDecode;
@@ -126,6 +138,36 @@ void main() {
 
   test("verify nullable boolean getter returns a bool", () {
     expect(decoded.booleanNodeOrNull("nowaiii")!.data, true);
+  });
+
+  test("verify data is stored without ast wrappers", () {
+    final data = decoded.getDataAsMap();
+    expect(data["youDontSay"]["but"]["I"], 1);
+    expect(data["youDontSay"]["but"]["do"], "saySo");
+    expect(data["youDontSay"]["but"]["kay"][0], "bye");
+    expect(data["youDontSay"]["but"]["kay"][1], "ciao");
+
+    final typedData = decoded.getDataAsTypedMap();
+    expect(typedData["youDontSay"]["but"]["I"], 1);
+    expect(typedData["youDontSay"]["but"]["do"], "saySo");
+    expect(typedData["youDontSay"]["but"]["kay"][0], "bye");
+    expect(typedData["youDontSay"]["but"]["kay"][1], "ciao");
+
+    final typedDataWithSpecifiers = decoded
+        .objectNode("youDontSay")
+        .objectNode("hello")
+        .getDataAsTypedMap(toTypedKey: (t) => t, toTypedValue: (r) => r);
+    expect(typedDataWithSpecifiers["is"], 1);
+    expect(typedDataWithSpecifiers["it"], 2);
+    expect(typedDataWithSpecifiers["me"], 3);
+
+    final typedDataWithSpecifiers2 = decoded
+        .objectNode("youDontSay")
+        .objectNode("hello")
+        .getDataAsTypedMap(toTypedKey: (t) => t, toTypedValue: (r) => "$r");
+    expect(typedDataWithSpecifiers2["is"], "1");
+    expect(typedDataWithSpecifiers2["it"], "2");
+    expect(typedDataWithSpecifiers2["me"], "3");
   });
 
   test("verify building a JsonObject from a Map with dynamic data", () {

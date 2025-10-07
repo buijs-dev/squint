@@ -1,3 +1,8 @@
+## 0.1.4
+- Remove obsolete path dependency.
+- Set analyzer dependency range to '>=7.0.0 <9.0.0'
+- Bugfix: JsonObject getters to retrieve data as Map should not return any JsonNode type.
+
 ## 0.1.3
 - Bump Flutter SDK range to ">=3.0.0 <4.0.0".
 - Bump dependencies.

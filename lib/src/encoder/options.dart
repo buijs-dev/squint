@@ -20,10 +20,14 @@
 
 import "indentation.dart";
 
+sealed class FormattingOptions {
+  const FormattingOptions();
+}
+
 /// Options to configure JSON formatting.
 ///
 /// {@category encoder}
-class JsonFormattingOptions {
+class JsonFormattingOptions extends FormattingOptions {
   /// Construct a [JsonFormattingOptions] instance.
   const JsonFormattingOptions({
     required this.indentation,
