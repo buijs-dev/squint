@@ -4,3 +4,6 @@
 /pana.sh
 /docsify.sh
 /publish.sh
+/coverage/
+/doc/
+/.idea/

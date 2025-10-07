@@ -32,7 +32,7 @@ import "ast.dart";
 /// {@category ast}
 /// {@category encoder}
 /// {@category decoder}
-abstract class JsonNode<T> {
+sealed class JsonNode<T> {
   /// Construct a new [JsonNode].
   const JsonNode({
     required this.key,
@@ -63,6 +63,23 @@ UntypedJsonNode dynamicValue({
   dynamic data,
 }) =>
     UntypedJsonNode(key: key, data: data);
+
+/// [JsonNode] to represent a JSON node of unknown type.
+///
+/// This [JsonNode] is not exposed as AST type
+/// because mapping to dynamic types is discouraged.
+///
+/// The use of this type is when converting a JSON String
+/// to a data class and/or extension methods. When a field
+/// is null then the type can not be determined.
+///
+/// Without a proper representation of this state
+/// it would be impossible to generate code for
+/// input containing null/unknown types.
+class UntypedJsonNode extends JsonNode<dynamic> {
+  /// Construct a new [UntypedJsonNode].
+  const UntypedJsonNode({required super.key, super.data});
+}
 
 /// JSON Object (Map) element.
 ///
@@ -507,16 +524,25 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
   /// Return raw (unwrapped) object data as Map
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<T, R> getDataAsTypedMap<T, R>({
-    required T Function(String) toTypedKey,
+    T Function(String)? toTypedKey,
     R Function(dynamic)? toTypedValue,
   }) =>
-      data.map((key, value) => MapEntry(toTypedKey.call(key),
-          toTypedValue?.call(value.data) ?? value.data as R));
+      data.map((key, value) => MapEntry(toTypedKey?.call(key) ?? key as T,
+          toTypedValue?.call(_unwrapValue(value)) ?? _unwrapValue(value)));
 
   /// Return raw (unwrapped) object data as Map
   /// where R is not of type JsonNode but a dart StandardType (String, bool, etc).
   Map<String, R> getDataAsMap<R>() =>
-      data.map((key, value) => MapEntry(key, value.data as R));
+      data.map((key, value) => MapEntry(key, _unwrapValue(value)));
+
+  dynamic _unwrapValue(JsonNode node) {
+    final t = node.data;
+    if (t is Map) {
+      return t.map((key, value) => MapEntry(key, _unwrapValue(value)));
+    } else {
+      return t;
+    }
+  }
 
   R? _byKeyOfType<R>(String key, bool nullable) {
     final data = byKey(key);
