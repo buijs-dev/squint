@@ -655,12 +655,11 @@ MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
   }
 
   if (value is Map && value.keys.every((dynamic k) => k is String)) {
-    final mapped = <String,dynamic>{};
-    value.forEach((k,v) {
+    final mapped = <String, dynamic>{};
+    value.forEach((k, v) {
       mapped[k.toString()] = v;
     });
-    return MapEntry(
-        key, JsonObject.fromMap(data: mapped));
+    return MapEntry(key, JsonObject.fromMap(data: mapped));
   }
 
   throw SquintException(
