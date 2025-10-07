@@ -567,6 +567,12 @@ class JsonObject extends JsonNode<Map<String, JsonNode>> {
       );
     }
 
+    if (data is! R) {
+      throw SquintException(
+        "Data is not of expected type. Expected: '$R'. Actual: ${data.runtimeType}",
+      );
+    }
+
     return null;
   }
 
@@ -649,8 +655,12 @@ MapEntry<String, JsonNode> _buildJsonNodeMap(String key, dynamic value) {
   }
 
   if (value is Map && value.keys.every((dynamic k) => k is String)) {
+    final mapped = <String,dynamic>{};
+    value.forEach((k,v) {
+      mapped[k.toString()] = v;
+    });
     return MapEntry(
-        key, JsonObject.fromMap(data: value as Map<String, dynamic>));
+        key, JsonObject.fromMap(data: mapped));
   }
 
   throw SquintException(
